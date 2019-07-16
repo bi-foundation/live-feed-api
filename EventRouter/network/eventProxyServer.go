@@ -7,6 +7,7 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/eventMessages"
 	"github.com/FactomProject/live-api/common/constants/runstate"
 	"github.com/gogo/protobuf/proto"
+	"github.com/joomcode/errorx"
 	"net"
 )
 
@@ -44,6 +45,15 @@ func (ep *EventProxyServer) tcpListener() {
 }
 
 func (ep *EventProxyServer) handleConnection(conn net.Conn) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			err := fmt.Errorf("Connection error: %v", r)
+			fmt.Println(err)
+			conn.Close()
+		}
+	}()
+
 	var bufferSize int32
 	reader := bufio.NewReader(conn)
 
@@ -52,7 +62,8 @@ func (ep *EventProxyServer) handleConnection(conn net.Conn) {
 		data := make([]byte, bufferSize)
 		bytesRead, err := reader.Read(data)
 		if err != nil {
-			fmt.Println("Could not read incoming data", err)
+			errx := errorx.Decorate(err, "An error occurred while reading network data from remote address %v", getRemoteAddress(conn))
+			panic(errx)
 		}
 
 		anchoredEvent := &eventMessages.AnchoredEvent{}
@@ -65,4 +76,15 @@ func (ep *EventProxyServer) handleConnection(conn net.Conn) {
 
 func (ep *EventProxyServer) Stop() {
 	ep.listener.Close()
+}
+
+func getRemoteAddress(conn net.Conn) string {
+	var addrString string
+	remoteAddr := conn.RemoteAddr()
+	if addr, ok := remoteAddr.(*net.TCPAddr); ok {
+		addrString = addr.IP.String()
+	} else {
+		addrString = remoteAddr.String()
+	}
+	return addrString
 }
