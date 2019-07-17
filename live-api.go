@@ -16,7 +16,7 @@ func main() {
 	eventProxyServer.StartProxy()
 
 	for eventProxyServer.RunState < runstate.Stopping {
-		time.Sleep(time.Second)
+		time.Sleep(500 * time.Millisecond)
 	}
 
 	eventProxyServer.Stop()
