@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/eventMessages"
+	"github.com/FactomProject/live-api/EventRouter/events/messages"
 	"github.com/FactomProject/live-api/common/constants/runstate"
 	"github.com/gogo/protobuf/proto"
 	"github.com/joomcode/errorx"
@@ -16,13 +16,13 @@ var (
 )
 
 type EventProxyServer struct {
-	eventsInQueue chan eventMessages.Event
+	eventsInQueue chan messages.Event
 	RunState      runstate.RunState
 	listener      net.Listener
 }
 
 func (ep *EventProxyServer) Init() *EventProxyServer {
-	ep.eventsInQueue = make(chan eventMessages.Event, StandardChannelSize)
+	ep.eventsInQueue = make(chan messages.Event, StandardChannelSize)
 	return ep
 }
 
@@ -66,7 +66,7 @@ func (ep *EventProxyServer) handleConnection(conn net.Conn) {
 			panic(errx)
 		}
 
-		anchoredEvent := &eventMessages.AnchoredEvent{}
+		anchoredEvent := &messages.AnchoredEvent{}
 		err = proto.Unmarshal(data[0:bytesRead], anchoredEvent)
 
 		fmt.Println("Received AnchoredEvent", anchoredEvent.DirectoryBlock.Header.DBHeight)
