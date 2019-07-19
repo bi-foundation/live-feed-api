@@ -20,10 +20,12 @@ func (evr *EventRouter) Start() {
 func (evr *EventRouter) handleEvents() {
 	for factomEvent := range evr.eventsInQueue {
 		switch factomEvent.Value.(type) {
-		case *eventmessages.FactomEvent_AnchoredEvent:
-			log.Println("Received AnchoredEvent", factomEvent.GetAnchoredEvent())
-		case *eventmessages.FactomEvent_IntermediateEvent:
-			log.Println("Received IntermediateEvent", factomEvent.GetIntermediateEvent())
+		case *eventmessages.FactomEvent_AnchorEvent:
+			log.Println("Received AnchoredEvent", factomEvent.GetAnchorEvent())
+		case *eventmessages.FactomEvent_CommitChain:
+			log.Println("Received CommitChain", factomEvent.GetCommitChain())
+		case *eventmessages.FactomEvent_CommitEntry:
+			log.Println("Received CommitEntry", factomEvent.GetCommitEntry())
 		}
 	}
 }
