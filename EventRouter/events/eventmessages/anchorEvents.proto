@@ -1,20 +1,36 @@
 syntax = "proto3";
-package eventMessages;
+package eventmessages;
 
 import "google/protobuf/timestamp.proto";
 
+enum EventSource {
+    ADD_TO_PROCESSLIST = 0;
+    ADD_TO_HOLDING = 1;
+}
+
+message FactomEvent {
+    oneof value {
+        IntermediateEvent intermediateEvent = 1;
+        AnchoredEvent anchoredEvent = 2;
+    }
+}
+
 
 message AnchoredEvent {
-
     DirectoryBlock directoryBlock = 1;
-
     AdminBlock adminBlock = 2;
-
     FactoidBlock factoidBlock = 3;
-
     EntryCreditBlock entryCreditBlock = 4;
-
 }
+
+message IntermediateEvent {
+    EventSource eventSource = 1;
+    oneof value {
+        CommitChain commitChain = 2;
+        CommitEntry commitEntry = 3;
+    }
+}
+
 
 message DirectoryBlock {
     DirectoryBlockHeader header = 1;
@@ -41,6 +57,16 @@ message AdminBlock {
     AdminBlockHeader header = 1;
     repeated AdminBlockEntry entries = 2;
 }
+
+message FactoidBlock {
+
+}
+
+
+message EntryCreditBlock {
+
+}
+
 
 message AdminBlockHeader {
     Hash PrevBackRefHash = 1;
@@ -83,13 +109,21 @@ message Signature {
     bytes signature = 2;
 }
 
-
-message FactoidBlock {
-
+message CommitChain {
+    Hash ChainIDHash = 1;
+    Hash EntryHash = 2;
+    Hash Weld = 3;
+    google.protobuf.Timestamp timestamp = 4;
+    uint32 Credits = 5;
+    bytes ECPubKey = 6;
+    bytes Sig = 7;
 }
 
-
-message EntryCreditBlock {
-
+message CommitEntry {
+    Hash EntryHash = 1;
+    google.protobuf.Timestamp timestamp = 2;
+    uint32 Credits = 3;
+    bytes ECPubKey = 4;
+    bytes Sig = 5;
 }
 

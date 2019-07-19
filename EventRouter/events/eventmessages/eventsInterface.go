@@ -1,4 +1,4 @@
-package messages
+package eventmessages
 
 type Event interface {
 	Reset()

@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/events/messages"
+	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
 	"github.com/FactomProject/live-api/common/constants/runstate"
 	"github.com/gogo/protobuf/proto"
 	"log"
@@ -16,22 +16,22 @@ var (
 )
 
 const (
-	defaultConnectionHost     = ""
-	defaultConnectionPort     = "3333"
+	defaultConnectionHost     = "127.0.0.1"
+	defaultConnectionPort     = "8040"
 	defaultConnectionProtocol = "tcp"
 )
 
-type eventServer struct {
-	eventsInQueue chan messages.Event
+type EventServer struct {
+	eventsInQueue chan *eventmessages.FactomEvent
 	state         runstate.RunState
 	listener      net.Listener
 	network       string
 	address       string
 }
 
-func New() eventServer {
-	server := eventServer{
-		eventsInQueue: make(chan messages.Event, StandardChannelSize),
+func NewEventServer() EventServer {
+	server := EventServer{
+		eventsInQueue: make(chan *eventmessages.FactomEvent, StandardChannelSize),
 		state:         runstate.New,
 		network:       defaultConnectionProtocol,
 		address:       fmt.Sprintf("%s:%s", defaultConnectionHost, defaultConnectionPort),
@@ -39,12 +39,12 @@ func New() eventServer {
 	return server
 }
 
-func (ep *eventServer) Start() {
+func (ep *EventServer) Start() {
 	go ep.listenIncomingConnections(ep.network, ep.address)
 	ep.state = runstate.Running
 }
 
-func (ep *eventServer) Stop() {
+func (ep *EventServer) Stop() {
 	ep.state = runstate.Stopping
 	err := ep.listener.Close()
 	if err != nil {
@@ -53,7 +53,7 @@ func (ep *eventServer) Stop() {
 	ep.state = runstate.Stopped
 }
 
-func (ep *eventServer) listenIncomingConnections(network string, address string) {
+func (ep *EventServer) listenIncomingConnections(network string, address string) {
 	var err error
 	ep.listener, err = net.Listen(network, address)
 	if err != nil {
@@ -69,7 +69,7 @@ func (ep *eventServer) listenIncomingConnections(network string, address string)
 	}
 }
 
-func (ep *eventServer) handleConnection(conn net.Conn) error {
+func (ep *EventServer) handleConnection(conn net.Conn) error {
 	defer closeConnection(conn)
 
 	var bufferSize int32
@@ -81,14 +81,17 @@ func (ep *eventServer) handleConnection(conn net.Conn) error {
 		data := make([]byte, bufferSize)
 		bytesRead, err := reader.Read(data)
 		if err != nil {
-			log.Printf("An error occurred while reading network data from remote address %v:, %v", getRemoteAddress(conn), err)
+			errorMsg := fmt.Sprintf("An error occurred while reading network data from remote address %v:, %v", getRemoteAddress(conn), err)
+			if "EOF" == err.Error() {
+				panic(errorMsg)
+			} else {
+				log.Println(errorMsg)
+			}
 		}
 
-		anchoredEvent := &messages.AnchoredEvent{}
-		err = proto.Unmarshal(data[0:bytesRead], anchoredEvent)
-
-		log.Println("Received AnchoredEvent", anchoredEvent.DirectoryBlock.Header.DBHeight)
-		ep.eventsInQueue <- anchoredEvent
+		factomEvent := &eventmessages.FactomEvent{}
+		err = proto.Unmarshal(data[0:bytesRead], factomEvent)
+		ep.eventsInQueue <- factomEvent
 	}
 }
 
@@ -110,14 +113,18 @@ func getRemoteAddress(conn net.Conn) string {
 	return addrString
 }
 
-func (ep *eventServer) GetState() runstate.RunState {
+func (ep *EventServer) GetState() runstate.RunState {
 	return ep.state
 }
 
-func (ep *eventServer) SetNetwork(network string) {
+func (ep *EventServer) GetEventsInQueue() (chan *eventmessages.FactomEvent) {
+	return ep.eventsInQueue
+}
+
+func (ep *EventServer) SetNetwork(network string) {
 	ep.network = network
 }
 
-func (ep *eventServer) SetAddress(address string) {
+func (ep *EventServer) SetAddress(address string) {
 	ep.address = address
 }
