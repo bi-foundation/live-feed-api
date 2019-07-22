@@ -26,6 +26,8 @@ func (evr *EventRouter) handleEvents() {
 			log.Println("Received CommitChain", factomEvent.GetCommitChain())
 		case *eventmessages.FactomEvent_CommitEntry:
 			log.Println("Received CommitEntry", factomEvent.GetCommitEntry())
+		case *eventmessages.FactomEvent_RevealEntry:
+			log.Println("Received FactomEvent_RevealEntry", factomEvent.GetRevealEntry())
 		}
 	}
 }
