@@ -5,4 +5,4 @@ Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/struct.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types:. \
-./EventRouter/events/eventmessages/anchorEvents.proto
+./EventRouter/events/eventmessages/factomEvents.proto

@@ -7,6 +7,7 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
 	"github.com/FactomProject/live-api/common/constants/runstate"
 	"github.com/gogo/protobuf/proto"
+	"io"
 	"log"
 	"net"
 )
@@ -82,7 +83,7 @@ func (ep *EventServer) handleConnection(conn net.Conn) error {
 		bytesRead, err := reader.Read(data)
 		if err != nil {
 			errorMsg := fmt.Sprintf("An error occurred while reading network data from remote address %v:, %v", getRemoteAddress(conn), err)
-			if "EOF" == err.Error() {
+			if io.EOF == err {
 				panic(errorMsg)
 			} else {
 				log.Println(errorMsg)
@@ -117,7 +118,7 @@ func (ep *EventServer) GetState() runstate.RunState {
 	return ep.state
 }
 
-func (ep *EventServer) GetEventsInQueue() (chan *eventmessages.FactomEvent) {
+func (ep *EventServer) GetEventsInQueue() chan *eventmessages.FactomEvent {
 	return ep.eventsInQueue
 }
 
