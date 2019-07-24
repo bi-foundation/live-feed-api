@@ -32,15 +32,11 @@ func TestWriteEvents(t *testing.T) {
 	data := mockData(t)
 	dataSize := int32(len(data))
 
-	fmt.Printf("dail '%s'\n", address)
-	conn, err := net.Dial("tcp", address)
-	if err != nil {
-		t.Fatal(err)
-	}
+	conn := connect(t)
 	defer conn.Close()
 
 	for i := 1; i <= n; i++ {
-		err = binary.Write(conn, binary.LittleEndian, dataSize)
+		err := binary.Write(conn, binary.LittleEndian, dataSize)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -55,11 +51,9 @@ func TestWriteEvents(t *testing.T) {
 
 	correctSendEvents := listenForEvents("WRITE", n, 20*time.Second)
 	assert.EqualValues(t, n, correctSendEvents, "failed to receive the correct number of events %d != %d", n, correctSendEvents)
-	fmt.Println("test finished")
 }
 
 func TestEOFConnection(t *testing.T) {
-	fmt.Println("EOF start")
 	n := 10
 	data := mockData(t)
 	dataSize := int32(len(data))
@@ -71,15 +65,11 @@ func TestEOFConnection(t *testing.T) {
 			r := rand.Intn(10)
 			time.Sleep(time.Duration(r) * time.Millisecond)
 
-			fmt.Printf("dail '%s'\n", address)
-			conn, err := net.Dial("tcp", address)
-			if err != nil {
-				t.Fatal(err)
-			}
+			conn := connect(t)
 			defer conn.Close()
 
 			// send one event correctly
-			err = binary.Write(conn, binary.LittleEndian, dataSize)
+			err := binary.Write(conn, binary.LittleEndian, dataSize)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -92,6 +82,14 @@ func TestEOFConnection(t *testing.T) {
 
 	correctSendEvents := listenForEvents("EOF", n, 20*time.Second)
 	assert.EqualValues(t, n, correctSendEvents, "failed to receive the correct number of events %d != %d", n, correctSendEvents)
+}
+
+func connect(t *testing.T) net.Conn {
+	conn, err := net.Dial("tcp", address)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return conn
 }
 
 func listenForEvents(testId string, n int, timeLimit time.Duration) int {

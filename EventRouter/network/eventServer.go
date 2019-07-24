@@ -5,9 +5,9 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
+	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/common/constants/runstate"
 	"github.com/gogo/protobuf/proto"
-	"log"
 	"net"
 )
 
@@ -59,16 +59,16 @@ func (server *Server) Stop() {
 	server.state = runstate.Stopping
 	err := server.listener.Close()
 	if err != nil {
-		log.Printf("failed to close listener: %v", err)
+		log.Error("failed to close listener: %v", err)
 	}
 	server.state = runstate.Stopped
 }
 
 func (server *Server) listenIncomingConnections() {
 	listener, err := net.Listen(server.protocol, server.address)
-	log.Printf(" event server listening: '%s' at %s", server.protocol, server.address)
+	log.Info(" event server listening: '%s' at %s", server.protocol, server.address)
 	if err != nil {
-		log.Printf("failed to listen to %s on %s: %v", server.protocol, server.address, err)
+		log.Error("failed to listen to %s on %s: %v", server.protocol, server.address, err)
 		return
 	}
 	server.listener = listener
@@ -76,7 +76,7 @@ func (server *Server) listenIncomingConnections() {
 	for {
 		conn, err := server.listener.Accept()
 		if err != nil {
-			log.Printf("failed to connect to factomd: %v", err)
+			log.Error("failed to connect to factomd: %v", err)
 		}
 
 		go server.handleConnection(conn)
@@ -86,12 +86,12 @@ func (server *Server) listenIncomingConnections() {
 func (server *Server) handleConnection(conn net.Conn) {
 	defer finalizeConnection(conn)
 	if err := server.readEvents(conn); err != nil {
-		log.Print(err)
+		log.Error("failed to read events: %v", err)
 	}
 }
 
 func (server *Server) readEvents(conn net.Conn) (err error) {
-	log.Printf("read events from: %s", getRemoteAddress(conn))
+	log.Debug("read events from: %s", getRemoteAddress(conn))
 
 	var dataSize int32
 	reader := bufio.NewReader(conn)
@@ -116,15 +116,15 @@ func (server *Server) readEvents(conn net.Conn) (err error) {
 		if err != nil {
 			return fmt.Errorf("failed to unmarshal event from %s: %v", getRemoteAddress(conn), err)
 		}
-		log.Printf("read factom event... %v", factomEvent)
+		log.Debug("read factom event... %v", factomEvent)
 		server.eventQueue <- factomEvent
 	}
 }
 
 func finalizeConnection(conn net.Conn) {
-	log.Printf("connection closed unexpectedly to: %s", getRemoteAddress(conn))
+	log.Info("connection closed unexpectedly to: %s", getRemoteAddress(conn))
 	if r := recover(); r != nil {
-		log.Printf("recovered during handling connection: %v\n", r)
+		log.Error("recovered during handling connection: %v\n", r)
 	}
 	conn.Close()
 }

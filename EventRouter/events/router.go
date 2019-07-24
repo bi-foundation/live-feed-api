@@ -2,7 +2,7 @@ package events
 
 import (
 	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
-	"log"
+	"github.com/FactomProject/live-api/EventRouter/log"
 )
 
 type EventRouter struct {
@@ -19,16 +19,16 @@ func (evr *EventRouter) Start() {
 
 func (evr *EventRouter) handleEvents() {
 	for factomEvent := range evr.eventsInQueue {
-		log.Printf("handle event: %v", factomEvent)
+		log.Debug("handle event: %v", factomEvent)
 		switch factomEvent.Value.(type) {
 		case *eventmessages.FactomEvent_AnchorEvent:
-			log.Println("Received AnchoredEvent", factomEvent.GetAnchorEvent())
+			log.Info("Received AnchoredEvent", factomEvent.GetAnchorEvent())
 		case *eventmessages.FactomEvent_CommitChain:
-			log.Println("Received CommitChain", factomEvent.GetCommitChain())
+			log.Info("Received CommitChain", factomEvent.GetCommitChain())
 		case *eventmessages.FactomEvent_CommitEntry:
-			log.Println("Received CommitEntry", factomEvent.GetCommitEntry())
+			log.Info("Received CommitEntry", factomEvent.GetCommitEntry())
 		case *eventmessages.FactomEvent_RevealEntry:
-			log.Println("Received FactomEvent_RevealEntry", factomEvent.GetRevealEntry())
+			log.Info("Received FactomEvent_RevealEntry", factomEvent.GetRevealEntry())
 		}
 	}
 }
