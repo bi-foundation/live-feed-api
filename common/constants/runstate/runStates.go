@@ -5,11 +5,11 @@ import "fmt"
 type RunState int
 
 const (
-	New      RunState = 0
-	Booting  RunState = 1
-	Running  RunState = 2
-	Stopping RunState = 3
-	Stopped  RunState = 4
+	New RunState = iota
+	Booting
+	Running
+	Stopping
+	Stopped
 )
 
 func (runState RunState) String() string {

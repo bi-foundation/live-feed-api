@@ -19,6 +19,7 @@ func (evr *EventRouter) Start() {
 
 func (evr *EventRouter) handleEvents() {
 	for factomEvent := range evr.eventsInQueue {
+		log.Printf("handle event: %v", factomEvent)
 		switch factomEvent.Value.(type) {
 		case *eventmessages.FactomEvent_AnchorEvent:
 			log.Println("Received AnchoredEvent", factomEvent.GetAnchorEvent())

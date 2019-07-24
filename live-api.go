@@ -8,12 +8,12 @@ import (
 )
 
 var (
-	eventServer = network.NewEventServer()
-	eventRouter = events.NewEventRouter(eventServer.GetEventsInQueue())
+	eventServer = network.NewDefaultServer()
+	eventRouter = events.NewEventRouter(eventServer.GetEventQueue())
 )
 
 func main() {
-	eventServer.Start()
+	go eventServer.Start()
 	eventRouter.Start()
 
 	for eventServer.GetState() < runstate.Stopping {
