@@ -76,7 +76,7 @@ func (server *Server) listenIncomingConnections() {
 	for {
 		conn, err := server.listener.Accept()
 		if err != nil {
-			log.Error("failed to connect to factomd: %v", err)
+			log.Error("connection from factomd failed: %v", err)
 		}
 
 		go server.handleConnection(conn)
