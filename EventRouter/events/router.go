@@ -29,6 +29,9 @@ func (evr *EventRouter) handleEvents() {
 			log.Info("Received CommitEntry", factomEvent.GetCommitEntry())
 		case *eventmessages.FactomEvent_RevealEntry:
 			log.Info("Received FactomEvent_RevealEntry", factomEvent.GetRevealEntry())
+		case *eventmessages.FactomEvent_NodeMessage:
+			log.Info("Received FactomEvent_NodeMessage", factomEvent.GetNodeMessage())
 		}
+
 	}
 }
