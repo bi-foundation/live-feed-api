@@ -4,10 +4,10 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
-	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/common/constants/runstate"
 	"github.com/gogo/protobuf/proto"
+	"live-api/EventRouter/events/eventmessages"
+	"live-api/EventRouter/log"
+	"live-api/common/constants/runstate"
 	"net"
 )
 

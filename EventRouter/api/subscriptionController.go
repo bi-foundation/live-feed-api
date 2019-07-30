@@ -1,20 +1,34 @@
 package api
 
 import (
-	"github.com/FactomProject/live-api/EventRouter/api/errors"
-	"github.com/FactomProject/live-api/EventRouter/api/models"
-	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/EventRouter/repository"
+	"live-api/EventRouter/api/errors"
+	"live-api/EventRouter/api/models"
+	"live-api/EventRouter/log"
+	"live-api/EventRouter/repository"
 	"net/http"
 )
 
 func subscribe(writer http.ResponseWriter, request *http.Request) {
+	// swagger:route POST /subscribe subscribe Subscription
+	//
+	// Subscribe a new application to receive an event
+	//
+	//     Consumes:
+	//     - application/json
+	//
+	//     Produces:
+	//     - application/json
+	//
+	//     Responses:
+	//       200: Subscription
+	//       400: ApiError
+	//
 	subscription := &models.Subscription{}
 	if decode(writer, request, subscription) {
 		return
 	}
 
-	if subscription == nil {
+	if len(subscription.Callback) > 0 {
 		log.Error("invalid request: %v", request.Body)
 		responseError(writer, errors.NewInvalidRequest())
 	}

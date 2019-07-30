@@ -1,5 +1,8 @@
 package errors
 
+// ApiError
+// description: An ApiEror is an error that is used when the required input fails validation.
+// swagger:response ApiError
 type ApiError struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`

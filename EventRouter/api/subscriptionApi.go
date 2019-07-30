@@ -1,10 +1,20 @@
+// Live Feed API
+//
+// API to receive events from factomd
+//
+//     Schemes: http
+//     Host: localhost: port TODO
+//     Version: 0.0.1
+//     License: MIT http://opensource.org/licenses/MIT
+//
+// swagger:meta
 package api
 
 import (
 	"encoding/json"
-	"github.com/FactomProject/live-api/EventRouter/api/errors"
-	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/gorilla/mux"
+	"live-api/EventRouter/api/errors"
+	"live-api/EventRouter/log"
 	"net/http"
 	"time"
 )
@@ -35,6 +45,8 @@ func (api *api) Start() {
 	router := mux.NewRouter()
 	router.Use(logger)
 	router.HandleFunc("/subscribe", subscribe).Methods("POST")
+	router.HandleFunc("/swagger.json", swagger).Methods("GET")
+	router.HandleFunc("/test", swagger).Methods("PUT")
 	router.Schemes("HTTP")
 
 	go func() {
@@ -44,6 +56,11 @@ func (api *api) Start() {
 			log.Error("%v", err)
 		}
 	}()
+}
+
+func swagger(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type", "application/json")
+	http.ServeFile(writer, request, "swagger.json")
 }
 
 func decode(writer http.ResponseWriter, request *http.Request, v interface{}) bool {

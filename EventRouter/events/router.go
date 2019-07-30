@@ -1,8 +1,8 @@
 package events
 
 import (
-	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
-	"github.com/FactomProject/live-api/EventRouter/log"
+	"live-api/EventRouter/events/eventmessages"
+	"live-api/EventRouter/log"
 )
 
 type EventRouter struct {

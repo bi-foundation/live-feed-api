@@ -1,0 +1,68 @@
+{
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "API to receive events from factomd",
+    "title": "Live Feed API",
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    },
+    "version": "0.0.1"
+  },
+  "host": "localhost:8080",
+  "paths": {
+    "/subscribe": {
+      "post": {
+        "description": "Subscribe a new application to receive an event",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subscribe"
+        ],
+        "operationId": "Subscription",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Subscription"
+          },
+          "400": {
+            "$ref": "#/responses/ApiError"
+          }
+        }
+      }
+    }
+  },
+  "responses": {
+    "ApiError": {
+      "description": "ApiError\ndescription: An ApiEror is an error that is used when the required input fails validation.",
+      "headers": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "Subscription": {
+      "description": "Subscription\n\nsummary:\nAn application is able to have a subscription for events\nEvents will be send to the callback endpoint of the subscription",
+      "headers": {
+        "callback": {
+          "type": "string",
+          "description": "the endpoint to receive the callback\nrequired: true"
+        },
+        "id": {
+          "type": "string",
+          "description": "the id of the subscription\n\nread only: true"
+        }
+      }
+    }
+  }
+}
