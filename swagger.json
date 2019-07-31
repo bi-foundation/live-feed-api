@@ -42,7 +42,40 @@
           "200": {
             "$ref": "#/responses/SubscriptionResponse"
           },
-          "422": {
+          "400": {
+            "$ref": "#/responses/ApiError"
+          }
+        }
+      }
+    },
+    "/unsubscribe/{id}": {
+      "delete": {
+        "description": "Unsubscribe an application from receiving events from the api",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subscription"
+        ],
+        "operationId": "UnsubscribeRequest",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ID",
+            "description": "subscription id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UnsubscriptionResponse"
+          },
+          "400": {
             "$ref": "#/responses/ApiError"
           }
         }
@@ -51,8 +84,8 @@
   },
   "definitions": {
     "ApiError": {
+      "description": "ApiError\nAn error occurred. This can be an invalid input of other unexpected error occurred.",
       "type": "object",
-      "title": "An ApiEror is an error that is used when the required input fails validation.",
       "properties": {
         "code": {
           "type": "integer",
@@ -97,6 +130,12 @@
     },
     "SubscriptionResponse": {
       "description": "An SubscriptionResponse is the stored subscription for factom events",
+      "schema": {
+        "$ref": "#/definitions/Subscription"
+      }
+    },
+    "UnsubscriptionResponse": {
+      "description": "A Subscription is returned that is successfully unsubscribed",
       "schema": {
         "$ref": "#/definitions/Subscription"
       }

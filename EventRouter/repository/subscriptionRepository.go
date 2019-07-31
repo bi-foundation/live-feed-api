@@ -30,3 +30,20 @@ func ReadSubscription(id string) *models.Subscription {
 	}
 	return nil
 }
+
+func DeleteSubscription(id string) *models.Subscription {
+	var index = -1
+	for i, subscription := range tmpSubscriptionDB {
+		if subscription.Id == id {
+			index = i
+			break
+		}
+	}
+	if index == -1 {
+		return nil
+	}
+
+	subscription := tmpSubscriptionDB[index]
+	tmpSubscriptionDB = append(tmpSubscriptionDB[:index], tmpSubscriptionDB[index+1:]...)
+	return &subscription
+}

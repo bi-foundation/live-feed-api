@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/gorilla/mux"
 	"live-api/EventRouter/api/errors"
 	"live-api/EventRouter/api/models"
 	"live-api/EventRouter/log"
@@ -27,11 +28,35 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if len(subscription.Callback) > 0 {
-		log.Error("invalid request: %v", request.Body)
-		responseError(writer, errors.NewInvalidRequest())
+	// TODO validate callback url
+	if len(subscription.Callback) < 1 {
+		log.Error("invalid subscribe request: %v", subscription)
+		responseError(writer, errors.NewInvalidRequestDetailed("wrong callback url format"))
+		return
 	}
 
 	subscription = repository.StoreSubscription(subscription)
+	respond(writer, subscription)
+}
+
+func unsubscribe(writer http.ResponseWriter, request *http.Request) {
+	// swagger:route DELETE /unsubscribe/{id} subscription UnsubscribeRequest
+	//
+	// Unsubscribe an application from receiving events from the api
+	//
+	// Consumes:
+	//   - application/json
+	//
+	// Produces:
+	//   - application/json
+	//
+	// Responses:
+	//        200: UnsubscriptionResponse
+	//        400: ApiError
+
+	vars := mux.Vars(request)
+
+	id := vars["subscriptionId"]
+	subscription := repository.DeleteSubscription(id)
 	respond(writer, subscription)
 }

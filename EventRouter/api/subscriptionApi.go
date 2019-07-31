@@ -46,6 +46,7 @@ func (api *api) Start() {
 	router := mux.NewRouter()
 	router.Use(logger)
 	router.HandleFunc("/subscribe", subscribe).Methods("POST")
+	router.HandleFunc("/unsubscribe/{subscriptionId}", unsubscribe).Methods("DELETE")
 	router.HandleFunc("/swagger.json", swagger).Methods("GET")
 	router.Schemes("HTTP")
 

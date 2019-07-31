@@ -36,3 +36,22 @@ type subscriptionResponse struct {
 	// in: body
 	Subscription *Subscription `json:"subscription"`
 }
+
+// unsubscription request
+// swagger:parameters UnsubscribeRequest
+type unsubscribeRequest struct {
+	// subscription id
+	//
+	// In: path
+	ID string `json:"id"`
+}
+
+// A Subscription is returned that is successfully unsubscribed
+//
+// swagger:response UnsubscriptionResponse
+type unsubscriptionResponse struct {
+	// The subscription
+	//
+	// in: body
+	Subscription *Subscription `json:"subscription"`
+}

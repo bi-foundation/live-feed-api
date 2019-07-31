@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/api/models"
-	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
+	"live-api/EventRouter/api/models"
+	"live-api/EventRouter/log"
 	"net/http"
 	"testing"
 	"time"
@@ -17,7 +17,7 @@ func init() {
 	log.SetLevel(log.D)
 }
 
-func TestSubscribe(t *testing.T) {
+func TestSubscribeRequest(t *testing.T) {
 	server := NewSubscriptionApi(":8070")
 	server.Start()
 
@@ -47,14 +47,16 @@ func TestSubscribe(t *testing.T) {
 	var result models.Subscription
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		t.Fatalf("unmarsheling failed: %v", err)
+		t.Fatalf("unmarshalling failed: %v", err)
 	}
 
 	assert.Equal(t, subscription.Callback, result.Callback)
 	assert.NotNil(t, result.Id)
 }
 
+// test unsubscribe request
 // test invalid request
+// test subscribe: invalid callback url
 // test parsing error
 // test method not allowed
 // test url not found
