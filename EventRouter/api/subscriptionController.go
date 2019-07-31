@@ -1,12 +1,14 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"live-api/EventRouter/api/errors"
 	"live-api/EventRouter/api/models"
 	"live-api/EventRouter/log"
 	"live-api/EventRouter/repository"
 	"net/http"
+	"net/url"
 )
 
 func subscribe(writer http.ResponseWriter, request *http.Request) {
@@ -28,10 +30,10 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// TODO validate callback url
-	if len(subscription.Callback) < 1 {
-		log.Error("invalid subscribe request: %v", subscription)
-		responseError(writer, errors.NewInvalidRequestDetailed("wrong callback url format"))
+	u, err := url.ParseRequestURI(subscription.Callback)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		log.Debug("invalid subscribe request %v: %v", subscription, err)
+		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed("invalid callback url"))
 		return
 	}
 
@@ -58,5 +60,9 @@ func unsubscribe(writer http.ResponseWriter, request *http.Request) {
 
 	id := vars["subscriptionId"]
 	subscription := repository.DeleteSubscription(id)
+	if subscription == nil {
+		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(fmt.Sprintf("subscription '%s' not found", id)))
+		return
+	}
 	respond(writer, subscription)
 }

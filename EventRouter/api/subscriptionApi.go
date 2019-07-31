@@ -68,18 +68,18 @@ func decode(writer http.ResponseWriter, request *http.Request, v interface{}) bo
 	err := json.NewDecoder(request.Body).Decode(v)
 	if err != nil {
 		log.Error("failed to parse request: %v", request.Body)
-		responseError(writer, errors.NewParseError())
+		responseError(writer, http.StatusBadRequest, errors.NewParseError())
 		return true
 	}
 	return false
 }
 
-func responseError(writer http.ResponseWriter, error interface{}) {
-	writer.WriteHeader(http.StatusBadRequest)
+func responseError(writer http.ResponseWriter, statusCode int, error interface{}) {
+	writer.WriteHeader(statusCode)
 	err := json.NewEncoder(writer).Encode(error)
 	if err != nil {
 		log.Error("failed to write error '%v': %v", error, err)
-		responseError(writer, errors.NewInternalError())
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError())
 	}
 }
 
@@ -88,6 +88,6 @@ func respond(writer http.ResponseWriter, data interface{}) {
 	err := json.NewEncoder(writer).Encode(data)
 	if err != nil {
 		log.Error("failed to write response '%v': %v", data, err)
-		responseError(writer, errors.NewInternalError())
+		responseError(writer, http.StatusBadRequest, errors.NewInternalError())
 	}
 }

@@ -18,16 +18,18 @@ func CreateSubscription(subscription *models.Subscription) *models.Subscription 
 	subscription.Id = strconv.Itoa(id)
 	tmpSubscriptionDB = append(tmpSubscriptionDB, *subscription)
 	id++
-	log.Info("stored subscription: %v", subscription)
+	log.Debug("stored subscription: %v", subscription)
 	return subscription
 }
 
 func ReadSubscription(id string) *models.Subscription {
 	for _, subscription := range tmpSubscriptionDB {
 		if subscription.Id == id {
+			log.Info("read subscription: %v", subscription)
 			return &subscription
 		}
 	}
+	log.Debug("subscription not found: %s", id)
 	return nil
 }
 
@@ -45,5 +47,6 @@ func DeleteSubscription(id string) *models.Subscription {
 
 	subscription := tmpSubscriptionDB[index]
 	tmpSubscriptionDB = append(tmpSubscriptionDB[:index], tmpSubscriptionDB[index+1:]...)
+	log.Debug("deleted subscription: %v", subscription)
 	return &subscription
 }

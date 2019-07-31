@@ -20,11 +20,11 @@ type apiErrorResponse struct {
 }
 
 func NewInternalError() *ApiError {
-	return &ApiError{-410800, "Internal error", ""}
+	return &ApiError{-410800, "internal error", ""}
 }
 
 func NewMethodNotFoundError() *ApiError {
-	return &ApiError{-410801, "Method not found", ""}
+	return &ApiError{-410801, "method not found", ""}
 }
 
 func NewInvalidRequest() *ApiError {
@@ -36,5 +36,5 @@ func NewInvalidRequestDetailed(reason string) *ApiError {
 }
 
 func NewParseError() *ApiError {
-	return &ApiError{-32700, "Parse error", ""}
+	return &ApiError{-410800, "parse error", ""}
 }
