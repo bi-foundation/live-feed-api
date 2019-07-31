@@ -35,7 +35,7 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	subscription = repository.StoreSubscription(subscription)
+	subscription = repository.CreateSubscription(subscription)
 	respond(writer, subscription)
 }
 

@@ -14,7 +14,7 @@ type Repository interface {
 var id = 0
 var tmpSubscriptionDB []models.Subscription
 
-func StoreSubscription(subscription *models.Subscription) *models.Subscription {
+func CreateSubscription(subscription *models.Subscription) *models.Subscription {
 	subscription.Id = strconv.Itoa(id)
 	tmpSubscriptionDB = append(tmpSubscriptionDB, *subscription)
 	id++
