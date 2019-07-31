@@ -12,7 +12,7 @@
     },
     "version": "0.0.1"
   },
-  "host": "localhost:8080",
+  "host": "localhost:8700",
   "paths": {
     "/subscribe": {
       "post": {
@@ -24,44 +24,81 @@
           "application/json"
         ],
         "tags": [
-          "subscribe"
+          "subscription"
         ],
-        "operationId": "Subscription",
+        "operationId": "SubscriptionRequest",
+        "parameters": [
+          {
+            "x-go-name": "Subscription",
+            "description": "The subscription registration for receiving information from factomd through the live api.",
+            "name": "subscription",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Subscription"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "$ref": "#/responses/Subscription"
+            "$ref": "#/responses/SubscriptionResponse"
           },
-          "400": {
+          "422": {
             "$ref": "#/responses/ApiError"
           }
         }
       }
     }
   },
-  "responses": {
+  "definitions": {
     "ApiError": {
-      "description": "ApiError\ndescription: An ApiEror is an error that is used when the required input fails validation.",
-      "headers": {
+      "type": "object",
+      "title": "An ApiEror is an error that is used when the required input fails validation.",
+      "properties": {
         "code": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "x-go-name": "Code"
         },
         "message": {
-          "type": "string"
+          "type": "string",
+          "x-go-name": "Message"
         }
-      }
+      },
+      "x-go-package": "live-api/EventRouter/api/errors"
     },
     "Subscription": {
-      "description": "Subscription\n\nsummary:\nAn application is able to have a subscription for events\nEvents will be send to the callback endpoint of the subscription",
-      "headers": {
+      "description": "An application is able to have a subscription for events\nEvents will be send to the callback endpoint of the subscription",
+      "type": "object",
+      "required": [
+        "callback"
+      ],
+      "properties": {
         "callback": {
+          "description": "the endpoint to receive the callback",
           "type": "string",
-          "description": "the endpoint to receive the callback\nrequired: true"
+          "x-go-name": "Callback"
         },
         "id": {
+          "description": "the id of the subscription",
           "type": "string",
-          "description": "the id of the subscription\n\nread only: true"
+          "x-go-name": "Id",
+          "readOnly": true
         }
+      },
+      "x-go-package": "live-api/EventRouter/api/models"
+    }
+  },
+  "responses": {
+    "ApiError": {
+      "description": "ApiErrorResponse",
+      "schema": {
+        "$ref": "#/definitions/ApiError"
+      }
+    },
+    "SubscriptionResponse": {
+      "description": "An SubscriptionResponse is the stored subscription for factom events",
+      "schema": {
+        "$ref": "#/definitions/Subscription"
       }
     }
   }

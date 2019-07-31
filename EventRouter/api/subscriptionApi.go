@@ -3,7 +3,8 @@
 // API to receive events from factomd
 //
 //     Schemes: http
-//     Host: localhost: port TODO
+//     Host: localhost:8700
+//     TODO change port
 //     Version: 0.0.1
 //     License: MIT http://opensource.org/licenses/MIT
 //
@@ -46,7 +47,6 @@ func (api *api) Start() {
 	router.Use(logger)
 	router.HandleFunc("/subscribe", subscribe).Methods("POST")
 	router.HandleFunc("/swagger.json", swagger).Methods("GET")
-	router.HandleFunc("/test", swagger).Methods("PUT")
 	router.Schemes("HTTP")
 
 	go func() {

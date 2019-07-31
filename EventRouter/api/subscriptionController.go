@@ -9,20 +9,19 @@ import (
 )
 
 func subscribe(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route POST /subscribe subscribe Subscription
+	// swagger:route POST /subscribe subscription SubscriptionRequest
 	//
 	// Subscribe a new application to receive an event
 	//
-	//     Consumes:
-	//     - application/json
+	// Consumes:
+	//   - application/json
 	//
-	//     Produces:
-	//     - application/json
+	// Produces:
+	//   - application/json
 	//
-	//     Responses:
-	//       200: Subscription
-	//       400: ApiError
-	//
+	// Responses:
+	//        200: SubscriptionResponse
+	//        400: ApiError
 	subscription := &models.Subscription{}
 	if decode(writer, request, subscription) {
 		return
