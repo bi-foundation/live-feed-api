@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"live-api/EventRouter/api/models"
-	"live-api/EventRouter/log"
+	"github.com/FactomProject/live-api/EventRouter/api/models"
+	"github.com/FactomProject/live-api/EventRouter/log"
 	"strconv"
 )
 
