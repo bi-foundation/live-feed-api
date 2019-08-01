@@ -22,15 +22,15 @@ func (evr *EventRouter) handleEvents() {
 		log.Debug("handle event: %v", factomEvent)
 		switch factomEvent.Value.(type) {
 		case *eventmessages.FactomEvent_AnchorEvent:
-			log.Info("Received AnchoredEvent", factomEvent.GetAnchorEvent())
+			log.Info("Received AnchoredEvent with event source ", factomEvent.GetEventSource().String(), factomEvent.GetAnchorEvent())
 		case *eventmessages.FactomEvent_CommitChain:
-			log.Info("Received CommitChain", factomEvent.GetCommitChain())
+			log.Info("Received CommitChain with event source ", factomEvent.GetEventSource().String(), factomEvent.GetCommitChain())
 		case *eventmessages.FactomEvent_CommitEntry:
-			log.Info("Received CommitEntry", factomEvent.GetCommitEntry())
+			log.Info("Received CommitEntry with event source ", factomEvent.GetEventSource().String(), factomEvent.GetCommitEntry())
 		case *eventmessages.FactomEvent_RevealEntry:
-			log.Info("Received FactomEvent_RevealEntry", factomEvent.GetRevealEntry())
+			log.Info("Received FactomEvent_RevealEntry with event source ", factomEvent.GetEventSource().String(), factomEvent.GetRevealEntry())
 		case *eventmessages.FactomEvent_NodeMessage:
-			log.Info("Received FactomEvent_NodeMessage", factomEvent.GetNodeMessage())
+			log.Info("Received FactomEvent_NodeMessage with event source ", factomEvent.GetEventSource().String(), factomEvent.GetNodeMessage())
 		}
 
 	}
