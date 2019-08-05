@@ -8,6 +8,7 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/common/constants/runstate"
 	"github.com/gogo/protobuf/proto"
+	"io"
 	"net"
 )
 
@@ -106,7 +107,7 @@ func (server *Server) readEvents(conn net.Conn) (err error) {
 
 		// read the factom event
 		data := make([]byte, dataSize)
-		bytesRead, err := reader.Read(data)
+		bytesRead, err := io.ReadFull(reader, data)
 		if err != nil {
 			return fmt.Errorf("failed to data from %s:, %v", getRemoteAddress(conn), err)
 		}
