@@ -37,7 +37,11 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	subscription = repository.CreateSubscription(subscription)
+	subscription, err = repository.SubscriptionRepository.CreateSubscription(subscription)
+	if err != nil {
+		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(fmt.Sprintf("failed to create subscription: %v", err)))
+		return
+	}
 	respond(writer, subscription)
 }
 
@@ -59,9 +63,9 @@ func unsubscribe(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 
 	id := vars["subscriptionId"]
-	subscription := repository.DeleteSubscription(id)
-	if subscription == nil {
-		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(fmt.Sprintf("subscription '%s' not found", id)))
+	subscription, err := repository.SubscriptionRepository.DeleteSubscription(id)
+	if err != nil {
+		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
 		return
 	}
 	respond(writer, subscription)

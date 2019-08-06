@@ -12,19 +12,23 @@ func TestCRUD(t *testing.T) {
 		Callback: "url",
 	}
 
-	createdSubscription := CreateSubscription(subscription)
+	createdSubscription, err := SubscriptionRepository.CreateSubscription(subscription)
 
+	assert.Nil(t, err)
 	assert.Equal(t, subscription.Id, createdSubscription.Id)
 	assert.Equal(t, subscription.Callback, createdSubscription.Callback)
 
-	readedSubscription := ReadSubscription(subscription.Id)
+	readedSubscription, err := SubscriptionRepository.ReadSubscription(subscription.Id)
+	assert.Nil(t, err)
 	assert.Equal(t, subscription.Id, readedSubscription.Id)
 	assert.Equal(t, subscription.Callback, readedSubscription.Callback)
 
-	deletedSubscription := DeleteSubscription(subscription.Id)
+	deletedSubscription, err := SubscriptionRepository.DeleteSubscription(subscription.Id)
+	assert.Nil(t, err)
 	assert.Equal(t, subscription.Id, deletedSubscription.Id)
 	assert.Equal(t, subscription.Callback, deletedSubscription.Callback)
 
-	unknownSubscription := ReadSubscription(subscription.Id)
+	unknownSubscription, err := SubscriptionRepository.ReadSubscription(subscription.Id)
+	assert.NotNil(t, err)
 	assert.Nil(t, unknownSubscription)
 }
