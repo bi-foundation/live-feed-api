@@ -92,12 +92,16 @@
           "format": "int64",
           "x-go-name": "Code"
         },
+        "details": {
+          "type": "string",
+          "x-go-name": "Details"
+        },
         "message": {
           "type": "string",
           "x-go-name": "Message"
         }
       },
-      "x-go-package": "live-api/EventRouter/api/errors"
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/api/errors"
     },
     "Subscription": {
       "description": "An application is able to have a subscription for events\nEvents will be send to the callback endpoint of the subscription",
@@ -118,7 +122,7 @@
           "readOnly": true
         }
       },
-      "x-go-package": "live-api/EventRouter/api/models"
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/api/models"
     }
   },
   "responses": {

@@ -7,7 +7,7 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/api/models"
 	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
 	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/EventRouter/repository/inmemory"
+	"github.com/FactomProject/live-api/EventRouter/repository"
 	"github.com/gogo/protobuf/types"
 	"io/ioutil"
 	"net/http"
@@ -51,7 +51,7 @@ func TestEventRouter_Start(t *testing.T) {
 	subscription := &models.Subscription{
 		Callback: "http://localhost:23232/callback",
 	}
-	subscription = inmemory.CreateSubscription(subscription)
+	subscription, _ = repository.SubscriptionRepository.CreateSubscription(subscription)
 
 	n := 1
 	queue <- event

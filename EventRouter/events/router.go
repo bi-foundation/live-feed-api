@@ -7,10 +7,8 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/api/models"
 	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
 	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/EventRouter/repository/inmemory"
+	"github.com/FactomProject/live-api/EventRouter/repository"
 	"net/http"
-	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
-	"github.com/FactomProject/live-api/EventRouter/log"
 )
 
 type EventRouter struct {
@@ -30,7 +28,7 @@ func (evr *EventRouter) handleEvents() {
 		log.Debug("handle event: %v", factomEvent)
 
 		// TODO what about types?
-		subscriptions := inmemory.ReadSubscriptions()
+		subscriptions := repository.SubscriptionRepository.ReadSubscriptions()
 		err := send(subscriptions, factomEvent)
 		if err != nil {
 			log.Error("%v", err)

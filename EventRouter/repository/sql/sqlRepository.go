@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-type SQLRepository struct {
+type Repository struct {
 	db              *sql.DB
 	createStatement *sql.Stmt
 	readStatement   *sql.Stmt
@@ -60,7 +60,7 @@ func NewSQLRepository() (repository.Repository, error) {
 		return nil, fmt.Errorf("failed to delete read statement: %v", err)
 	}
 
-	repository := &SQLRepository{
+	repository := &Repository{
 		db:              db,
 		createStatement: createStatement,
 		readStatement:   readStatement,
@@ -71,13 +71,13 @@ func NewSQLRepository() (repository.Repository, error) {
 	return repository, nil
 }
 
-func (repository *SQLRepository) Close() error {
+func (repository *Repository) Close() error {
 	defer repository.createStatement.Close()
 	defer repository.readStatement.Close()
 	return repository.db.Close()
 }
 
-func (repository *SQLRepository) CreateSubscription(subscription *models.Subscription) (*models.Subscription, error) {
+func (repository *Repository) CreateSubscription(subscription *models.Subscription) (*models.Subscription, error) {
 	result, err := repository.createStatement.Exec(subscription.Callback)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create subscription: %v", err)
@@ -98,7 +98,7 @@ func (repository *SQLRepository) CreateSubscription(subscription *models.Subscri
 	return subscription, nil
 }
 
-func (repository *SQLRepository) ReadSubscription(id string) (*models.Subscription, error) {
+func (repository *Repository) ReadSubscription(id string) (*models.Subscription, error) {
 	subscription := &models.Subscription{}
 	err := repository.readStatement.QueryRow(id).Scan(&subscription.Id, &subscription.Callback)
 	if err != nil {
@@ -109,7 +109,7 @@ func (repository *SQLRepository) ReadSubscription(id string) (*models.Subscripti
 	return subscription, nil
 }
 
-func (repository *SQLRepository) UpdateSubscription(id string, subscription *models.Subscription) (*models.Subscription, error) {
+func (repository *Repository) UpdateSubscription(id string, subscription *models.Subscription) (*models.Subscription, error) {
 	result, err := repository.updateStatement.Exec(subscription.Callback, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update subscription: %v", err)
@@ -124,7 +124,7 @@ func (repository *SQLRepository) UpdateSubscription(id string, subscription *mod
 	return subscription, nil
 }
 
-func (repository *SQLRepository) DeleteSubscription(id string) (*models.Subscription, error) {
+func (repository *Repository) DeleteSubscription(id string) (*models.Subscription, error) {
 	subscription, err := repository.ReadSubscription(id)
 	if err != nil {
 		return nil, err

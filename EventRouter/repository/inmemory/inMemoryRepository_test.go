@@ -2,15 +2,20 @@ package inmemory
 
 import (
 	"github.com/FactomProject/live-api/EventRouter/api/models"
-	"github.com/FactomProject/live-api/EventRouter/repository"
 	"github.com/stretchr/testify/assert"
+	"strconv"
 	"testing"
 )
 
-var repo repository.Repository
+const initId = 0
+
+var repo *Repository
 
 func init() {
-	repo = &InMemoryRepository{}
+	repo = &Repository{
+		id: initId,
+		db: nil,
+	}
 }
 
 func TestCRUD(t *testing.T) {
@@ -20,27 +25,29 @@ func TestCRUD(t *testing.T) {
 	}
 	createdSubscription, err := repo.CreateSubscription(subscription)
 
+	id := strconv.Itoa(initId)
+
 	assert.Nil(t, err)
-	assert.Equal(t, subscription.Id, createdSubscription.Id)
+	assert.Equal(t, id, createdSubscription.Id)
 	assert.Equal(t, subscription.Callback, createdSubscription.Callback)
 
 	readSubscription, err := repo.ReadSubscription(subscription.Id)
 	assert.Nil(t, err)
-	assert.Equal(t, subscription.Id, readSubscription.Id)
+	assert.Equal(t, id, readSubscription.Id)
 	assert.Equal(t, subscription.Callback, readSubscription.Callback)
 
 	substituteSubscription := &models.Subscription{
 		Id:       "ID",
 		Callback: "updated-url",
 	}
-	updatedSubscription, err := repo.ReadSubscription(subscription.Id)
+	updatedSubscription, err := repo.UpdateSubscription(subscription.Id, substituteSubscription)
 	assert.Nil(t, err)
-	assert.Equal(t, substituteSubscription.Id, updatedSubscription.Id)
+	assert.Equal(t, id, updatedSubscription.Id)
 	assert.Equal(t, substituteSubscription.Callback, updatedSubscription.Callback)
 
 	deletedSubscription, err := repo.DeleteSubscription(subscription.Id)
 	assert.Nil(t, err)
-	assert.Equal(t, substituteSubscription.Id, deletedSubscription.Id)
+	assert.Equal(t, id, deletedSubscription.Id)
 	assert.Equal(t, substituteSubscription.Callback, deletedSubscription.Callback)
 
 	unknownSubscription, err := repo.ReadSubscription(subscription.Id)

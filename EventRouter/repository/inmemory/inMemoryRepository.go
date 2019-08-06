@@ -7,12 +7,12 @@ import (
 	"strconv"
 )
 
-type InMemoryRepository struct {
+type Repository struct {
 	id int
 	db []models.Subscription
 }
 
-func (repository *InMemoryRepository) CreateSubscription(subscription *models.Subscription) (*models.Subscription, error) {
+func (repository *Repository) CreateSubscription(subscription *models.Subscription) (*models.Subscription, error) {
 	subscription.Id = strconv.Itoa(repository.id)
 	repository.db = append(repository.db, *subscription)
 	repository.id++
@@ -20,7 +20,7 @@ func (repository *InMemoryRepository) CreateSubscription(subscription *models.Su
 	return subscription, nil
 }
 
-func (repository *InMemoryRepository) ReadSubscription(id string) (*models.Subscription, error) {
+func (repository *Repository) ReadSubscription(id string) (*models.Subscription, error) {
 	_, subscription, err := repository.findSubscription(id)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (repository *InMemoryRepository) ReadSubscription(id string) (*models.Subsc
 	return subscription, nil
 }
 
-func (repository *InMemoryRepository) UpdateSubscription(id string, substitute *models.Subscription) (*models.Subscription, error) {
+func (repository *Repository) UpdateSubscription(id string, substitute *models.Subscription) (*models.Subscription, error) {
 	index, subscription, err := repository.findSubscription(id)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (repository *InMemoryRepository) UpdateSubscription(id string, substitute *
 	return substitute, err
 }
 
-func (repository *InMemoryRepository) DeleteSubscription(id string) (*models.Subscription, error) {
+func (repository *Repository) DeleteSubscription(id string) (*models.Subscription, error) {
 	index, _, err := repository.findSubscription(id)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (repository *InMemoryRepository) DeleteSubscription(id string) (*models.Sub
 	return &subscription, nil
 }
 
-func (repository *InMemoryRepository) findSubscription(id string) (int, *models.Subscription, error) {
+func (repository *Repository) findSubscription(id string) (int, *models.Subscription, error) {
 	for i, subscription := range repository.db {
 		if subscription.Id == id {
 			return i, &subscription, nil
@@ -63,7 +63,7 @@ func (repository *InMemoryRepository) findSubscription(id string) (int, *models.
 	return -1, nil, fmt.Errorf("failed to find subscription '%s'", id)
 }
 
-func (repository *InMemoryRepository) ReadSubscriptions() []models.Subscription {
+func (repository *Repository) ReadSubscriptions() []models.Subscription {
 	// TODO filter on events
 	return repository.db
 }
