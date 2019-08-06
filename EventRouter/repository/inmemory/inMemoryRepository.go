@@ -31,16 +31,15 @@ func (repository *InMemoryRepository) ReadSubscription(id string) (*models.Subsc
 }
 
 func (repository *InMemoryRepository) UpdateSubscription(id string, substitute *models.Subscription) (*models.Subscription, error) {
-	_, subscription, err := repository.findSubscription(id)
+	index, subscription, err := repository.findSubscription(id)
 	if err != nil {
 		return nil, err
 	}
 
 	log.Debug("update subscription: %v with: %v", subscription, substitute)
-	// change the subscription, ensure the id is the one that has been searched for
-	subscription = substitute
-	subscription.Id = id
-	return subscription, err
+	repository.db[index].Callback = substitute.Callback
+	substitute.Id = id
+	return substitute, err
 }
 
 func (repository *InMemoryRepository) DeleteSubscription(id string) (*models.Subscription, error) {
