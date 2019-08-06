@@ -3,10 +3,10 @@ package network
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
 	"github.com/gogo/protobuf/proto"
 	"github.com/gogo/protobuf/types"
 	"github.com/stretchr/testify/assert"
-	"live-api/EventRouter/events/eventmessages"
 	"math/rand"
 	"net"
 	"sync/atomic"

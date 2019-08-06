@@ -1,6 +1,14 @@
 package events
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"github.com/FactomProject/live-api/EventRouter/api/models"
+	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
+	"github.com/FactomProject/live-api/EventRouter/log"
+	"github.com/FactomProject/live-api/EventRouter/repository/inmemory"
+	"net/http"
 	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
 	"github.com/FactomProject/live-api/EventRouter/log"
 )
@@ -20,6 +28,15 @@ func (evr *EventRouter) Start() {
 func (evr *EventRouter) handleEvents() {
 	for factomEvent := range evr.eventsInQueue {
 		log.Debug("handle event: %v", factomEvent)
+
+		// TODO what about types?
+		subscriptions := inmemory.ReadSubscriptions()
+		err := send(subscriptions, factomEvent)
+		if err != nil {
+			log.Error("%v", err)
+			continue
+		}
+
 		switch factomEvent.Value.(type) {
 		case *eventmessages.FactomEvent_AnchorEvent:
 			log.Info("Received AnchoredEvent with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetAnchorEvent())
@@ -32,5 +49,28 @@ func (evr *EventRouter) handleEvents() {
 		case *eventmessages.FactomEvent_NodeMessage:
 			log.Info("Received FactomEvent_NodeMessage with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetNodeMessage())
 		}
+	}
+}
+
+func send(subscriptions []models.Subscription, factomEvent *eventmessages.FactomEvent) error {
+	event, err := json.Marshal(factomEvent)
+	if err != nil {
+		return fmt.Errorf("failed to create json from factom event")
+	}
+	for _, subscription := range subscriptions {
+		url := subscription.Callback
+		sendEvent(url, event)
+	}
+	return nil
+}
+
+func sendEvent(url string, event []byte) {
+	response, err := http.Post(url, "application/json", bytes.NewBuffer(event))
+	// TODO handle endpoint failure
+	if err != nil {
+		log.Error("failed to send event to '%s': %v", url, err)
+	}
+	if response == nil || response.StatusCode != http.StatusOK {
+		log.Error("failed to receive correct response from '%s': %v", url, response)
 	}
 }

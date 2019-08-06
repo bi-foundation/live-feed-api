@@ -3,11 +3,11 @@
 package main
 
 import (
-	"live-api/EventRouter/api"
-	"live-api/EventRouter/events"
-	"live-api/EventRouter/log"
-	"live-api/EventRouter/network"
-	"live-api/common/constants/runstate"
+	"github.com/FactomProject/live-api/EventRouter/api"
+	"github.com/FactomProject/live-api/EventRouter/events"
+	"github.com/FactomProject/live-api/EventRouter/log"
+	"github.com/FactomProject/live-api/EventRouter/network"
+	"github.com/FactomProject/live-api/common/constants/runstate"
 	"time"
 )
 
