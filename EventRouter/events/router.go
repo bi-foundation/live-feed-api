@@ -1,8 +1,8 @@
 package events
 
 import (
-	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
-	"github.com/FactomProject/live-api/EventRouter/log"
+	"live-api/EventRouter/events/eventmessages"
+	"live-api/EventRouter/log"
 )
 
 type EventRouter struct {
@@ -22,16 +22,20 @@ func (evr *EventRouter) handleEvents() {
 		log.Debug("handle event: %v", factomEvent)
 		switch factomEvent.Value.(type) {
 		case *eventmessages.FactomEvent_AnchorEvent:
+			log.Info("Received AnchoredEvent: %v", factomEvent.GetAnchorEvent())
 			log.Info("Received AnchoredEvent with event source ", factomEvent.GetEventSource().String(), factomEvent.GetAnchorEvent())
 		case *eventmessages.FactomEvent_CommitChain:
+			log.Info("Received CommitChain: %v", factomEvent.GetCommitChain())
 			log.Info("Received CommitChain with event source ", factomEvent.GetEventSource().String(), factomEvent.GetCommitChain())
 		case *eventmessages.FactomEvent_CommitEntry:
+			log.Info("Received CommitEntry: %v", factomEvent.GetCommitEntry())
 			log.Info("Received CommitEntry with event source ", factomEvent.GetEventSource().String(), factomEvent.GetCommitEntry())
 		case *eventmessages.FactomEvent_RevealEntry:
+			log.Info("Received FactomEvent_RevealEntry: %v", factomEvent.GetRevealEntry())
 			log.Info("Received FactomEvent_RevealEntry with event source ", factomEvent.GetEventSource().String(), factomEvent.GetRevealEntry())
 		case *eventmessages.FactomEvent_NodeMessage:
+			log.Info("Received FactomEvent_NodeMessage: %v", factomEvent.GetNodeMessage())
 			log.Info("Received FactomEvent_NodeMessage with event source ", factomEvent.GetEventSource().String(), factomEvent.GetNodeMessage())
 		}
-
 	}
 }

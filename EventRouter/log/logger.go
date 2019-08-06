@@ -8,8 +8,8 @@ import (
 type Level int8
 
 const (
-	I Level = iota + 1
-	D
+	D Level = iota + 1
+	I
 	W
 	E
 	F
@@ -25,32 +25,32 @@ func SetLogger(l *log.Logger) {
 	logger = l
 }
 
-func Info(format string, v ...interface{}) {
-	if level >= I {
-		logger.Printf("[INFO] "+format, v...)
-	}
-}
-
 func Debug(format string, v ...interface{}) {
-	if level >= D {
+	if level <= D {
 		logger.Printf("[DEBUG] "+format, v...)
 	}
 }
 
+func Info(format string, v ...interface{}) {
+	if level <= I {
+		logger.Printf("[INFO] "+format, v...)
+	}
+}
+
 func Warn(format string, v ...interface{}) {
-	if level >= W {
+	if level <= W {
 		logger.Printf("[WARN] "+format, v...)
 	}
 }
 
 func Error(format string, v ...interface{}) {
-	if level >= E {
+	if level <= E {
 		logger.Printf("[ERROR] "+format, v...)
 	}
 }
 
 func Fatal(format string, v ...interface{}) {
-	if level >= F {
+	if level <= F {
 		logger.Fatalf("[FATAL] "+format, v...)
 	}
 }

@@ -1,0 +1,144 @@
+{
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "API to receive events from factomd",
+    "title": "Live Feed API",
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    },
+    "version": "0.0.1"
+  },
+  "host": "localhost:8700",
+  "paths": {
+    "/subscribe": {
+      "post": {
+        "description": "Subscribe a new application to receive an event",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subscription"
+        ],
+        "operationId": "SubscriptionRequest",
+        "parameters": [
+          {
+            "x-go-name": "Subscription",
+            "description": "The subscription registration for receiving information from factomd through the live api.",
+            "name": "subscription",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Subscription"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/SubscriptionResponse"
+          },
+          "400": {
+            "$ref": "#/responses/ApiError"
+          }
+        }
+      }
+    },
+    "/unsubscribe/{id}": {
+      "delete": {
+        "description": "Unsubscribe an application from receiving events from the api",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subscription"
+        ],
+        "operationId": "UnsubscribeRequest",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ID",
+            "description": "subscription id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UnsubscriptionResponse"
+          },
+          "400": {
+            "$ref": "#/responses/ApiError"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ApiError": {
+      "description": "ApiError\nAn error occurred. This can be an invalid input of other unexpected error occurred.",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Code"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "live-api/EventRouter/api/errors"
+    },
+    "Subscription": {
+      "description": "An application is able to have a subscription for events\nEvents will be send to the callback endpoint of the subscription",
+      "type": "object",
+      "required": [
+        "callback"
+      ],
+      "properties": {
+        "callback": {
+          "description": "the endpoint to receive the callback",
+          "type": "string",
+          "x-go-name": "Callback"
+        },
+        "id": {
+          "description": "the id of the subscription",
+          "type": "string",
+          "x-go-name": "Id",
+          "readOnly": true
+        }
+      },
+      "x-go-package": "live-api/EventRouter/api/models"
+    }
+  },
+  "responses": {
+    "ApiError": {
+      "description": "ApiErrorResponse",
+      "schema": {
+        "$ref": "#/definitions/ApiError"
+      }
+    },
+    "SubscriptionResponse": {
+      "description": "An SubscriptionResponse is the stored subscription for factom events",
+      "schema": {
+        "$ref": "#/definitions/Subscription"
+      }
+    },
+    "UnsubscriptionResponse": {
+      "description": "A Subscription is returned that is successfully unsubscribed",
+      "schema": {
+        "$ref": "#/definitions/Subscription"
+      }
+    }
+  }
+}
