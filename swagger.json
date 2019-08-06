@@ -103,6 +103,25 @@
       },
       "x-go-package": "github.com/FactomProject/live-api/EventRouter/api/errors"
     },
+    "Filter": {
+      "description": "Define a Filter on an EventType to filter the event. This allows to reduce the network traffic",
+      "type": "object",
+      "properties": {
+        "Filtering": {
+          "$ref": "#/definitions/GraphQL"
+        }
+      },
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+    },
+    "GraphQL": {
+      "description": "Define a filter with GraphQL",
+      "type": "string",
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+    },
+    "Model": {
+      "type": "object",
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+    },
     "Subscription": {
       "description": "An application is able to have a subscription for events\nEvents will be send to the callback endpoint of the subscription",
       "type": "object",
@@ -115,14 +134,29 @@
           "type": "string",
           "x-go-name": "Callback"
         },
+        "callbackType": {
+          "description": "the type of callback: HTTP(S), HTTP with basic authentication, HTTP with OAUTH2 token",
+          "x-go-name": "CallbackType"
+        },
+        "filters": {
+          "description": "the emitted event can be filter to receive not all data from an event type",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Filter"
+          },
+          "x-go-name": "Filters"
+        },
         "id": {
           "description": "the id of the subscription",
           "type": "string",
           "x-go-name": "Id",
           "readOnly": true
+        },
+        "model": {
+          "$ref": "#/definitions/Model"
         }
       },
-      "x-go-package": "github.com/FactomProject/live-api/EventRouter/api/models"
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
     }
   },
   "responses": {
