@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/FactomProject/live-api/EventRouter/api/models"
+	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

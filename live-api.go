@@ -6,8 +6,8 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/api"
 	"github.com/FactomProject/live-api/EventRouter/events"
 	"github.com/FactomProject/live-api/EventRouter/log"
+	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/FactomProject/live-api/EventRouter/network"
-	"github.com/FactomProject/live-api/common/constants/runstate"
 	"time"
 )
 
@@ -24,7 +24,7 @@ func main() {
 
 	api.NewSubscriptionApi(":8700").Start()
 
-	for eventServer.GetState() < runstate.Stopping {
+	for eventServer.GetState() < models.Stopping {
 		time.Sleep(time.Second)
 	}
 

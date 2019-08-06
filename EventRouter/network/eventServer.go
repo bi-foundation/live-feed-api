@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
 	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/common/constants/runstate"
+	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/gogo/protobuf/proto"
 	"io"
 	"net"
@@ -25,14 +25,14 @@ const (
 type EventServer interface {
 	Start()
 	Stop()
-	GetState() runstate.RunState
+	GetState() models.RunState
 	GetEventQueue() chan *eventmessages.FactomEvent
 	GetAddress() string
 }
 
 type Server struct {
 	eventQueue chan *eventmessages.FactomEvent
-	state      runstate.RunState
+	state      models.RunState
 	listener   net.Listener
 	protocol   string
 	address    string
@@ -41,7 +41,7 @@ type Server struct {
 func NewServer(protocol string, address string) EventServer {
 	return &Server{
 		eventQueue: make(chan *eventmessages.FactomEvent, StandardChannelSize),
-		state:      runstate.New,
+		state:      models.New,
 		protocol:   protocol,
 		address:    address,
 	}
@@ -53,16 +53,16 @@ func NewDefaultServer() EventServer {
 
 func (server *Server) Start() {
 	go server.listenIncomingConnections()
-	server.state = runstate.Running
+	server.state = models.Running
 }
 
 func (server *Server) Stop() {
-	server.state = runstate.Stopping
+	server.state = models.Stopping
 	err := server.listener.Close()
 	if err != nil {
 		log.Error("failed to close listener: %v", err)
 	}
-	server.state = runstate.Stopped
+	server.state = models.Stopped
 }
 
 func (server *Server) listenIncomingConnections() {
@@ -141,7 +141,7 @@ func getRemoteAddress(conn net.Conn) string {
 	return addrString
 }
 
-func (server *Server) GetState() runstate.RunState {
+func (server *Server) GetState() models.RunState {
 	return server.state
 }
 

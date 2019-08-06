@@ -2,8 +2,8 @@ package inmemory
 
 import (
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/api/models"
 	"github.com/FactomProject/live-api/EventRouter/log"
+	"github.com/FactomProject/live-api/EventRouter/models"
 	"strconv"
 )
 

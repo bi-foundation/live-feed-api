@@ -2,8 +2,8 @@ package sql
 
 import (
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/api/models"
 	"github.com/FactomProject/live-api/EventRouter/log"
+	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/FactomProject/live-api/EventRouter/repository"
 	"github.com/stretchr/testify/assert"
 	"testing"
