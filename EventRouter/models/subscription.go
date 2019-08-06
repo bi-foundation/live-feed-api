@@ -12,6 +12,15 @@ type Subscription struct {
 	// the endpoint to receive the callback
 	// required: true
 	Callback string `json:"callback"`
+
+	// the type of callback: HTTP(S), HTTP with basic authentication, HTTP with OAUTH2 token
+	// swagger:enum CallbackType
+	// required: true
+	CallbackType CallbackType `json:"callbackType"`
+
+	// the emitted event can be filter to receive not all data from an event type
+	//
+	Filters map[EventType]Filter `json:"filters"`
 }
 
 // SubscriptionRequest

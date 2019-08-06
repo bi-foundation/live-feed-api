@@ -23,18 +23,21 @@ func init() {
 func TestCRUD(t *testing.T) {
 	// TODO clean up, also if test fails
 	subscription := &models.Subscription{
-		Callback: "url",
+		Callback:     "url",
+		CallbackType: models.HTTP,
 	}
 	createdSubscription, err := repo.CreateSubscription(subscription)
 
 	assert.Nil(t, err)
 	assert.Equal(t, subscription.Id, createdSubscription.Id)
 	assert.Equal(t, subscription.Callback, createdSubscription.Callback)
+	assert.Equal(t, subscription.CallbackType, createdSubscription.CallbackType)
 
 	readSubscription, err := repo.ReadSubscription(subscription.Id)
 	assert.Nil(t, err)
 	assert.Equal(t, subscription.Id, readSubscription.Id)
 	assert.Equal(t, subscription.Callback, readSubscription.Callback)
+	assert.Equal(t, subscription.CallbackType, readSubscription.CallbackType)
 
 	substituteSubscription := &models.Subscription{
 		Id:       "ID",
@@ -44,11 +47,13 @@ func TestCRUD(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, substituteSubscription.Id, updatedSubscription.Id)
 	assert.Equal(t, substituteSubscription.Callback, updatedSubscription.Callback)
+	assert.Equal(t, substituteSubscription.CallbackType, updatedSubscription.CallbackType)
 
 	deletedSubscription, err := repo.DeleteSubscription(subscription.Id)
 	assert.Nil(t, err)
 	assert.Equal(t, subscription.Id, deletedSubscription.Id)
 	assert.Equal(t, substituteSubscription.Callback, deletedSubscription.Callback)
+	assert.Equal(t, substituteSubscription.CallbackType, deletedSubscription.CallbackType)
 
 	unknownSubscription, err := repo.ReadSubscription(subscription.Id)
 	assert.NotNil(t, err)
