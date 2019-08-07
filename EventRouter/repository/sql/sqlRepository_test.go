@@ -48,11 +48,8 @@ func TestCRUD(t *testing.T) {
 	assert.Equal(t, substituteSubscription.Callback, updatedSubscription.Callback)
 	assert.Equal(t, substituteSubscription.CallbackType, updatedSubscription.CallbackType)
 
-	deletedSubscription, err := repo.DeleteSubscription(subscription.Id)
+	err = repo.DeleteSubscription(subscription.Id)
 	assert.Nil(t, err)
-	assert.Equal(t, subscription.Id, deletedSubscription.Id)
-	assert.Equal(t, substituteSubscription.Callback, deletedSubscription.Callback)
-	assert.Equal(t, substituteSubscription.CallbackType, deletedSubscription.CallbackType)
 
 	unknownSubscription, err := repo.ReadSubscription(subscription.Id)
 	assert.NotNil(t, err)

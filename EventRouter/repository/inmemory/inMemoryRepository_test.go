@@ -34,18 +34,16 @@ func TestCRUD(t *testing.T) {
 	assert.Equal(t, subscription.Callback, readSubscription.Callback)
 
 	substituteSubscription := &models.Subscription{
-		Id:       "ID",
+		Id:       createdSubscription.Id,
 		Callback: "updated-url",
 	}
-	updatedSubscription, err := repo.UpdateSubscription(subscription.Id, substituteSubscription)
+	updatedSubscription, err := repo.UpdateSubscription(substituteSubscription)
 	assert.Nil(t, err)
 	assert.Equal(t, id, updatedSubscription.Id)
 	assert.Equal(t, substituteSubscription.Callback, updatedSubscription.Callback)
 
-	deletedSubscription, err := repo.DeleteSubscription(subscription.Id)
+	err = repo.DeleteSubscription(subscription.Id)
 	assert.Nil(t, err)
-	assert.Equal(t, id, deletedSubscription.Id)
-	assert.Equal(t, substituteSubscription.Callback, deletedSubscription.Callback)
 
 	unknownSubscription, err := repo.ReadSubscription(subscription.Id)
 	assert.NotNil(t, err)

@@ -18,11 +18,68 @@ func TestCRUD(t *testing.T) {
 		"sql":      sqlRepository,
 	}
 
+	subscription := &models.Subscription{
+		Callback:     "url",
+		CallbackType: models.HTTP,
+		Filters: map[models.EventType]models.Filter{
+			models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering 1"))},
+			models.COMMIT_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("filtering 2"))},
+			models.COMMIT_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering 3"))},
+		},
+	}
+
+	substituteSubscription := &models.Subscription{
+		Callback:     "updated-url",
+		CallbackType: models.HTTP,
+		Filters: map[models.EventType]models.Filter{
+			models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering update 1"))},
+			models.COMMIT_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("filtering update 2"))},
+		},
+	}
+
 	for name, repo := range repositories {
 		t.Run(name, func(t *testing.T) {
-			testCRUD(t, repo)
+			testCreate(t, repo, subscription)
+			testRead(t, repo, subscription)
+
+			substituteSubscription.Id = subscription.Id
+			testUpdate(t, repo, substituteSubscription)
+			testRead(t, repo, substituteSubscription)
+
+			testDelete(t, repo, substituteSubscription)
+			testNoExits(t, repo, subscription)
 		})
 	}
+}
+
+func testCreate(t *testing.T, repository repository.Repository, subscription *models.Subscription) {
+	createdSubscription, err := repository.CreateSubscription(subscription)
+	assert.Nil(t, err)
+	assertSubscription(t, subscription, createdSubscription)
+	subscription.Id = createdSubscription.Id
+}
+
+func testRead(t *testing.T, repository repository.Repository, subscription *models.Subscription) {
+	readSubscription, err := repository.ReadSubscription(subscription.Id)
+	assert.Nil(t, err)
+	assertSubscription(t, subscription, readSubscription)
+}
+
+func testUpdate(t *testing.T, repository repository.Repository, subscription *models.Subscription) {
+	updatedSubscription, err := repository.UpdateSubscription(subscription)
+	assert.Nil(t, err)
+	assertSubscription(t, subscription, updatedSubscription)
+}
+
+func testDelete(t *testing.T, repository repository.Repository, subscription *models.Subscription) {
+	err := repository.DeleteSubscription(subscription.Id)
+	assert.Nil(t, err)
+}
+
+func testNoExits(t *testing.T, repository repository.Repository, subscription *models.Subscription) {
+	unknownSubscription, err := repository.ReadSubscription(subscription.Id)
+	assert.NotNil(t, err)
+	assert.Nil(t, unknownSubscription)
 }
 
 func testCRUD(t *testing.T, repository repository.Repository) {
@@ -37,16 +94,12 @@ func testCRUD(t *testing.T, repository repository.Repository) {
 		},
 	}
 
-	createdSubscription, err := repository.CreateSubscription(subscription)
-	assert.Nil(t, err)
-	assertSubscription(t, subscription, createdSubscription)
-
 	readSubscription, err := repository.ReadSubscription(subscription.Id)
 	assert.Nil(t, err)
 	assertSubscription(t, subscription, readSubscription)
 
 	substituteSubscription := &models.Subscription{
-		Id:           "ID",
+		Id:           readSubscription.Id,
 		Callback:     "updated-url",
 		CallbackType: models.HTTP,
 		Filters: map[models.EventType]models.Filter{
@@ -55,17 +108,17 @@ func testCRUD(t *testing.T, repository repository.Repository) {
 		},
 	}
 
-	updatedSubscription, err := repository.UpdateSubscription(subscription.Id, substituteSubscription)
+	updatedSubscription, err := repository.UpdateSubscription(substituteSubscription)
 	assert.Nil(t, err)
 	assertSubscription(t, substituteSubscription, updatedSubscription)
 
-	deletedSubscription, err := repository.DeleteSubscription(subscription.Id)
+	readSubscription, err = repository.ReadSubscription(subscription.Id)
 	assert.Nil(t, err)
-	assertSubscription(t, substituteSubscription, deletedSubscription)
+	assertSubscription(t, substituteSubscription, readSubscription)
 
-	unknownSubscription, err := repository.ReadSubscription(subscription.Id)
-	assert.NotNil(t, err)
-	assert.Nil(t, unknownSubscription)
+	err = repository.DeleteSubscription(subscription.Id)
+	assert.Nil(t, err)
+
 }
 
 func assertSubscription(t *testing.T, expected *models.Subscription, actual *models.Subscription) {

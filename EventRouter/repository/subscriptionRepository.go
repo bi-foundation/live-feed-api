@@ -4,4 +4,4 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/repository/inmemory"
 )
 
-var SubscriptionRepository = inmemory.New()
+var SubscriptionRepository Repository = inmemory.New()

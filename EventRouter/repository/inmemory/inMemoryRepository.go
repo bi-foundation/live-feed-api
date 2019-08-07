@@ -36,8 +36,8 @@ func (repository *inMemoryRepository) ReadSubscription(id string) (*models.Subsc
 	return subscription, nil
 }
 
-func (repository *inMemoryRepository) UpdateSubscription(id string, substitute *models.Subscription) (*models.Subscription, error) {
-	index, subscription, err := repository.findSubscription(id)
+func (repository *inMemoryRepository) UpdateSubscription(substitute *models.Subscription) (*models.Subscription, error) {
+	index, subscription, err := repository.findSubscription(substitute.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -46,19 +46,17 @@ func (repository *inMemoryRepository) UpdateSubscription(id string, substitute *
 	repository.db[index].Callback = substitute.Callback
 	repository.db[index].CallbackType = substitute.CallbackType
 	repository.db[index].Filters = substitute.Filters
-	substitute.Id = id
 	return substitute, err
 }
 
-func (repository *inMemoryRepository) DeleteSubscription(id string) (*models.Subscription, error) {
+func (repository *inMemoryRepository) DeleteSubscription(id string) error {
 	index, _, err := repository.findSubscription(id)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("failed to delete subscription: %v", err)
 	}
-	subscription := repository.db[index]
 	repository.db = append(repository.db[:index], repository.db[index+1:]...)
-	log.Debug("deleted subscription: %v", subscription)
-	return subscription, nil
+	log.Debug("deleted subscription: %s", id)
+	return nil
 }
 
 func (repository *inMemoryRepository) findSubscription(id string) (int, *models.Subscription, error) {

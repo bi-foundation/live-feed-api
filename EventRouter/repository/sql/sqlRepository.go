@@ -148,49 +148,86 @@ func (repository *sqlRepository) CreateSubscription(subscription *models.Subscri
 }
 
 func (repository *sqlRepository) ReadSubscription(id string) (*models.Subscription, error) {
-	subscription := &models.Subscription{}
-	err := repository.readStatement.QueryRow(id).Scan(&subscription.Id, &subscription.Callback, &subscription.CallbackType)
+	query := "SELECT subscription, event_type, filtering, callback, callback_type FROM filters LEFT JOIN subscriptions ON subscription = subscriptions.id WHERE subscription = ?"
+	rows, err := connection.Query(query, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read subscription: %v", err)
+	}
+
+	subscription := &models.Subscription{
+		Filters: make(map[models.EventType]models.Filter),
+	}
+
+	found := false
+	for rows.Next() {
+		found = true
+		var eventType models.EventType
+		filter := models.Filter{}
+
+		err := rows.Scan(&subscription.Id, &eventType, &filter.Filtering, &subscription.Callback, &subscription.CallbackType)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read subscription: %v", err)
+		}
+
+		subscription.Filters[eventType] = filter
+	}
+
+	if !found {
+		return nil, fmt.Errorf("failed to read subscription: no subscriptions found with if '%s'", id)
 	}
 
 	log.Debug("read subscription: %v", subscription)
 	return subscription, nil
 }
 
-func (repository *sqlRepository) UpdateSubscription(id string, subscription *models.Subscription) (*models.Subscription, error) {
-	result, err := repository.updateStatement.Exec(subscription.Callback, subscription.CallbackType, id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to update subscription: %v", err)
-	}
+func (repository *sqlRepository) UpdateSubscription(subscription *models.Subscription) (*models.Subscription, error) {
+	repository.DeleteSubscription(subscription.Id)
+	return repository.CreateSubscription(subscription)
+	/*
+		result, err := repository.updateStatement.Exec(subscription.Callback, subscription.CallbackType, id)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update subscription: %v", err)
+		}
 
-	rows, err := result.RowsAffected()
-	if rows != 1 || err != nil {
-		return nil, fmt.Errorf("failed to create subscription: no subscription found")
-	}
+		rows, err := result.RowsAffected()
+		if rows != 1 || err != nil {
+			return nil, fmt.Errorf("failed to create subscription: no subscription found")
+		}
 
-	log.Debug("update subscription: %v", subscription)
-	return subscription, nil
+		log.Debug("update subscription: %v", subscription)
+		return subscription, nil*/
 }
 
-func (repository *sqlRepository) DeleteSubscription(id string) (*models.Subscription, error) {
-	subscription, err := repository.ReadSubscription(id)
+func (repository *sqlRepository) DeleteSubscription(id string) error {
+	deleteFiltersQuery := "DELETE FROM filters WHERE subscription = ?"
+	deleteSubscriptionsQuery := "DELETE FROM subscriptions WHERE id = ?"
+
+	tx, err := connection.Begin()
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("failed to delete subscription: %v", err)
 	}
 
-	result, err := repository.deleteStatement.Exec(id)
+	// commit or rollback when there is an error
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		err = tx.Commit()
+	}()
+
+	_, err = tx.Query(deleteFiltersQuery, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to delete subscription: %v", err)
+		return fmt.Errorf("failed to delete subscription: %v", err)
 	}
 
-	rows, err := result.RowsAffected()
-	if rows != 1 || err != nil {
-		return nil, fmt.Errorf("failed to delete subscription: no row has been updated")
+	_, err = tx.Query(deleteSubscriptionsQuery, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete subscription: %v", err)
 	}
 
-	log.Debug("deleted subscription: %v", id)
-	return subscription, nil
+	log.Debug("deleted subscription: %s", id)
+	return nil
 }
 
 func (repository *sqlRepository) GetSubscriptions(eventType models.EventType) ([]*models.Subscription, error) {
@@ -229,7 +266,6 @@ func (repository *sqlRepository) GetSubscriptions(eventType models.EventType) ([
 
 	log.Debug("get subscriptions: %v", subscriptions)
 	return subscriptions, nil
-
 }
 
 func (repository *sqlRepository) GetAllSubscriptions() ([]*models.Subscription, error) {
