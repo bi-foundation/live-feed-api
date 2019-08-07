@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
-	"github.com/FactomProject/live-api/EventRouter/repository"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-var repo repository.Repository
+var repo *sqlRepository
 
 func init() {
 	log.SetLevel(log.D)
-	repository, err := NewSQLRepository()
+	repository, err := New()
 	if err != nil {
 		fmt.Printf("%v\n", err)
 	}
@@ -77,4 +76,54 @@ func TestUpdateUnknownId(t *testing.T) {
 	t.Logf("test update subscription error: %v", err)
 	assert.NotNil(t, err)
 	assert.Nil(t, updatedSubscription)
+}
+
+func TestRepository_GetSubscriptions(t *testing.T) {
+	for i := 0; i < 1; i++ {
+		subscription := &models.Subscription{
+			Callback:     fmt.Sprintf("url: %d", i),
+			CallbackType: models.HTTP,
+			Filters: map[models.EventType]models.Filter{
+				models.ANCHOR_EVENT: {Filtering: "filtering 1"},
+				models.COMMIT_ENTRY: {Filtering: "filtering 2"},
+				models.COMMIT_EVENT: {Filtering: "filtering 3"},
+			},
+		}
+		repo.CreateSubscription(subscription)
+	}
+
+	// TODO dirty
+	subscriptions, err := repo.GetAllSubscriptions()
+
+	assert.Nil(t, err)
+
+	fmt.Println("=========================================================================================")
+	fmt.Println("")
+	fmt.Println("=========================================================================================")
+
+	fmt.Printf("SUBS: %v\n", subscriptions)
+
+	for _, subscription := range subscriptions {
+		fmt.Printf("%v\n", subscription)
+		// r.DeleteSubscription(subscription.Id)
+	}
+}
+
+func TestRepository_CreateSubscriptionFailure(t *testing.T) {
+	// TODO fail with an inmemory db
+	/*subscription := &models.Subscription{
+		// max url size is 2083
+		Callback:     "",
+		CallbackType: models.HTTP,
+		Filters: map[models.EventType]models.Filter{
+			models.ANCHOR_EVENT: struct{ Filtering models.GraphQL }{Filtering: "filtering 1"},
+			models.COMMIT_ENTRY: struct{ Filtering models.GraphQL }{Filtering: "filtering 2"},
+			models.COMMIT_EVENT: struct{ Filtering models.GraphQL }{Filtering: "filtering 3"},
+		},
+	}
+	*/
+	// createdSubscription, err := repo.CreateSubscription(subscription)
+
+	// assert.NotNil(t, err)
+	// assert.Nil(t, createdSubscription)
 }

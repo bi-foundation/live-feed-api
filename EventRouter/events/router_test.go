@@ -50,6 +50,10 @@ func TestEventRouter_Start(t *testing.T) {
 
 	subscription := &models.Subscription{
 		Callback: "http://localhost:23232/callback",
+		Filters: map[models.EventType]models.Filter{
+			// NO hardcode this
+			models.COMMIT_EVENT: models.Filter{Filtering: ""},
+		},
 	}
 	subscription, _ = repository.SubscriptionRepository.CreateSubscription(subscription)
 

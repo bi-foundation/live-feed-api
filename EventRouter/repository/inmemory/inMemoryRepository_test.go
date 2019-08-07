@@ -9,13 +9,10 @@ import (
 
 const initId = 0
 
-var repo *Repository
+var repo *inMemoryRepository
 
 func init() {
-	repo = &Repository{
-		id: initId,
-		db: nil,
-	}
+	repo = New()
 }
 
 func TestCRUD(t *testing.T) {

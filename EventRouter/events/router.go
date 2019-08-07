@@ -28,8 +28,13 @@ func (evr *EventRouter) handleEvents() {
 		log.Debug("handle event: %v", factomEvent)
 
 		// TODO what about types?
-		subscriptions := repository.SubscriptionRepository.ReadSubscriptions()
-		err := send(subscriptions, factomEvent)
+		subscriptions, err := repository.SubscriptionRepository.GetSubscriptions(models.COMMIT_EVENT)
+		if err != nil {
+			log.Error("%v", err)
+			continue
+		}
+
+		err = send(subscriptions, factomEvent)
 		if err != nil {
 			log.Error("%v", err)
 			continue
@@ -50,7 +55,7 @@ func (evr *EventRouter) handleEvents() {
 	}
 }
 
-func send(subscriptions []models.Subscription, factomEvent *eventmessages.FactomEvent) error {
+func send(subscriptions []*models.Subscription, factomEvent *eventmessages.FactomEvent) error {
 	event, err := json.Marshal(factomEvent)
 	if err != nil {
 		return fmt.Errorf("failed to create json from factom event")

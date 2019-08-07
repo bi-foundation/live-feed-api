@@ -7,4 +7,5 @@ type Repository interface {
 	ReadSubscription(id string) (*models.Subscription, error)
 	UpdateSubscription(id string, subscription *models.Subscription) (*models.Subscription, error)
 	DeleteSubscription(id string) (*models.Subscription, error)
+	GetSubscriptions(models.EventType) ([]*models.Subscription, error)
 }

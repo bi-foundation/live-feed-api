@@ -29,9 +29,10 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS filter (
+CREATE TABLE IF NOT EXISTS filters (
 	id INT AUTO_INCREMENT NOT NULL,
 	subscription INT NOT NULL,
+	event_type VARCHAR(20) NOT NULL,
 	filtering TEXT,
     PRIMARY KEY (id),
     FOREIGN KEY (subscription) REFERENCES subscriptions(id)
