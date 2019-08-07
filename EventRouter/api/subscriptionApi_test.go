@@ -168,7 +168,7 @@ func parseApiBody(t *testing.T, body []byte) errors.ApiError {
 func content(t *testing.T, v interface{}) []byte {
 	content, err := json.Marshal(v)
 	if err != nil {
-		t.Fatalf("marsheling failed: %v", err)
+		t.Fatalf("marshaling failed: %v", err)
 	}
 	return content
 }
@@ -181,7 +181,7 @@ func TestSubscribeRequest(t *testing.T) {
 	// write
 	content, err := json.Marshal(subscription)
 	if err != nil {
-		t.Fatalf("marsheling failed: %v", err)
+		t.Fatalf("marshaling failed: %v", err)
 	}
 
 	fmt.Printf("request: %s\n", content)

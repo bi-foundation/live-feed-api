@@ -34,7 +34,7 @@ func NewSubscriptionApi(address string) SubscriptionApi {
 	}
 }
 
-func logger(f http.Handler) http.Handler {
+func logInterceptor(f http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		f.ServeHTTP(w, r)
@@ -44,7 +44,7 @@ func logger(f http.Handler) http.Handler {
 
 func (api *api) Start() {
 	router := mux.NewRouter()
-	router.Use(logger)
+	router.Use(logInterceptor)
 	router.HandleFunc("/subscribe", subscribe).Methods("POST")
 	router.HandleFunc("/unsubscribe/{subscriptionId}", unsubscribe).Methods("DELETE")
 	router.HandleFunc("/swagger.json", swagger).Methods("GET")
