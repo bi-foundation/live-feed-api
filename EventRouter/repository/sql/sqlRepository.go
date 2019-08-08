@@ -97,7 +97,6 @@ func (repository *sqlRepository) Close() error {
 func (repository *sqlRepository) CreateSubscription(subscription *models.Subscription) (*models.Subscription, error) {
 	createSql := "INSERT INTO subscriptions (callback, callback_type) VALUES(?, ?);"
 	filterSql := "INSERT INTO filters (subscription, event_type, filtering) VALUES(?, ?, ?);"
-
 	tx, err := connection.Begin()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create subscription transaction: %v", err)
@@ -148,28 +147,37 @@ func (repository *sqlRepository) CreateSubscription(subscription *models.Subscri
 }
 
 func (repository *sqlRepository) ReadSubscription(id string) (*models.Subscription, error) {
-	query := "SELECT subscription, event_type, filtering, callback, callback_type FROM filters LEFT JOIN subscriptions ON subscription = subscriptions.id WHERE subscription = ?"
+	query := "SELECT callback, callback_type, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = ?"
 	rows, err := connection.Query(query, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read subscription: %v", err)
 	}
 
 	subscription := &models.Subscription{
+		Id:      id,
 		Filters: make(map[models.EventType]models.Filter),
 	}
 
 	found := false
 	for rows.Next() {
 		found = true
-		var eventType models.EventType
-		filter := models.Filter{}
 
-		err := rows.Scan(&subscription.Id, &eventType, &filter.Filtering, &subscription.Callback, &subscription.CallbackType)
+		var eventTypeValue sql.NullString
+		var filteringValue sql.NullString
+
+		err := rows.Scan(&subscription.Callback, &subscription.CallbackType, &eventTypeValue, &filteringValue)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read subscription: %v", err)
 		}
 
-		subscription.Filters[eventType] = filter
+		if eventTypeValue.Valid {
+			filter := models.Filter{}
+			if filteringValue.Valid {
+				filter.Filtering = models.GraphQL(filteringValue.String)
+			}
+			eventType := models.EventType(eventTypeValue.String)
+			subscription.Filters[eventType] = filter
+		}
 	}
 
 	if !found {
@@ -181,21 +189,68 @@ func (repository *sqlRepository) ReadSubscription(id string) (*models.Subscripti
 }
 
 func (repository *sqlRepository) UpdateSubscription(subscription *models.Subscription) (*models.Subscription, error) {
-	repository.DeleteSubscription(subscription.Id)
-	return repository.CreateSubscription(subscription)
-	/*
-		result, err := repository.updateStatement.Exec(subscription.Callback, subscription.CallbackType, id)
+	updateSubscriptionQuery := "UPDATE subscriptions SET callback = ?, callback_type = ? WHERE id = ?"
+	updateFilterQuery := "UPDATE filters SET filtering = ? WHERE subscription = ? AND event_type = ?"
+	insertFilterQuery := "INSERT INTO filters(subscription, event_type, filtering) VALUES (?, ?, ?)"
+	deleteFilterQuery := "DELETE FROM filters WHERE subscription = ? AND event_type = ?"
+
+	oldSubscription, err := repository.ReadSubscription(subscription.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err := connection.Begin()
+	if err != nil {
+		return nil, fmt.Errorf("failed to update subscription transaction: %v", err)
+	}
+
+	// commit or rollback when there is an error
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		err = tx.Commit()
+	}()
+
+	if subscription.Callback != oldSubscription.Callback || subscription.CallbackType != oldSubscription.CallbackType {
+		_, err := tx.Query(updateSubscriptionQuery, subscription.Callback, subscription.CallbackType, subscription.Id)
 		if err != nil {
 			return nil, fmt.Errorf("failed to update subscription: %v", err)
 		}
+	}
 
-		rows, err := result.RowsAffected()
-		if rows != 1 || err != nil {
-			return nil, fmt.Errorf("failed to create subscription: no subscription found")
+	oldFilters := oldSubscription.Filters
+	for eventType, filter := range subscription.Filters {
+		// update existing filter or insert new filter
+		if oldFilter, ok := oldFilters[eventType]; ok {
+			// change update filtering, otherwise nothing changed
+			if oldFilter.Filtering != filter.Filtering {
+				_, err := tx.Query(updateFilterQuery, filter.Filtering, subscription.Id, eventType)
+				if err != nil {
+					return nil, fmt.Errorf("failed to update subscription filter: %v", err)
+				}
+			}
+
+			// keep track of filter such that removed filter can be deleted from the db
+			delete(oldFilters, eventType)
+		} else {
+			_, err := tx.Query(insertFilterQuery, filter.Filtering, subscription.Id, eventType)
+			if err != nil {
+				return nil, fmt.Errorf("failed to update subscription new filter: %v", err)
+			}
 		}
+	}
 
-		log.Debug("update subscription: %v", subscription)
-		return subscription, nil*/
+	for eventType, _ := range oldFilters {
+		_, err := tx.Query(deleteFilterQuery, subscription.Id, eventType)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update subscription removed filter: %v", err)
+		}
+	}
+
+	log.Debug("update subscription: %v", subscription)
+	return subscription, nil
 }
 
 func (repository *sqlRepository) DeleteSubscription(id string) error {
@@ -251,11 +306,11 @@ func (repository *sqlRepository) GetSubscriptions(eventType models.EventType) ([
 			return nil, fmt.Errorf("failed to get subscriptions: %v", err)
 		}
 
-		if s, ok := subs[subscription.Id]; ok {
-			subscription = s
+		if _, ok := subs[subscription.Id]; !ok {
+			subs[subscription.Id] = subscription
 		}
 
-		subscription.Filters[eventType] = filter
+		subs[subscription.Id].Filters[eventType] = filter
 	}
 
 	// preallocate memory for the slice

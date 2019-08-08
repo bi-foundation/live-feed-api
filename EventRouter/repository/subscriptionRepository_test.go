@@ -2,22 +2,27 @@ package repository_test
 
 import (
 	"fmt"
+	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/FactomProject/live-api/EventRouter/repository"
-	"github.com/FactomProject/live-api/EventRouter/repository/inmemory"
 	"github.com/FactomProject/live-api/EventRouter/repository/sql"
 	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 )
 
+var sqlRepository, _ = sql.New()
+
+var repositories = map[string]repository.Repository{
+	//"inmemory": inmemory.New(),
+	"sql": sqlRepository,
+}
+
+func init() {
+	log.SetLevel(log.D)
+}
+
 func TestCRUD(t *testing.T) {
-	sqlRepository, _ := sql.New()
-
-	repositories := map[string]repository.Repository{
-		"inmemory": inmemory.New(),
-		"sql":      sqlRepository,
-	}
-
 	subscription := &models.Subscription{
 		Callback:     "url",
 		CallbackType: models.HTTP,
@@ -135,4 +140,46 @@ func assertSubscription(t *testing.T, expected *models.Subscription, actual *mod
 		assert.NotNil(t, actual.Filters[eventType])
 		assert.Equal(t, filter.Filtering, actual.Filters[eventType].Filtering)
 	}
+}
+
+func TestConcurrency(t *testing.T) {
+	for name, repo := range repositories {
+		t.Run(name, func(t *testing.T) {
+			testConcurrency(t, repo)
+		})
+	}
+}
+
+func testConcurrency(t *testing.T, repository repository.Repository) {
+	eventType := models.COMMIT_ENTRY
+	subscription := &models.Subscription{
+
+		Callback: "url",
+		Filters: map[models.EventType]models.Filter{
+			eventType: {Filtering: ""},
+		},
+	}
+
+	// calculate the offset if the database already has entries
+	// Although the database should be clean and clean-up afterwards,
+	previousSubscriptions, err := repository.GetSubscriptions(eventType)
+	offset := len(previousSubscriptions)
+
+	n := 100
+	wait := sync.WaitGroup{}
+	wait.Add(n)
+	for i := 0; i < n; i++ {
+		go func(x int) {
+			defer wait.Done()
+
+			subscription, err := repository.CreateSubscription(subscription)
+			assert.Nil(t, err)
+			t.Logf("%d: created %s", x, subscription.Id)
+		}(i)
+	}
+	wait.Wait()
+
+	subscriptions, err := repository.GetSubscriptions(eventType)
+	assert.Nil(t, err)
+	assert.Equal(t, n, len(subscriptions)-offset)
 }

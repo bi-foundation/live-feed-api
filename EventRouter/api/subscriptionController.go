@@ -63,10 +63,9 @@ func unsubscribe(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 
 	id := vars["subscriptionId"]
-	subscription, err := repository.SubscriptionRepository.DeleteSubscription(id)
+	err := repository.SubscriptionRepository.DeleteSubscription(id)
 	if err != nil {
 		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
 		return
 	}
-	respond(writer, subscription)
 }
