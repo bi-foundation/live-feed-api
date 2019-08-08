@@ -1,9 +1,11 @@
 package inmemory
 
 import (
+	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/stretchr/testify/assert"
 	"strconv"
+	"sync"
 	"testing"
 )
 
@@ -48,4 +50,25 @@ func TestCRUD(t *testing.T) {
 	unknownSubscription, err := repo.ReadSubscription(subscription.Id)
 	assert.NotNil(t, err)
 	assert.Nil(t, unknownSubscription)
+}
+
+func TestConcurrency(t *testing.T) {
+	n := 100
+	wait := sync.WaitGroup{}
+	wait.Add(n)
+	for i := 0; i < n; i++ {
+		go func(x int) {
+			defer wait.Done()
+			subscription := &models.Subscription{
+				Callback: fmt.Sprintf("url: %d", x),
+			}
+
+			subscription, err := repo.CreateSubscription(subscription)
+			assert.Nil(t, err)
+			t.Logf("%d: created %s", x, subscription.Id)
+		}(i)
+	}
+	wait.Wait()
+
+	assert.Equal(t, n, len(repo.db))
 }
