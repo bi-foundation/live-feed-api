@@ -5,21 +5,27 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/FactomProject/live-api/EventRouter/repository"
+	"github.com/FactomProject/live-api/EventRouter/repository/inmemory"
 	"github.com/FactomProject/live-api/EventRouter/repository/sql"
 	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
 )
 
-var sqlRepository, _ = sql.New()
-
-var repositories = map[string]repository.Repository{
-	//"inmemory": inmemory.New(),
-	"sql": sqlRepository,
-}
+var repositories map[string]repository.Repository
 
 func init() {
 	log.SetLevel(log.D)
+
+	sqlRepository, err := sql.New()
+	if err != nil {
+		log.Error("setup test: %v", err)
+	}
+
+	repositories = map[string]repository.Repository{
+		"inmemory": inmemory.New(),
+		"sql":      sqlRepository,
+	}
 }
 
 func TestCRUD(t *testing.T) {
@@ -87,48 +93,9 @@ func testNoExits(t *testing.T, repository repository.Repository, subscription *m
 	assert.Nil(t, unknownSubscription)
 }
 
-func testCRUD(t *testing.T, repository repository.Repository) {
-	subscription := &models.Subscription{
-		Id:           "ID",
-		Callback:     "url",
-		CallbackType: models.HTTP,
-		Filters: map[models.EventType]models.Filter{
-			models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering 1"))},
-			models.COMMIT_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("filtering 2"))},
-			models.COMMIT_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering 3"))},
-		},
-	}
-
-	readSubscription, err := repository.ReadSubscription(subscription.Id)
-	assert.Nil(t, err)
-	assertSubscription(t, subscription, readSubscription)
-
-	substituteSubscription := &models.Subscription{
-		Id:           readSubscription.Id,
-		Callback:     "updated-url",
-		CallbackType: models.HTTP,
-		Filters: map[models.EventType]models.Filter{
-			models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering update 1"))},
-			models.COMMIT_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("filtering update 2"))},
-		},
-	}
-
-	updatedSubscription, err := repository.UpdateSubscription(substituteSubscription)
-	assert.Nil(t, err)
-	assertSubscription(t, substituteSubscription, updatedSubscription)
-
-	readSubscription, err = repository.ReadSubscription(subscription.Id)
-	assert.Nil(t, err)
-	assertSubscription(t, substituteSubscription, readSubscription)
-
-	err = repository.DeleteSubscription(subscription.Id)
-	assert.Nil(t, err)
-
-}
-
 func assertSubscription(t *testing.T, expected *models.Subscription, actual *models.Subscription) {
 	if actual == nil {
-		assert.Fail(t, "subscription is nil")
+		assert.FailNow(t, "subscription is nil")
 		return
 	}
 	assert.NotNil(t, actual.Id)
