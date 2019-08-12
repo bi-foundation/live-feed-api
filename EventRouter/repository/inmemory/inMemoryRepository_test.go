@@ -1,21 +1,20 @@
 package inmemory
 
 import (
+	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/stretchr/testify/assert"
 	"strconv"
+	"sync"
 	"testing"
 )
 
 const initId = 0
 
-var repo *Repository
+var repo *inMemoryRepository
 
 func init() {
-	repo = &Repository{
-		id: initId,
-		db: nil,
-	}
+	repo = New()
 }
 
 func TestCRUD(t *testing.T) {
@@ -37,20 +36,39 @@ func TestCRUD(t *testing.T) {
 	assert.Equal(t, subscription.Callback, readSubscription.Callback)
 
 	substituteSubscription := &models.Subscription{
-		Id:       "ID",
+		Id:       createdSubscription.Id,
 		Callback: "updated-url",
 	}
-	updatedSubscription, err := repo.UpdateSubscription(subscription.Id, substituteSubscription)
+	updatedSubscription, err := repo.UpdateSubscription(substituteSubscription)
 	assert.Nil(t, err)
 	assert.Equal(t, id, updatedSubscription.Id)
 	assert.Equal(t, substituteSubscription.Callback, updatedSubscription.Callback)
 
-	deletedSubscription, err := repo.DeleteSubscription(subscription.Id)
+	err = repo.DeleteSubscription(subscription.Id)
 	assert.Nil(t, err)
-	assert.Equal(t, id, deletedSubscription.Id)
-	assert.Equal(t, substituteSubscription.Callback, deletedSubscription.Callback)
 
 	unknownSubscription, err := repo.ReadSubscription(subscription.Id)
 	assert.NotNil(t, err)
 	assert.Nil(t, unknownSubscription)
+}
+
+func TestConcurrency(t *testing.T) {
+	n := 100
+	wait := sync.WaitGroup{}
+	wait.Add(n)
+	for i := 0; i < n; i++ {
+		go func(x int) {
+			defer wait.Done()
+			subscription := &models.Subscription{
+				Callback: fmt.Sprintf("url: %d", x),
+			}
+
+			subscription, err := repo.CreateSubscription(subscription)
+			assert.Nil(t, err)
+			t.Logf("%d: created %s", x, subscription.Id)
+		}(i)
+	}
+	wait.Wait()
+
+	assert.Equal(t, n, len(repo.db))
 }

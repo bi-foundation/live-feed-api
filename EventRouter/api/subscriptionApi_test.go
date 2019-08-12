@@ -127,14 +127,7 @@ func assertSubscribe(t *testing.T, body []byte) {
 }
 
 func assertUnsubscribe(t *testing.T, body []byte) {
-	var result models.Subscription
-	err := json.Unmarshal(body, &result)
-	if err != nil {
-		t.Fatalf("unmarshalling failed: %v", err)
-	}
-
-	assert.Equal(t, testSubscription.Callback, result.Callback)
-	assert.NotNil(t, result.Id)
+	assert.Equal(t, []byte(""), body)
 }
 
 func assertEmptyResponse(t *testing.T, body []byte) {
