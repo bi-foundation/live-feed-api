@@ -6,6 +6,7 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/FactomProject/live-api/EventRouter/repository"
 	"github.com/FactomProject/live-api/EventRouter/repository/inmemory"
+	"github.com/FactomProject/live-api/EventRouter/repository/postgres"
 	"github.com/FactomProject/live-api/EventRouter/repository/sql"
 	"github.com/stretchr/testify/assert"
 	"sync"
@@ -22,9 +23,15 @@ func init() {
 		log.Error("setup test: %v", err)
 	}
 
+	postgresRepository, err := postgres.NewPostgres()
+	if err != nil {
+		log.Error("setup test: %v", err)
+	}
+
 	repositories = map[string]repository.Repository{
 		"inmemory": inmemory.New(),
 		"sql":      sqlRepository,
+		"postgres": postgresRepository,
 	}
 }
 
