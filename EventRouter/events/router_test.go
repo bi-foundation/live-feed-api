@@ -2,6 +2,8 @@ package events
 
 import (
 	"bytes"
+	"crypto/subtle"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
@@ -9,63 +11,256 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/FactomProject/live-api/EventRouter/repository"
 	"github.com/gogo/protobuf/types"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 )
 
-func TestEventRouter_Start(t *testing.T) {
+func init() {
 	log.SetLevel(log.D)
+}
 
-	var eventsReceived int32 = 0
-	event := mockAnchorEvent()
+func TestSendEvent(t *testing.T) {
+	accessToken := "access-token"
 
-	queue := make(chan *eventmessages.FactomEvent)
-	router := NewEventRouter(queue)
-	router.Start()
+	// init test cases
+	testCases := map[string]struct {
+		CallbackType             models.CallbackType
+		Credentials              models.Credentials
+		AuthenticationValidation func(r *http.Request) bool
+	}{
+		"basic http": {
+			CallbackType: models.HTTP,
+		},
+		"bearer token": {
+			CallbackType: models.BEARER_TOKEN,
+			Credentials: models.Credentials{
+				AccessToken: accessToken,
+			},
+			AuthenticationValidation: ValidateToken(accessToken),
+		}, /*
+			"invalid bearer token": {
+				CallbackType: models.BEARER_TOKEN,
+				Credentials: models.Credentials{
+					AccessToken: accessToken,
+				},
+				AuthenticationValidation: ValidateToken("invalid"),
+			},*/
+		"basic auth": {
+			CallbackType: models.BASIC_AUTH,
+			Credentials: models.Credentials{
+				BasicAuthUsername: "username",
+				BasicAuthPassword: "password",
+			},
+			AuthenticationValidation: ValidateUsernamePassword("username", "password"),
+		},
+		/*"basic invalid auth": {
+			CallbackType: models.BASIC_AUTH,
+			Credentials: models.Credentials{
+				BasicAuthUsername: "username",
+				BasicAuthPassword: "password",
+			},
+			AuthenticationValidation: ValidateUsernamePassword("incorrect", "password"),
+		},*/
+	}
 
-	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
-		defer atomic.AddInt32(&eventsReceived, 1)
+	// init data
+	factomEvent := mockAnchorEvent()
+	event, err := json.Marshal(factomEvent)
+	if err != nil {
+		t.Fatalf("failed to marshal event: %v", err)
+	}
+
+	index := 0
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			index++
+			port := 23232 + index
+			var eventsReceived int32 = 0
+			subscriptions := &models.Subscription{
+				Callback:     fmt.Sprintf("http://localhost:%[1]d/callback%[1]d", port),
+				CallbackType: testCase.CallbackType,
+				Filters: map[models.EventType]models.Filter{
+					models.COMMIT_EVENT: {Filtering: ""},
+				},
+				Credentials: testCase.Credentials,
+			}
+
+			// start server to receive events
+			startMockServer(t, port, &eventsReceived, testCase.AuthenticationValidation, event)
+
+			// test send to http oauth2 endpoint
+			sendEvent(subscriptions, event)
+
+			// wait until server has received events or deadline has passed
+			waitOnEventReceived(&eventsReceived, 1, 10*time.Second)
+		})
+	}
+}
+
+func startMockServer(t *testing.T, port int, eventsReceived *int32, authenticationValidation func(r *http.Request) bool, expectedEvent []byte) {
+	startMockTLSServer(t, port, "", "", eventsReceived, authenticationValidation, expectedEvent)
+}
+
+func startMockTLSServer(t *testing.T, port int, certFile string, pkFile string, eventsReceived *int32, validAuthentication func(r *http.Request) bool, expectedEvent []byte) {
+	// start http server to receive event
+	http.HandleFunc(fmt.Sprintf("/callback%d", port), func(w http.ResponseWriter, r *http.Request) {
+		defer atomic.AddInt32(eventsReceived, 1)
+
+		// validate auth
+		if validAuthentication != nil && !validAuthentication(r) {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("Unauthorised.\n"))
+			t.Error("failed to authentication")
+			return
+		}
+
+		// verify body
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
+			t.Error("failed to read body")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()
 
+		// assert body
+		assert.EqualValues(t, expectedEvent, body)
+
 		var prettyJSON bytes.Buffer
-		error := json.Indent(&prettyJSON, body, "", "\t")
-		if error != nil {
+		err = json.Indent(&prettyJSON, body, "", "\t")
+		if err != nil {
+			t.Error("failed to parse json")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		fmt.Printf("> %s\n", string(prettyJSON.Bytes()))
-		// TODO assertion
+		// fmt.Printf("> %s\n", string(prettyJSON.Bytes()))
 		w.WriteHeader(http.StatusOK)
 	})
-	go http.ListenAndServe(":23232", nil)
 
-	subscription := &models.Subscription{
-		Callback: "http://localhost:23232/callback",
+	if certFile != "" && pkFile != "" {
+		go http.ListenAndServeTLS(fmt.Sprintf(":%d", port), certFile, pkFile, nil)
+	} else {
+		go http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	}
+
+}
+
+func ValidateToken(accessToken string) func(r *http.Request) bool {
+	return func(r *http.Request) bool {
+		authorization := r.Header.Get("authorization")
+		token := strings.TrimPrefix(strings.ToLower(authorization), "bearer ")
+		return strings.EqualFold(token, accessToken)
+	}
+}
+
+func ValidateUsernamePassword(username string, password string) func(r *http.Request) bool {
+	return func(r *http.Request) bool {
+		user, pass, ok := r.BasicAuth()
+		if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 || subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
+			fmt.Printf("basic auth validation failed: %s, %s, %t\n", user, pass, ok)
+			return false
+		}
+		return true
+	}
+}
+
+// test sending 5 subscriptions to two different endpoints
+func TestEventRouter_Start(t *testing.T) {
+	subscription1 := &models.Subscription{
+		Callback: "http://localhost:23222/callback23222",
 		Filters: map[models.EventType]models.Filter{
-			// NO hardcode this
-			models.COMMIT_EVENT: models.Filter{Filtering: ""},
+			models.ANCHOR_EVENT: {Filtering: ""},
 		},
 	}
-	subscription, _ = repository.SubscriptionRepository.CreateSubscription(subscription)
+	subscription2 := &models.Subscription{
+		Callback: "http://localhost:23223/callback23223",
+		Filters: map[models.EventType]models.Filter{
+			models.ANCHOR_EVENT: {Filtering: ""},
+		},
+	}
+	subscriptions := []*models.Subscription{
+		subscription1,
+		subscription2,
+		subscription2,
+		subscription1,
+		subscription1,
+	}
 
-	n := 1
-	queue <- event
+	// init mock repository
+	mockStore := repository.InitMockRepository()
+	mockStore.On("GetSubscriptions").Return(subscriptions, nil).Once()
 
-	//
-	// TODO receive events on endpoints
+	var eventsReceived int32 = 0
+	factomEvent := mockAnchorEvent()
+	expectedEvent, err := json.Marshal(factomEvent)
+	if err != nil {
+		t.Fatalf("failed to marshal event: %v", err)
+	}
 
-	timeLimit := 1 * time.Minute
+	queue := make(chan *eventmessages.FactomEvent)
+	router := NewEventRouter(queue)
+	router.Start()
+
+	// start two mock server on different porst
+	startMockServer(t, 23222, &eventsReceived, nil, expectedEvent)
+	startMockServer(t, 23223, &eventsReceived, nil, expectedEvent)
+
+	// test send event if an event is send through the channel
+	queue <- factomEvent
+
+	waitOnEventReceived(&eventsReceived, len(subscriptions), 1*time.Minute)
+}
+
+func TestHTTPSEndpoint(t *testing.T) {
+	accessToken := "access-token"
+	subscriptions := []*models.Subscription{
+		{
+			Callback:     "https://localhost:23232/callback23232",
+			CallbackType: models.BEARER_TOKEN,
+			Filters: map[models.EventType]models.Filter{
+				models.COMMIT_EVENT: {Filtering: ""},
+			},
+			Credentials: models.Credentials{
+				AccessToken: accessToken,
+			},
+		},
+	}
+	factomEvent := mockAnchorEvent()
+	expectedEvent, err := json.Marshal(factomEvent)
+	if err != nil {
+		t.Fatalf("failed to marshal event: %v", err)
+	}
+
+	certFile, pkFile, cleanup := testSetupCertificateFiles(t)
+	defer cleanup()
+
+	var eventsReceived int32 = 0
+
+	// as the code makes use of the default client, we allow to ignore expired certificate
+	transCfg := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
+	}
+	http.DefaultClient = &http.Client{Transport: transCfg}
+
+	// start https server to receive event
+	startMockTLSServer(t, 23232, certFile, pkFile, &eventsReceived, nil, expectedEvent)
+
+	// test send to http oauth2 endpoint
+	send(subscriptions, factomEvent)
+
+	waitOnEventReceived(&eventsReceived, len(subscriptions), 1*time.Minute)
+}
+
+func waitOnEventReceived(eventsReceived *int32, n int, timeLimit time.Duration) {
 	deadline := time.Now().Add(timeLimit)
-	for int(atomic.LoadInt32(&eventsReceived)) != n && time.Now().Before(deadline) {
+	for int(atomic.LoadInt32(eventsReceived)) != n && time.Now().Before(deadline) {
 		time.Sleep(100 * time.Millisecond)
 	}
 }
@@ -112,4 +307,80 @@ func mockAnchorEvent() *eventmessages.FactomEvent {
 			},
 		},
 	}
+}
+
+// an arbitrary self-signed certificate, generated with
+// `openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout cert.pem -out cert.pem`
+var pkey = `-----BEGIN RSA PRIVATE KEY-----
+MIICXAIBAAKBgQDVBUw40q0zpF/zWzwBf0GFkXmnkw+YCNTiV8l7mso1DCv/VTYM
+cqtvy0g2KNBV7SFLC+NHuxJkNOAtJ8Fxx1EpeIw5A3KeCRNb4lo6ecAkuDLiPYGO
+qgAqjj8QmhmZA68qTIuWGYM1FTtUK3wO4wrHnqHEjs3cWNghmby6AgLHVQIDAQAB
+AoGAcy5GJINlu4KpjwBJ1dVlLD+YtA9EY0SDN0+YVglARKasM4dzjg+CuxQDm6U9
+4PgzBE0NO3/fVedxP3k7k7XeH73PosaxjWpfMawXR3wSLFKJBwxux/8gNdzeGRHN
+X1sYsJ70WiZLFOAPQ9jctF1ejUP6fpLHsti6ZHQj/R1xqBECQQDrHxmpMoviQL6n
+4CBR4HvlIRtd4Qr21IGEXtbjIcC5sgbkfne6qhqdv9/zxsoiPTi0859cr704Mf3y
+cA8LZ8c3AkEA5+/KjSoqgzPaUnvPZ0p9TNx6odxMsd5h1AMIVIbZPT6t2vffCaZ7
+R0ffim/KeWfoav8u9Cyz8eJpBG6OHROT0wJBAML54GLCCuROAozePI8JVFS3NqWM
+OHZl1R27NAHYfKTBMBwNkCYYZ8gHVKUoZXktQbg1CyNmjMhsFIYWTTONFNMCQFsL
+eBld2f5S1nrWex3y0ajgS4tKLRkNUJ2m6xgzLwepmRmBf54MKgxbHFb9dx+dOFD4
+Bvh2q9RhqhPBSiwDyV0CQBxN3GPbaa8V7eeXBpBYO5Evy4VxSWJTpgmMDtMH+RUp
+9eAJ8rUyhZ2OaElg1opGCRemX98s/o2R5JtzZvOx7so=
+-----END RSA PRIVATE KEY-----
+`
+
+var cert = `-----BEGIN CERTIFICATE-----
+MIIDXDCCAsWgAwIBAgIJAJqbbWPZgt0sMA0GCSqGSIb3DQEBBQUAMH0xCzAJBgNV
+BAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNU2FuIEZyYW5jaXNjbzEPMA0G
+A1UEChMGV2ViLmdvMRcwFQYDVQQDEw5NaWNoYWVsIEhvaXNpZTEfMB0GCSqGSIb3
+DQEJARYQaG9pc2llQGdtYWlsLmNvbTAeFw0xMzA0MDgxNjIzMDVaFw0xNDA0MDgx
+NjIzMDVaMH0xCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNU2Fu
+IEZyYW5jaXNjbzEPMA0GA1UEChMGV2ViLmdvMRcwFQYDVQQDEw5NaWNoYWVsIEhv
+aXNpZTEfMB0GCSqGSIb3DQEJARYQaG9pc2llQGdtYWlsLmNvbTCBnzANBgkqhkiG
+9w0BAQEFAAOBjQAwgYkCgYEA1QVMONKtM6Rf81s8AX9BhZF5p5MPmAjU4lfJe5rK
+NQwr/1U2DHKrb8tINijQVe0hSwvjR7sSZDTgLSfBccdRKXiMOQNyngkTW+JaOnnA
+JLgy4j2BjqoAKo4/EJoZmQOvKkyLlhmDNRU7VCt8DuMKx56hxI7N3FjYIZm8ugIC
+x1UCAwEAAaOB4zCB4DAdBgNVHQ4EFgQURizcvrgUl8yhIEQvJT/1b5CzV8MwgbAG
+A1UdIwSBqDCBpYAURizcvrgUl8yhIEQvJT/1b5CzV8OhgYGkfzB9MQswCQYDVQQG
+EwJVUzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDVNhbiBGcmFuY2lzY28xDzANBgNV
+BAoTBldlYi5nbzEXMBUGA1UEAxMOTWljaGFlbCBIb2lzaWUxHzAdBgkqhkiG9w0B
+CQEWEGhvaXNpZUBnbWFpbC5jb22CCQCam21j2YLdLDAMBgNVHRMEBTADAQH/MA0G
+CSqGSIb3DQEBBQUAA4GBAGBPoVCReGMO1FrsIeVrPV/N6pSK7H3PLdxm7gmmvnO9
+K/LK0OKIT7UL3eus+eh0gt0/Tv/ksq4nSIzXBLPKyPggLmpC6Agf3ydNTpdLQ23J
+gWrxykqyLToIiAuL+pvC3Jv8IOPIiVFsY032rOqcwSGdVUyhTsG28+7KnR6744tM
+-----END CERTIFICATE-----
+`
+
+func testSetupCertificateFiles(t *testing.T) (string, string, func()) {
+	certificates := make([]tls.Certificate, 1)
+	var err error
+	certificates[0], err = tls.X509KeyPair([]byte(cert), []byte(pkey))
+
+	if err != nil {
+		t.Fatalf("failed to create certificate: %v", err)
+	}
+
+	certFile, cleanCertFile := testTempFile(t, "cert", cert)
+	pkFile, cleanPKFile := testTempFile(t, "pk", pkey)
+
+	cleanup := func() {
+		cleanCertFile()
+		cleanPKFile()
+	}
+	return certFile, pkFile, cleanup
+}
+
+func testTempFile(t *testing.T, prefix string, content string) (string, func()) {
+	tmpFile, err := ioutil.TempFile(os.TempDir(), prefix)
+	if err != nil {
+		t.Fatalf("error creating temp file %v", err)
+	}
+	defer tmpFile.Close()
+
+	_, err = tmpFile.WriteString(content)
+	if err != nil {
+		t.Fatalf("error write to temp file %v", err)
+	}
+	cleanFile := func() { os.Remove(tmpFile.Name()) }
+
+	return tmpFile.Name(), cleanFile
 }

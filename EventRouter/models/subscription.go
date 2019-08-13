@@ -21,6 +21,10 @@ type Subscription struct {
 	// the emitted event can be filter to receive not all data from an event type
 	//
 	Filters map[EventType]Filter `json:"filters"`
+
+	// the emitted event can be filter to receive not all data from an event type
+	//
+	Credentials Credentials `json:"credentials"`
 }
 
 // SubscriptionRequest

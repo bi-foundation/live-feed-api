@@ -2,6 +2,7 @@ package events
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
@@ -27,19 +28,6 @@ func (evr *EventRouter) handleEvents() {
 	for factomEvent := range evr.eventsInQueue {
 		log.Debug("handle event: %v", factomEvent)
 
-		// TODO what about types?
-		subscriptions, err := repository.SubscriptionRepository.GetSubscriptions(models.COMMIT_EVENT)
-		if err != nil {
-			log.Error("%v", err)
-			continue
-		}
-
-		err = send(subscriptions, factomEvent)
-		if err != nil {
-			log.Error("%v", err)
-			continue
-		}
-
 		switch factomEvent.Value.(type) {
 		case *eventmessages.FactomEvent_AnchorEvent:
 			log.Info("Received AnchoredEvent with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetAnchorEvent())
@@ -52,6 +40,18 @@ func (evr *EventRouter) handleEvents() {
 		case *eventmessages.FactomEvent_NodeMessage:
 			log.Info("Received FactomEvent_NodeMessage with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetNodeMessage())
 		}
+
+		subscriptions, err := repository.SubscriptionRepository.GetSubscriptions(models.COMMIT_EVENT)
+		if err != nil {
+			log.Error("%v", err)
+			continue
+		}
+
+		err = send(subscriptions, factomEvent)
+		if err != nil {
+			log.Error("%v", err)
+			continue
+		}
 	}
 }
 
@@ -61,19 +61,41 @@ func send(subscriptions []*models.Subscription, factomEvent *eventmessages.Facto
 		return fmt.Errorf("failed to create json from factom event")
 	}
 	for _, subscription := range subscriptions {
-		url := subscription.Callback
-		sendEvent(url, event)
+		sendEvent(subscription, event)
 	}
 	return nil
 }
 
-func sendEvent(url string, event []byte) {
-	response, err := http.Post(url, "application/json", bytes.NewBuffer(event))
+func sendEvent(subscription *models.Subscription, event []byte) {
+	url := subscription.Callback
+	// Create a new request
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(event))
+
+	// setup authentication
+	if subscription.CallbackType == models.BASIC_AUTH {
+		auth := subscription.Credentials.BasicAuthUsername + ":" + subscription.Credentials.BasicAuthPassword
+		authentication := base64.StdEncoding.EncodeToString([]byte(auth))
+		request.Header.Add("Authorization", "Basic "+authentication)
+	} else if subscription.CallbackType == models.BEARER_TOKEN {
+		bearer := "Bearer " + subscription.Credentials.AccessToken
+		request.Header.Add("Authorization", bearer)
+	}
+
+	log.Debug("send event to '%s' %v", subscription.Callback, subscription.CallbackType)
+	// Send request using default http Client
+	response, err := http.DefaultClient.Do(request)
+
 	// TODO handle endpoint failure
 	if err != nil {
 		log.Error("failed to send event to '%s': %v", url, err)
+		return
 	}
-	if response == nil || response.StatusCode != http.StatusOK {
-		log.Error("failed to receive correct response from '%s': %v", url, response)
+	if response == nil {
+		log.Error("failed to receive correct response from '%s': no response", url)
+		return
+	}
+	if response.StatusCode != http.StatusOK {
+		log.Error("failed to receive correct response from '%s': code=%d, body=%v", url, response.StatusCode, response)
+		return
 	}
 }
