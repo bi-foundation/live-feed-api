@@ -48,7 +48,47 @@
         }
       }
     },
-    "/unsubscribe/{id}": {
+    "/subscribe/{id}": {
+      "put": {
+        "description": "Update a subscription for receiving events from the api",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subscription"
+        ],
+        "operationId": "UpdateSubscriptionRequest",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ID",
+            "description": "subscription id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "x-go-name": "Subscription",
+            "description": "The subscription registration for receiving information from factomd through the live api.",
+            "name": "subscription",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Subscription"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UpdateSubscriptionResponse"
+          },
+          "400": {
+            "$ref": "#/responses/ApiError"
+          }
+        }
+      },
       "delete": {
         "description": "Unsubscribe an application from receiving events from the api",
         "consumes": [
@@ -186,13 +226,19 @@
       }
     },
     "SubscriptionResponse": {
-      "description": "An SubscriptionResponse is the stored subscription for factom events",
+      "description": "An SubscriptionResponse is the stored subscription",
       "schema": {
         "$ref": "#/definitions/Subscription"
       }
     },
     "UnsubscriptionResponse": {
       "description": "A Subscription is returned that is successfully unsubscribed",
+      "schema": {
+        "$ref": "#/definitions/Subscription"
+      }
+    },
+    "UpdateSubscriptionResponse": {
+      "description": "An SubscriptionResponse is the stored subscription",
       "schema": {
         "$ref": "#/definitions/Subscription"
       }

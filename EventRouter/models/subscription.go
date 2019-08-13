@@ -31,7 +31,7 @@ type Subscription struct {
 // summary:
 // An SubscriptionRequest model.
 //
-// This is used for operations that want an Order as body of the request
+// This is used to subscribe for factom events
 // swagger:parameters SubscriptionRequest
 type subscriptionRequest struct {
 	// The subscription registration for receiving information from factomd through the live api.
@@ -40,10 +40,38 @@ type subscriptionRequest struct {
 	Subscription *Subscription `json:"subscription"`
 }
 
-// An SubscriptionResponse is the stored subscription for factom events
+// An SubscriptionResponse is the stored subscription
 //
 // swagger:response SubscriptionResponse
 type subscriptionResponse struct {
+	// The subscription
+	//
+	// in: body
+	Subscription *Subscription `json:"subscription"`
+}
+
+// UpdateSubscriptionRequest
+// summary:
+// An UpdateSubscriptionRequest model.
+//
+// This is used to update a subscription as body of the request
+// swagger:parameters UpdateSubscriptionRequest
+type updateSubscriptionRequest struct {
+	// subscription id
+	//
+	// In: path
+	ID string `json:"id"`
+
+	// The subscription registration for receiving information from factomd through the live api.
+	//
+	// in: body
+	Subscription *Subscription `json:"subscription"`
+}
+
+// An SubscriptionResponse is the stored subscription
+//
+// swagger:response UpdateSubscriptionResponse
+type updateSubscriptionResponse struct {
 	// The subscription
 	//
 	// in: body

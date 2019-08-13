@@ -24,6 +24,7 @@ func init() {
 }
 
 var testSubscription = &models.Subscription{
+	Id:           "id",
 	Callback:     "http://url.nl/callback",
 	CallbackType: models.HTTP,
 	Filters: map[models.EventType]models.Filter{
@@ -46,30 +47,14 @@ func TestSubscriptionApi(t *testing.T) {
 	}{
 		"subscribe": {
 			URL:          "/subscribe",
-			Method:       "POST",
+			Method:       http.MethodPost,
 			content:      content(t, testSubscription),
 			responseCode: http.StatusOK,
 			assert:       assertSubscribe,
 		},
-		"unsubscribe": {
-			URL:          "/unsubscribe/0",
-			Method:       "DELETE",
-			content:      nil,
-			responseCode: http.StatusOK,
-			assert:       assertEmptyResponse,
-		},
 		"subscribe-invalid": {
 			URL:    "/subscribe",
-			Method: "POST",
-			content: content(t, &models.Subscription{
-				Callback: "invalid url",
-			}),
-			responseCode: http.StatusBadRequest,
-			assert:       assertInvalidRequestError,
-		},
-		"unsubscribe-invalid": {
-			URL:    "/unsubscribe/notfound",
-			Method: "DELETE",
+			Method: http.MethodPost,
 			content: content(t, &models.Subscription{
 				Callback: "invalid url",
 			}),
@@ -78,21 +63,68 @@ func TestSubscriptionApi(t *testing.T) {
 		},
 		"subscribe-nothing": {
 			URL:          "/subscribe",
-			Method:       "POST",
+			Method:       http.MethodPost,
 			content:      nil,
 			responseCode: http.StatusBadRequest,
 			assert:       assertParseError,
 		},
 		"subscribe-something-else": {
 			URL:          "/subscribe",
-			Method:       "POST",
+			Method:       http.MethodPost,
 			content:      []byte(`{"message":"invalid object"}`),
+			responseCode: http.StatusBadRequest,
+			assert:       assertInvalidRequestError,
+		},
+		"update-subscription": {
+			URL:          "/subscribe/id",
+			Method:       http.MethodPut,
+			content:      content(t, testSubscription),
+			responseCode: http.StatusOK,
+			assert:       assertSubscribe,
+		},
+		"update-invalid-id ": {
+			URL:          "/subscribe/different-id",
+			Method:       http.MethodPut,
+			content:      content(t, testSubscription),
+			responseCode: http.StatusBadRequest,
+			assert:       assertInvalidRequestError,
+		},
+		"update-invalid-subscription ": {
+			URL:    "/subscribe/id",
+			Method: http.MethodPut,
+			content: content(t, &models.Subscription{
+				Callback:     "http://url/test",
+				CallbackType: "invalid",
+			}),
+			responseCode: http.StatusBadRequest,
+			assert:       assertInvalidRequestError,
+		},
+		"unsubscribe": {
+			URL:          "/subscribe/0",
+			Method:       http.MethodDelete,
+			content:      nil,
+			responseCode: http.StatusOK,
+			assert:       assertEmptyResponse,
+		},
+		"unsubscribe not found": {
+			URL:          "/subscribe/",
+			Method:       http.MethodDelete,
+			content:      nil,
+			responseCode: http.StatusNotFound,
+			assert:       assertNotFound,
+		},
+		"unsubscribe-invalid": {
+			URL:    "/subscribe/notfound",
+			Method: http.MethodDelete,
+			content: content(t, &models.Subscription{
+				Callback: "invalid url",
+			}),
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
 		"subscribe-wrong-method": {
 			URL:          "/subscribe",
-			Method:       "DELETE",
+			Method:       http.MethodDelete,
 			content:      content(t, testSubscription),
 			responseCode: http.StatusMethodNotAllowed,
 			assert:       assertEmptyResponse,
@@ -102,6 +134,7 @@ func TestSubscriptionApi(t *testing.T) {
 	// init mock repository,
 	mockStore := repository.InitMockRepository()
 	mockStore.On("CreateSubscription").Return(testSubscription, nil).Once()
+	mockStore.On("UpdateSubscription", "id").Return(testSubscription, nil).Once()
 	mockStore.On("DeleteSubscription", "0").Return(nil).Once()
 	mockStore.On("DeleteSubscription", "notfound").Return(fmt.Errorf("subscription not found")).Once()
 
@@ -115,11 +148,10 @@ func TestSubscriptionApi(t *testing.T) {
 			response, err := http.DefaultClient.Do(request)
 
 			assert.Nil(t, err, "failed to get response: %v", err)
-			assert.Equal(t, testCase.responseCode, response.StatusCode)
-
 			if response == nil {
 				t.Fatalf("response incorrect")
 			}
+			assert.Equal(t, testCase.responseCode, response.StatusCode)
 
 			defer response.Body.Close()
 			body, err := ioutil.ReadAll(response.Body)
@@ -161,6 +193,10 @@ func assertInvalidRequestError(t *testing.T, body []byte) {
 
 	assert.Equal(t, "invalid request", result.Message)
 	assert.Equal(t, errors.NewInvalidRequest().Code, result.Code)
+}
+
+func assertNotFound(t *testing.T, body []byte) {
+	assert.Equal(t, "404 page not found\n", string(body))
 }
 
 func parseApiBody(t *testing.T, body []byte) errors.ApiError {

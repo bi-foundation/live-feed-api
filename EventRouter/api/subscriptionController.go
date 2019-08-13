@@ -44,6 +44,66 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 	respond(writer, subscription)
 }
 
+func updateSubscription(writer http.ResponseWriter, request *http.Request) {
+	// swagger:route PUT /subscribe/{id} subscription UpdateSubscriptionRequest
+	//
+	// Update a subscription for receiving events from the api
+	//
+	// Consumes:
+	//   - application/json
+	//
+	// Produces:
+	//   - application/json
+	//
+	// Responses:
+	//        200: UpdateSubscriptionResponse
+	//        400: ApiError
+	vars := mux.Vars(request)
+
+	subscription := &models.Subscription{}
+	if decode(writer, request, subscription) {
+		return
+	}
+
+	id := vars["subscriptionId"]
+	if subscription.Id != id {
+		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed("subscription id doesn't match"))
+		return
+	}
+
+	subscription, err := repository.SubscriptionRepository.UpdateSubscription(subscription)
+	if err != nil {
+		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
+		return
+	}
+
+	respond(writer, subscription)
+}
+
+func unsubscribe(writer http.ResponseWriter, request *http.Request) {
+	// swagger:route DELETE /subscribe/{id} subscription UnsubscribeRequest
+	//
+	// Unsubscribe an application from receiving events from the api
+	//
+	// Consumes:
+	//   - application/json
+	//
+	// Produces:
+	//   - application/json
+	//
+	// Responses:
+	//        200: UnsubscriptionResponse
+	//        400: ApiError
+	vars := mux.Vars(request)
+
+	id := vars["subscriptionId"]
+	err := repository.SubscriptionRepository.DeleteSubscription(id)
+	if err != nil {
+		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
+		return
+	}
+}
+
 func validateSubscription(subscription *models.Subscription) error {
 	u, err := url.ParseRequestURI(subscription.Callback)
 	if err != nil || u.Scheme == "" || u.Host == "" {
@@ -80,29 +140,4 @@ func validateSubscription(subscription *models.Subscription) error {
 	}
 
 	return nil
-}
-
-func unsubscribe(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route DELETE /unsubscribe/{id} subscription UnsubscribeRequest
-	//
-	// Unsubscribe an application from receiving events from the api
-	//
-	// Consumes:
-	//   - application/json
-	//
-	// Produces:
-	//   - application/json
-	//
-	// Responses:
-	//        200: UnsubscriptionResponse
-	//        400: ApiError
-
-	vars := mux.Vars(request)
-
-	id := vars["subscriptionId"]
-	err := repository.SubscriptionRepository.DeleteSubscription(id)
-	if err != nil {
-		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
-		return
-	}
 }
