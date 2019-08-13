@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
@@ -14,12 +15,6 @@ import (
 
 var (
 	StandardChannelSize = 5000
-)
-
-const (
-	defaultConnectionHost     = "127.0.0.1"
-	defaultConnectionPort     = "8040"
-	defaultConnectionProtocol = "tcp"
 )
 
 type EventReceiver interface {
@@ -38,17 +33,13 @@ type Receiver struct {
 	address    string
 }
 
-func NewReceiver(protocol string, address string) EventReceiver {
+func NewReceiver(protocoleventListenerConfig *config.ListenerConfig) EventReceiver {
 	return &Receiver{
 		eventQueue: make(chan *eventmessages.FactomEvent, StandardChannelSize),
 		state:      models.New,
-		protocol:   protocol,
-		address:    address,
+		protocol:   eventListenerConfig.Protocol,
+		address:    fmt.Sprintf("%s:%d", eventListenerConfig.BindAddress, eventListenerConfig.Port),
 	}
-}
-
-func NewDefaultReceiver() EventReceiver {
-	return NewReceiver(defaultConnectionProtocol, fmt.Sprintf("%s:%s", defaultConnectionHost, defaultConnectionPort))
 }
 
 func (receiver *Receiver) Start() {

@@ -14,6 +14,7 @@ require (
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/opsee/protobuf v0.0.0-20170203071455-928523252569
 	github.com/proullon/ramsql v0.0.0-20181213202341-817cee58a244
+	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.3.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	google.golang.org/appengine v1.6.1 // indirect

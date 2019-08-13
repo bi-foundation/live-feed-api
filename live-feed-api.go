@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	eventServer = events.NewDefaultReceiver()
+	appConfig   = config.LoadEventRouterConfig()
+	eventServer = events.NewDefaultReceiver(appConfig.EventListenerConfig)
 	eventRouter = events.NewEventRouter(eventServer.GetEventQueue())
 )
 
@@ -23,7 +24,7 @@ func main() {
 	eventServer.Start()
 	eventRouter.Start()
 
-	api.NewSubscriptionApi(":8700").Start()
+	api.NewSubscriptionApi(appConfig.SubscriptionApiConfig).Start()
 
 	for eventServer.GetState() < models.Stopping {
 		time.Sleep(time.Second)

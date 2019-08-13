@@ -3,6 +3,7 @@ package events
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
 	"github.com/gogo/protobuf/proto"
 	"github.com/opsee/protobuf/opseeproto/types"
@@ -18,8 +19,11 @@ var eventsQueue chan *eventmessages.FactomEvent
 var address string
 
 func init() {
+	config := config.LoadEventRouterConfig()
+
 	// Start the new server at random port
-	server := NewReceiver("tcp", ":0")
+	config.EventListenerConfig.Port = 0
+	server := NewReceiver(config.EventListenerConfig)
 	server.Start()
 	time.Sleep(10 * time.Millisecond) // sleep to allow the server to start before making a connection
 	address = server.GetAddress()

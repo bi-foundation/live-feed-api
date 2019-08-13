@@ -15,6 +15,8 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
 	"github.com/gorilla/mux"
@@ -27,12 +29,12 @@ type SubscriptionApi interface {
 }
 
 type api struct {
-	address string
+	apiConfig *config.SubscriptionApiConfig
 }
 
-func NewSubscriptionApi(address string) SubscriptionApi {
+func NewSubscriptionApi(apiConfig *config.SubscriptionApiConfig) SubscriptionApi {
 	return &api{
-		address: address,
+		apiConfig: apiConfig,
 	}
 }
 
@@ -52,11 +54,12 @@ func (api *api) Start() {
 	router.HandleFunc("/subscriptions/{subscriptionId}", getSubscription).Methods(http.MethodGet)
 	router.HandleFunc("/subscriptions/{subscriptionId}", updateSubscription).Methods(http.MethodPut)
 	router.HandleFunc("/swagger.json", swagger).Methods(http.MethodGet)
-	router.Schemes("HTTP")
+	router.Schemes(api.apiConfig.Schemes...)
 
 	go func() {
-		log.Info("start subscription api at: %s", api.address)
-		err := http.ListenAndServe(api.address, router)
+		address := fmt.Sprintf("%s:%d", api.apiConfig.BindAddress, api.apiConfig.Port)
+		log.Info("start subscription api at: %s", address)
+		err := http.ListenAndServe(address, router)
 		if err != nil {
 			log.Error("%v", err)
 		}
