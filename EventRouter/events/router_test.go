@@ -86,7 +86,7 @@ func TestSendEvent(t *testing.T) {
 				Callback:     fmt.Sprintf("http://localhost:%[1]d/callback%[1]d", port),
 				CallbackType: testCase.CallbackType,
 				Filters: map[models.EventType]models.Filter{
-					models.COMMIT_EVENT: {Filtering: ""},
+					models.COMMIT_CHAIN: {Filtering: ""},
 				},
 				Credentials: testCase.Credentials,
 			}
@@ -195,7 +195,7 @@ func TestEventRouter_Start(t *testing.T) {
 
 	// init mock repository
 	mockStore := repository.InitMockRepository()
-	mockStore.On("GetSubscriptions").Return(subscriptions, nil).Once()
+	mockStore.On("GetSubscriptions", models.ANCHOR_EVENT).Return(subscriptions, nil).Once()
 
 	var eventsReceived int32 = 0
 	factomEvent := mockAnchorEvent()
@@ -225,7 +225,7 @@ func TestHTTPSEndpoint(t *testing.T) {
 			Callback:     "https://localhost:23232/callback23232",
 			CallbackType: models.BEARER_TOKEN,
 			Filters: map[models.EventType]models.Filter{
-				models.COMMIT_EVENT: {Filtering: ""},
+				models.COMMIT_CHAIN: {Filtering: ""},
 			},
 			Credentials: models.Credentials{
 				AccessToken: accessToken,
@@ -253,7 +253,8 @@ func TestHTTPSEndpoint(t *testing.T) {
 	startMockTLSServer(t, 23232, certFile, pkFile, &eventsReceived, nil, expectedEvent)
 
 	// test send to http oauth2 endpoint
-	send(subscriptions, factomEvent)
+	err = send(subscriptions, factomEvent)
+	assert.Nil(t, err)
 
 	waitOnEventReceived(&eventsReceived, len(subscriptions), 1*time.Minute)
 }

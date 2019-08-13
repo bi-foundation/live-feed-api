@@ -4,7 +4,7 @@ package models
 type EventType string
 
 const (
-	COMMIT_EVENT EventType = "COMMIT_EVENT"
+	COMMIT_CHAIN EventType = "COMMIT_CHAIN"
 	COMMIT_ENTRY EventType = "COMMIT_ENTRY"
 	ANCHOR_EVENT EventType = "ANCHOR_EVENT"
 	REVEAL_ENTRY EventType = "REVEAL_ENTRY"

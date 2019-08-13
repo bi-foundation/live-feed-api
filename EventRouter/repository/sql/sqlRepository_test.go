@@ -326,11 +326,11 @@ func TestUpdateSubscriptionDeleteFilter(t *testing.T) {
 		WithArgs(subscription.Id).
 		WillReturnRows(sqlmock.NewRows(columns).
 			AddRow("url-change", subscription.CallbackType, models.ANCHOR_EVENT, "no change filtering").
-			AddRow("url-change", subscription.CallbackType, models.COMMIT_EVENT, "this will be deleted"))
+			AddRow("url-change", subscription.CallbackType, models.COMMIT_CHAIN, "this will be deleted"))
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`UPDATE subscriptions`).WithArgs(subscription.Callback, subscription.CallbackType, subscription.Id).WillReturnResult(sqlmock.NewResult(42, 1))
-	mock.ExpectExec(`DELETE FROM filters`).WithArgs(subscription.Id, models.COMMIT_EVENT).WillReturnResult(sqlmock.NewResult(42, 1))
+	mock.ExpectExec(`DELETE FROM filters`).WithArgs(subscription.Id, models.COMMIT_CHAIN).WillReturnResult(sqlmock.NewResult(42, 1))
 	mock.ExpectCommit()
 
 	// now we execute our method

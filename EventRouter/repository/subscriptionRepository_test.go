@@ -35,7 +35,7 @@ func TestCRUD(t *testing.T) {
 		Filters: map[models.EventType]models.Filter{
 			models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering 1"))},
 			models.COMMIT_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("filtering 2"))},
-			models.COMMIT_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering 3"))},
+			models.COMMIT_CHAIN: {Filtering: models.GraphQL(fmt.Sprintf("filtering 3"))},
 		},
 	}
 

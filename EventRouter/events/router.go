@@ -28,20 +28,15 @@ func (evr *EventRouter) handleEvents() {
 	for factomEvent := range evr.eventsInQueue {
 		log.Debug("handle event: %v", factomEvent)
 
-		switch factomEvent.Value.(type) {
-		case *eventmessages.FactomEvent_AnchorEvent:
-			log.Info("Received AnchoredEvent with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetAnchorEvent())
-		case *eventmessages.FactomEvent_CommitChain:
-			log.Info("Received CommitChain with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetCommitChain())
-		case *eventmessages.FactomEvent_CommitEntry:
-			log.Info("Received CommitEntry with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetCommitEntry())
-		case *eventmessages.FactomEvent_RevealEntry:
-			log.Info("Received FactomEvent_RevealEntry with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetRevealEntry())
-		case *eventmessages.FactomEvent_NodeMessage:
-			log.Info("Received FactomEvent_NodeMessage with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetNodeMessage())
+		eventType, err := mapEventType(factomEvent)
+		if err != nil {
+			log.Error("invalid event type %v: '%v'", err, factomEvent.Value)
+			continue
 		}
 
-		subscriptions, err := repository.SubscriptionRepository.GetSubscriptions(models.COMMIT_EVENT)
+		log.Info("Received %s with event source %v: %v", eventType, factomEvent.GetEventSource(), factomEvent.GetAnchorEvent())
+
+		subscriptions, err := repository.SubscriptionRepository.GetSubscriptions(eventType)
 		if err != nil {
 			log.Error("%v", err)
 			continue
@@ -52,6 +47,23 @@ func (evr *EventRouter) handleEvents() {
 			log.Error("%v", err)
 			continue
 		}
+	}
+}
+
+func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, error) {
+	switch factomEvent.Value.(type) {
+	case *eventmessages.FactomEvent_AnchorEvent:
+		return models.ANCHOR_EVENT, nil
+	case *eventmessages.FactomEvent_CommitChain:
+		return models.COMMIT_CHAIN, nil
+	case *eventmessages.FactomEvent_CommitEntry:
+		return models.COMMIT_ENTRY, nil
+	case *eventmessages.FactomEvent_RevealEntry:
+		return models.REVEAL_ENTRY, nil
+	case *eventmessages.FactomEvent_NodeMessage:
+		return models.NODE_MESSAGE, nil
+	default:
+		return "", fmt.Errorf("failed to map correct node")
 	}
 }
 
@@ -70,6 +82,10 @@ func sendEvent(subscription *models.Subscription, event []byte) {
 	url := subscription.Callback
 	// Create a new request
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(event))
+	if err != nil || request == nil {
+		log.Error("failed to create request to '%s': %v", url, err)
+		return
+	}
 
 	// setup authentication
 	if subscription.CallbackType == models.BASIC_AUTH {

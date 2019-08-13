@@ -7,6 +7,7 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/api/errors"
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
+	"github.com/FactomProject/live-api/EventRouter/repository"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -23,7 +24,16 @@ func init() {
 }
 
 var testSubscription = &models.Subscription{
-	Callback: "http://url.nl/callback",
+	Callback:     "http://url.nl/callback",
+	CallbackType: models.HTTP,
+	Filters: map[models.EventType]models.Filter{
+		models.COMMIT_CHAIN: {
+			Filtering: "filtering 1",
+		},
+		models.COMMIT_ENTRY: {
+			Filtering: "filtering 2",
+		},
+	},
 }
 
 func TestSubscriptionApi(t *testing.T) {
@@ -46,7 +56,7 @@ func TestSubscriptionApi(t *testing.T) {
 			Method:       "DELETE",
 			content:      nil,
 			responseCode: http.StatusOK,
-			assert:       assertUnsubscribe,
+			assert:       assertEmptyResponse,
 		},
 		"subscribe-invalid": {
 			URL:    "/subscribe",
@@ -89,6 +99,12 @@ func TestSubscriptionApi(t *testing.T) {
 		},
 	}
 
+	// init mock repository,
+	mockStore := repository.InitMockRepository()
+	mockStore.On("CreateSubscription").Return(testSubscription, nil).Once()
+	mockStore.On("DeleteSubscription", "0").Return(nil).Once()
+	mockStore.On("DeleteSubscription", "notfound").Return(fmt.Errorf("subscription not found")).Once()
+
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
 			url := fmt.Sprintf("http://localhost:8070%s", testCase.URL)
@@ -123,16 +139,14 @@ func assertSubscribe(t *testing.T, body []byte) {
 	}
 
 	assert.Equal(t, testSubscription.Callback, result.Callback)
+	assert.Equal(t, testSubscription.CallbackType, result.CallbackType)
+	assert.EqualValues(t, testSubscription.Filters, result.Filters)
+	assert.Equal(t, testSubscription.Credentials, result.Credentials)
 	assert.NotNil(t, result.Id)
 }
 
-func assertUnsubscribe(t *testing.T, body []byte) {
-	assert.Equal(t, []byte(""), body)
-}
-
 func assertEmptyResponse(t *testing.T, body []byte) {
-	result := string(body)
-	assert.Equal(t, "", result)
+	assert.Equal(t, "", string(body))
 }
 
 func assertParseError(t *testing.T, body []byte) {
@@ -164,36 +178,4 @@ func content(t *testing.T, v interface{}) []byte {
 		t.Fatalf("marshaling failed: %v", err)
 	}
 	return content
-}
-
-func TestSubscribeRequest(t *testing.T) {
-	subscription := &models.Subscription{
-		Callback: "http://url.nl/callback",
-	}
-
-	// write
-	content, err := json.Marshal(subscription)
-	if err != nil {
-		t.Fatalf("marshaling failed: %v", err)
-	}
-
-	fmt.Printf("request: %s\n", content)
-
-	response, err := http.Post("http://localhost:8070/subscribe", "application/json", bytes.NewBuffer(content))
-	if err != nil {
-		t.Fatalf("request failed: %v", err)
-	}
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
-
-	fmt.Printf("response: %s\n", body)
-
-	var result models.Subscription
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		t.Fatalf("unmarshalling failed: %v", err)
-	}
-
-	assert.Equal(t, subscription.Callback, result.Callback)
-	assert.NotNil(t, result.Id)
 }

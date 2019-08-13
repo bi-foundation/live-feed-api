@@ -30,19 +30,56 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	u, err := url.ParseRequestURI(subscription.Callback)
-	if err != nil || u.Scheme == "" || u.Host == "" {
+	if err := validateSubscription(subscription); err != nil {
 		log.Debug("invalid subscribe request %v: %v", subscription, err)
-		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed("invalid callback url"))
+		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
 		return
 	}
 
-	subscription, err = repository.SubscriptionRepository.CreateSubscription(subscription)
+	subscription, err := repository.SubscriptionRepository.CreateSubscription(subscription)
 	if err != nil {
 		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(fmt.Sprintf("failed to create subscription: %v", err)))
 		return
 	}
 	respond(writer, subscription)
+}
+
+func validateSubscription(subscription *models.Subscription) error {
+	u, err := url.ParseRequestURI(subscription.Callback)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return fmt.Errorf("invalid callback url: %v", err)
+	}
+
+	switch subscription.CallbackType {
+	case models.HTTP:
+		if subscription.Credentials.AccessToken != "" || subscription.Credentials.BasicAuthUsername != "" || subscription.Credentials.BasicAuthPassword != "" {
+			return fmt.Errorf("credentials are set but will not be used")
+		}
+	case models.BEARER_TOKEN:
+		if subscription.Credentials.AccessToken == "" {
+			return fmt.Errorf("access token required")
+		}
+	case models.BASIC_AUTH:
+		if subscription.Credentials.BasicAuthUsername == "" || subscription.Credentials.BasicAuthPassword == "" {
+			return fmt.Errorf("username and password are required")
+		}
+	default:
+		return fmt.Errorf("unknown callback type: should be one of [%s,%s,%s]", models.HTTP, models.BASIC_AUTH, models.BEARER_TOKEN)
+	}
+
+	for eventType := range subscription.Filters {
+		switch eventType {
+		case models.ANCHOR_EVENT:
+		case models.COMMIT_ENTRY:
+		case models.COMMIT_CHAIN:
+		case models.NODE_MESSAGE:
+		case models.REVEAL_ENTRY:
+		default:
+			return fmt.Errorf("invalid event type: %s", eventType)
+		}
+	}
+
+	return nil
 }
 
 func unsubscribe(writer http.ResponseWriter, request *http.Request) {
