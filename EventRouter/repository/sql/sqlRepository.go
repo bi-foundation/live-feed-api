@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	selectSubscriptionSql   = `SELECT callback, callback_type, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = ?;`
-	selectSubscriptionsSql  = `SELECT subscription, callback, callback_type, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE event_type = ?;`
-	insertSubscriptionSql   = `INSERT INTO subscriptions (callback, callback_type) VALUES(?, ?);`
+	selectSubscriptionSql   = `SELECT callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = ?;`
+	selectSubscriptionsSql  = `SELECT subscription, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE event_type = ?;`
+	insertSubscriptionSql   = `INSERT INTO subscriptions (callback, callback_type, status, info, access_token, username, password) VALUES(?, ?, ?, ?, ?, ?, ?);`
 	insertFilterSql         = `INSERT INTO filters (subscription, event_type, filtering) VALUES(?, ?, ?);`
-	updateSubscriptionQuery = `UPDATE subscriptions SET callback = ?, callback_type = ? WHERE id = ?`
+	updateSubscriptionQuery = `UPDATE subscriptions SET callback = ?, callback_type = ?, status = ?, info = ?, access_token = ?, username = ?, password = ? WHERE id = ?`
 	updateFilterQuery       = `UPDATE filters SET filtering = ? WHERE subscription = ? AND event_type = ?`
 	deleteFilterSql         = `DELETE FROM filters WHERE subscription = ? AND event_type = ?`
 	deleteFiltersSql        = `DELETE FROM filters WHERE subscription = ?`
@@ -87,7 +87,11 @@ func (repository *sqlRepository) CreateSubscription(insertSubscription *models.S
 	}
 
 	// insert subscription
-	result, err := subscriptionStmt.Exec(insertSubscription.Callback, insertSubscription.CallbackType)
+	result, err := subscriptionStmt.Exec(insertSubscription.Callback, insertSubscription.CallbackType, insertSubscription.SubscriptionStatus, insertSubscription.SubscriptionInfo, insertSubscription.Credentials.AccessToken, insertSubscription.Credentials.BasicAuthUsername, insertSubscription.Credentials.BasicAuthPassword)
+	if err != nil {
+		err = fmt.Errorf("failed to create subscription: %v", err)
+		return nil, err
+	}
 	rows, err := result.RowsAffected()
 	if rows != 1 || err != nil {
 		err = fmt.Errorf("failed to create subscription: no subscription found")
@@ -142,7 +146,7 @@ func (repository *sqlRepository) ReadSubscription(id string) (subscription *mode
 		var eventTypeValue sql.NullString
 		var filteringValue sql.NullString
 
-		err = rows.Scan(&subscription.Callback, &subscription.CallbackType, &eventTypeValue, &filteringValue)
+		err = rows.Scan(&subscription.Callback, &subscription.CallbackType, &subscription.SubscriptionStatus, &subscription.SubscriptionInfo, &subscription.Credentials.AccessToken, &subscription.Credentials.BasicAuthUsername, &subscription.Credentials.BasicAuthPassword, &eventTypeValue, &filteringValue)
 		if err != nil {
 			err = fmt.Errorf("failed to read subscription: %v", err)
 			return nil, err
@@ -188,8 +192,16 @@ func (repository *sqlRepository) UpdateSubscription(updateSubscription *models.S
 		err = tx.Commit()
 	}()
 
-	if updateSubscription.Callback != oldSubscription.Callback || updateSubscription.CallbackType != oldSubscription.CallbackType {
-		_, err = tx.Exec(updateSubscriptionQuery, updateSubscription.Callback, updateSubscription.CallbackType, updateSubscription.Id)
+	// check if the subscription needs to be updated
+	if updateSubscription.Callback != oldSubscription.Callback ||
+		updateSubscription.CallbackType != oldSubscription.CallbackType ||
+		updateSubscription.SubscriptionStatus != oldSubscription.SubscriptionStatus ||
+		updateSubscription.SubscriptionInfo != oldSubscription.SubscriptionInfo ||
+		updateSubscription.Credentials.AccessToken != oldSubscription.Credentials.AccessToken ||
+		updateSubscription.Credentials.BasicAuthUsername != oldSubscription.Credentials.BasicAuthUsername ||
+		updateSubscription.Credentials.BasicAuthPassword != oldSubscription.Credentials.BasicAuthPassword {
+
+		_, err = tx.Exec(updateSubscriptionQuery, updateSubscription.Callback, updateSubscription.CallbackType, updateSubscription.SubscriptionStatus, updateSubscription.SubscriptionInfo, updateSubscription.Credentials.AccessToken, updateSubscription.Credentials.BasicAuthUsername, updateSubscription.Credentials.BasicAuthPassword, updateSubscription.Id)
 		if err != nil {
 			err = fmt.Errorf("failed to update subscription: %v", err)
 			return nil, err
@@ -284,7 +296,7 @@ func (repository *sqlRepository) GetSubscriptions(eventType models.EventType) (s
 		var eventTypeValue sql.NullString
 		var filteringValue sql.NullString
 
-		err = rows.Scan(&subscription.Id, &subscription.Callback, &subscription.CallbackType, &eventTypeValue, &filteringValue)
+		err = rows.Scan(&subscription.Id, &subscription.Callback, &subscription.CallbackType, &subscription.SubscriptionStatus, &subscription.SubscriptionInfo, &subscription.Credentials.AccessToken, &subscription.Credentials.BasicAuthUsername, &subscription.Credentials.BasicAuthPassword, &eventTypeValue, &filteringValue)
 		if err != nil {
 			err = fmt.Errorf("failed to get subscriptions: %v", err)
 			return nil, err

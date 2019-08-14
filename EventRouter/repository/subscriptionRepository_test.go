@@ -30,21 +30,31 @@ func init() {
 
 func TestCRUD(t *testing.T) {
 	subscription := &models.Subscription{
-		Callback:     "url",
-		CallbackType: models.HTTP,
+		Callback:           "url",
+		CallbackType:       models.BEARER_TOKEN,
+		SubscriptionStatus: models.ACTIVE,
 		Filters: map[models.EventType]models.Filter{
 			models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering 1"))},
 			models.COMMIT_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("filtering 2"))},
 			models.COMMIT_CHAIN: {Filtering: models.GraphQL(fmt.Sprintf("filtering 3"))},
 		},
+		Credentials: models.Credentials{
+			AccessToken: "token",
+		},
 	}
 
 	substituteSubscription := &models.Subscription{
-		Callback:     "updated-url",
-		CallbackType: models.HTTP,
+		Callback:           "updated-url",
+		CallbackType:       models.BASIC_AUTH,
+		SubscriptionStatus: models.SUSPENDED,
+		SubscriptionInfo:   "reason",
 		Filters: map[models.EventType]models.Filter{
 			models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering update 1"))},
 			models.COMMIT_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("filtering update 2"))},
+		},
+		Credentials: models.Credentials{
+			BasicAuthUsername: "username",
+			BasicAuthPassword: "password",
 		},
 	}
 
@@ -64,22 +74,25 @@ func TestCRUD(t *testing.T) {
 }
 
 func testCreate(t *testing.T, repository repository.Repository, subscription *models.Subscription) {
+	expectedSubscription := models.Subscription(*subscription)
 	createdSubscription, err := repository.CreateSubscription(subscription)
 	assert.Nil(t, err)
-	assertSubscription(t, subscription, createdSubscription)
+	assertSubscription(t, expectedSubscription, createdSubscription)
 	subscription.Id = createdSubscription.Id
 }
 
 func testRead(t *testing.T, repository repository.Repository, subscription *models.Subscription) {
+	expectedSubscription := models.Subscription(*subscription)
 	readSubscription, err := repository.ReadSubscription(subscription.Id)
 	assert.Nil(t, err)
-	assertSubscription(t, subscription, readSubscription)
+	assertSubscription(t, expectedSubscription, readSubscription)
 }
 
 func testUpdate(t *testing.T, repository repository.Repository, subscription *models.Subscription) {
+	expectedSubscription := models.Subscription(*subscription)
 	updatedSubscription, err := repository.UpdateSubscription(subscription)
 	assert.Nil(t, err)
-	assertSubscription(t, subscription, updatedSubscription)
+	assertSubscription(t, expectedSubscription, updatedSubscription)
 }
 
 func testDelete(t *testing.T, repository repository.Repository, subscription *models.Subscription) {
@@ -93,14 +106,20 @@ func testNoExits(t *testing.T, repository repository.Repository, subscription *m
 	assert.Nil(t, unknownSubscription)
 }
 
-func assertSubscription(t *testing.T, expected *models.Subscription, actual *models.Subscription) {
+func assertSubscription(t *testing.T, expected models.Subscription, actual *models.Subscription) {
 	if actual == nil {
 		assert.FailNow(t, "subscription is nil")
 		return
 	}
+
 	assert.NotNil(t, actual.Id)
 	assert.Equal(t, expected.Callback, actual.Callback)
 	assert.Equal(t, expected.CallbackType, actual.CallbackType)
+	assert.Equal(t, expected.SubscriptionStatus, actual.SubscriptionStatus)
+	assert.Equal(t, expected.SubscriptionInfo, actual.SubscriptionInfo)
+	assert.Equal(t, expected.Credentials.AccessToken, actual.Credentials.AccessToken)
+	assert.Equal(t, expected.Credentials.BasicAuthUsername, actual.Credentials.BasicAuthUsername)
+	assert.Equal(t, expected.Credentials.BasicAuthPassword, actual.Credentials.BasicAuthPassword)
 	assert.Equal(t, len(expected.Filters), len(actual.Filters))
 
 	for eventType, filter := range expected.Filters {

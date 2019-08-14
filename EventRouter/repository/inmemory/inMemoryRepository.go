@@ -52,6 +52,11 @@ func (repository *inMemoryRepository) UpdateSubscription(substitute *models.Subs
 	log.Debug("update subscription: %v with: %v", subscription, substitute)
 	repository.db[index].Callback = substitute.Callback
 	repository.db[index].CallbackType = substitute.CallbackType
+	repository.db[index].SubscriptionStatus = substitute.SubscriptionStatus
+	repository.db[index].SubscriptionInfo = substitute.SubscriptionInfo
+	repository.db[index].Credentials.AccessToken = substitute.Credentials.AccessToken
+	repository.db[index].Credentials.BasicAuthUsername = substitute.Credentials.BasicAuthUsername
+	repository.db[index].Credentials.BasicAuthPassword = substitute.Credentials.BasicAuthPassword
 	repository.db[index].Filters = substitute.Filters
 	return substitute, err
 }
