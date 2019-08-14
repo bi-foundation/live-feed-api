@@ -80,7 +80,7 @@ func responseError(writer http.ResponseWriter, statusCode int, error interface{}
 	err := json.NewEncoder(writer).Encode(error)
 	if err != nil {
 		log.Error("failed to write error '%v': %v", error, err)
-		responseError(writer, http.StatusInternalServerError, errors.NewInternalError())
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to write error"))
 	}
 }
 
@@ -89,6 +89,6 @@ func respond(writer http.ResponseWriter, data interface{}) {
 	err := json.NewEncoder(writer).Encode(data)
 	if err != nil {
 		log.Error("failed to write response '%v': %v", data, err)
-		responseError(writer, http.StatusBadRequest, errors.NewInternalError())
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to write response"))
 	}
 }

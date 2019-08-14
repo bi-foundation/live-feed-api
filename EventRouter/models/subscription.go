@@ -18,7 +18,20 @@ type Subscription struct {
 	// required: true
 	CallbackType CallbackType `json:"callbackType"`
 
+	// Status of subscription. Normally a subscription is active. When events fail to be delivered the subscription
+	// will be suspended. The subscription can become active again by updating the subscription. When the subscription
+	// is suspended, the error information is set in the info field
+	// swagger:enum SubscriptionStatus
+	// required: false
+	SubscriptionStatus SubscriptionStatus `json:"status"`
+
+	// Information of the subscription. An information message can be for example about why the subscription is suspended.
+	//
+	// read only: true
+	SubscriptionInfo string `json:"info"`
+
 	// the emitted event can be filter to receive not all data from an event type
+	// swagger:enum EventType
 	//
 	Filters map[EventType]Filter `json:"filters"`
 

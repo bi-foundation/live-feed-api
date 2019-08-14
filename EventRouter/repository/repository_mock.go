@@ -11,11 +11,11 @@ type MockRepository struct {
 }
 
 func (m *MockRepository) CreateSubscription(subscription *models.Subscription) (*models.Subscription, error) {
-	rets := m.Called()
+	rets := m.Called(subscription.Callback)
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
 	 * we need to typecast it to the type we expect, which in this case is []*subscription
 	 */
-	return rets.Get(0).(*models.Subscription), rets.Error(1)
+	return subscription, rets.Error(1)
 }
 
 func (m *MockRepository) ReadSubscription(id string) (*models.Subscription, error) {
@@ -31,7 +31,7 @@ func (m *MockRepository) UpdateSubscription(subscription *models.Subscription) (
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
 	 * we need to typecast it to the type we expect, which in this case is []*subscription
 	 */
-	return rets.Get(0).(*models.Subscription), rets.Error(1)
+	return subscription, rets.Error(1)
 }
 
 func (m *MockRepository) DeleteSubscription(id string) error {

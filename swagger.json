@@ -213,8 +213,23 @@
           "type": "string",
           "x-go-name": "Id",
           "readOnly": true
+        },
+        "info": {
+          "description": "Information of the subscription. An information message can be for example about why the subscription is suspended.",
+          "type": "string",
+          "x-go-name": "SubscriptionInfo",
+          "readOnly": true
+        },
+        "status": {
+          "$ref": "#/definitions/SubscriptionStatuss"
         }
       },
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+    },
+    "SubscriptionStatuss": {
+      "description": "status of subscription: [ACTIVE, SUSPENDED]\nNormally a subscription is active. When events fail to be delivered the subscription will be suspended. The subscription can become active again by updating the subscription.",
+      "type": "string",
+      "x-go-name": "SubscriptionStatus",
       "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
     }
   },

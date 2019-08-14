@@ -1,5 +1,6 @@
 package models
 
+// A filtering is linked to event type [COMMIT_CHAIN, COMMIT_ENTRY, ANCHOR_EVENT, REVEAL_ENTRY, NODE_MESSAGE]
 // swagger:enum EventType
 type EventType string
 

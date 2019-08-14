@@ -14,15 +14,17 @@ func TestValidateSubscription(t *testing.T) {
 	}{
 		"valid": {
 			Subscription: &models.Subscription{
-				Callback:     "http://test/callback",
-				CallbackType: models.HTTP,
+				Callback:           "http://test/callback",
+				CallbackType:       models.HTTP,
+				SubscriptionStatus: models.ACTIVE,
 			},
 			Error: nil,
 		},
 		"valid filters": {
 			Subscription: &models.Subscription{
-				Callback:     "http://test/callback",
-				CallbackType: models.HTTP,
+				Callback:           "http://test/callback",
+				CallbackType:       models.HTTP,
+				SubscriptionStatus: models.ACTIVE,
 				Filters: map[models.EventType]models.Filter{
 					models.ANCHOR_EVENT: {Filtering: "filtering"},
 					models.COMMIT_ENTRY: {Filtering: "filtering"},
@@ -48,15 +50,17 @@ func TestValidateSubscription(t *testing.T) {
 		},
 		"invalid callback type": {
 			Subscription: &models.Subscription{
-				Callback:     "http://test/callback",
-				CallbackType: "WRONG",
+				Callback:           "http://test/callback",
+				CallbackType:       "WRONG",
+				SubscriptionStatus: models.ACTIVE,
 			},
 			Error: fmt.Errorf("unknown callback type: should be one of [HTTP,BASIC_AUTH,BEARER_TOKEN]"),
 		},
 		"invalid filters": {
 			Subscription: &models.Subscription{
-				Callback:     "http://test/callback",
-				CallbackType: models.HTTP,
+				Callback:           "http://test/callback",
+				CallbackType:       models.HTTP,
+				SubscriptionStatus: models.ACTIVE,
 				Filters: map[models.EventType]models.Filter{
 					"invalid": {Filtering: "as"},
 				},
@@ -65,41 +69,54 @@ func TestValidateSubscription(t *testing.T) {
 		},
 		"invalid http": {
 			Subscription: &models.Subscription{
-				Callback:     "http://test/callback",
-				CallbackType: models.HTTP,
-				Credentials:  models.Credentials{AccessToken: "token"},
+				Callback:           "http://test/callback",
+				CallbackType:       models.HTTP,
+				SubscriptionStatus: models.ACTIVE,
+				Credentials:        models.Credentials{AccessToken: "token"},
 			},
 			Error: fmt.Errorf("credentials are set but will not be used"),
 		},
 		"valid basic auth": {
 			Subscription: &models.Subscription{
-				Callback:     "http://test/callback",
-				CallbackType: models.BASIC_AUTH,
-				Credentials:  models.Credentials{BasicAuthUsername: "test", BasicAuthPassword: "test"},
+				Callback:           "http://test/callback",
+				CallbackType:       models.BASIC_AUTH,
+				SubscriptionStatus: models.ACTIVE,
+				Credentials:        models.Credentials{BasicAuthUsername: "test", BasicAuthPassword: "test"},
 			},
 			Error: nil,
 		},
 		"invalid basic auth": {
 			Subscription: &models.Subscription{
-				Callback:     "http://test/callback",
-				CallbackType: models.BASIC_AUTH,
+				Callback:           "http://test/callback",
+				CallbackType:       models.BASIC_AUTH,
+				SubscriptionStatus: models.ACTIVE,
 			},
 			Error: fmt.Errorf("username and password are required"),
 		},
 		"valid bearer token": {
 			Subscription: &models.Subscription{
-				Callback:     "http://test/callback",
-				CallbackType: models.BEARER_TOKEN,
-				Credentials:  models.Credentials{AccessToken: "test"},
+				Callback:           "http://test/callback",
+				CallbackType:       models.BEARER_TOKEN,
+				SubscriptionStatus: models.ACTIVE,
+				Credentials:        models.Credentials{AccessToken: "test"},
 			},
 			Error: nil,
 		},
 		"invalid bearer token": {
 			Subscription: &models.Subscription{
-				Callback:     "http://test/callback",
-				CallbackType: models.BEARER_TOKEN,
+				Callback:           "http://test/callback",
+				CallbackType:       models.BEARER_TOKEN,
+				SubscriptionStatus: models.ACTIVE,
 			},
 			Error: fmt.Errorf("access token required"),
+		},
+		"invalid status": {
+			Subscription: &models.Subscription{
+				Callback:           "http://test/callback",
+				CallbackType:       models.HTTP,
+				SubscriptionStatus: "Something different",
+			},
+			Error: fmt.Errorf("unknown subscription status: should be one of [ACTIVE, SUSPENDED]"),
 		},
 	}
 

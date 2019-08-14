@@ -25,7 +25,7 @@ func init() {
 
 var testSubscription = &models.Subscription{
 	Id:           "id",
-	Callback:     "http://url.nl/callback",
+	Callback:     "http://url/callback",
 	CallbackType: models.HTTP,
 	Filters: map[models.EventType]models.Filter{
 		models.COMMIT_CHAIN: {
@@ -35,6 +35,13 @@ var testSubscription = &models.Subscription{
 			Filtering: "filtering 2",
 		},
 	},
+}
+
+var suspendedSubscription = &models.Subscription{
+	Callback:           "http://url/callback",
+	CallbackType:       models.HTTP,
+	SubscriptionStatus: models.SUSPENDED,
+	SubscriptionInfo:   "read only information",
 }
 
 func TestSubscriptionApi(t *testing.T) {
@@ -50,7 +57,7 @@ func TestSubscriptionApi(t *testing.T) {
 			Method:       http.MethodPost,
 			content:      content(t, testSubscription),
 			responseCode: http.StatusOK,
-			assert:       assertSubscribe,
+			assert:       assertTestSubscribe,
 		},
 		"subscribe-invalid": {
 			URL:    "/subscribe",
@@ -80,9 +87,9 @@ func TestSubscriptionApi(t *testing.T) {
 			Method:       http.MethodPut,
 			content:      content(t, testSubscription),
 			responseCode: http.StatusOK,
-			assert:       assertSubscribe,
+			assert:       assertTestSubscribe,
 		},
-		"update-invalid-id ": {
+		"update-unknown-id ": {
 			URL:          "/subscribe/different-id",
 			Method:       http.MethodPut,
 			content:      content(t, testSubscription),
@@ -129,12 +136,41 @@ func TestSubscriptionApi(t *testing.T) {
 			responseCode: http.StatusMethodNotAllowed,
 			assert:       assertEmptyResponse,
 		},
+		"subscribe-suspended": {
+			URL:          "/subscribe",
+			Method:       http.MethodPost,
+			content:      content(t, suspendedSubscription),
+			responseCode: http.StatusOK,
+			assert:       assertSuspendedSubscribe,
+		},
+		"subscribe-invalid-status": {
+			URL:    "/subscribe",
+			Method: http.MethodPost,
+			content: content(t, &models.Subscription{
+				Callback:           "http://url/callback/suspended",
+				CallbackType:       models.HTTP,
+				SubscriptionStatus: "invalid status",
+			}),
+			responseCode: http.StatusBadRequest,
+			assert:       assertInvalidRequestError,
+		},
+		"subscribe-db-fail": {
+			URL:    "/subscribe",
+			Method: http.MethodPost,
+			content: content(t, &models.Subscription{
+				Callback:     "http://url/callback/internal/error",
+				CallbackType: models.HTTP,
+			}),
+			responseCode: http.StatusInternalServerError,
+			assert:       assertInternalError,
+		},
 	}
 
 	// init mock repository,
 	mockStore := repository.InitMockRepository()
-	mockStore.On("CreateSubscription").Return(testSubscription, nil).Once()
-	mockStore.On("UpdateSubscription", "id").Return(testSubscription, nil).Once()
+	mockStore.On("CreateSubscription", "http://url/callback").Return(nil, nil).Twice()
+	mockStore.On("CreateSubscription", "http://url/callback/internal/error").Return(nil, fmt.Errorf("something failed")).Once()
+	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Once()
 	mockStore.On("DeleteSubscription", "0").Return(nil).Once()
 	mockStore.On("DeleteSubscription", "notfound").Return(fmt.Errorf("subscription not found")).Once()
 
@@ -163,18 +199,32 @@ func TestSubscriptionApi(t *testing.T) {
 	}
 }
 
-func assertSubscribe(t *testing.T, body []byte) {
-	var result models.Subscription
-	err := json.Unmarshal(body, &result)
+func assertTestSubscribe(t *testing.T, body []byte) {
+	assertSubscribe(t, testSubscription, body)
+}
+
+func assertSuspendedSubscribe(t *testing.T, body []byte) {
+	assertSubscribe(t, suspendedSubscription, body)
+}
+
+func assertSubscribe(t *testing.T, expected *models.Subscription, body []byte) {
+	var actual models.Subscription
+	err := json.Unmarshal(body, &actual)
 	if err != nil {
 		t.Fatalf("unmarshalling failed: %v", err)
 	}
 
-	assert.Equal(t, testSubscription.Callback, result.Callback)
-	assert.Equal(t, testSubscription.CallbackType, result.CallbackType)
-	assert.EqualValues(t, testSubscription.Filters, result.Filters)
-	assert.Equal(t, testSubscription.Credentials, result.Credentials)
-	assert.NotNil(t, result.Id)
+	assert.Equal(t, expected.Callback, actual.Callback)
+	assert.Equal(t, expected.CallbackType, actual.CallbackType)
+	assert.EqualValues(t, expected.Filters, actual.Filters)
+	assert.Equal(t, expected.Credentials, actual.Credentials)
+	if expected.SubscriptionStatus != "" {
+		assert.Equal(t, expected.SubscriptionStatus, actual.SubscriptionStatus)
+	} else {
+		assert.Equal(t, models.ACTIVE, actual.SubscriptionStatus)
+	}
+	assert.Equal(t, "", actual.SubscriptionInfo)
+	assert.NotNil(t, actual.Id)
 }
 
 func assertEmptyResponse(t *testing.T, body []byte) {
@@ -193,6 +243,13 @@ func assertInvalidRequestError(t *testing.T, body []byte) {
 
 	assert.Equal(t, "invalid request", result.Message)
 	assert.Equal(t, errors.NewInvalidRequest().Code, result.Code)
+}
+
+func assertInternalError(t *testing.T, body []byte) {
+	result := parseApiBody(t, body)
+
+	assert.Equal(t, "internal error", result.Message)
+	assert.Equal(t, errors.NewInternalError("").Code, result.Code)
 }
 
 func assertNotFound(t *testing.T, body []byte) {

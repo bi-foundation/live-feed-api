@@ -30,6 +30,12 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if subscription.SubscriptionStatus == "" {
+		subscription.SubscriptionStatus = models.ACTIVE
+	}
+	// ignore user input message
+	subscription.SubscriptionInfo = ""
+
 	if err := validateSubscription(subscription); err != nil {
 		log.Debug("invalid subscribe request %v: %v", subscription, err)
 		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
@@ -38,7 +44,7 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 
 	subscription, err := repository.SubscriptionRepository.CreateSubscription(subscription)
 	if err != nil {
-		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(fmt.Sprintf("failed to create subscription: %v", err)))
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError(fmt.Sprintf("failed to store subscription: %v", err)))
 		return
 	}
 	respond(writer, subscription)
@@ -70,6 +76,12 @@ func updateSubscription(writer http.ResponseWriter, request *http.Request) {
 		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed("subscription id doesn't match"))
 		return
 	}
+
+	if subscription.SubscriptionStatus == "" {
+		subscription.SubscriptionStatus = models.ACTIVE
+	}
+	// ignore user input message
+	subscription.SubscriptionInfo = ""
 
 	subscription, err := repository.SubscriptionRepository.UpdateSubscription(subscription)
 	if err != nil {
@@ -137,6 +149,13 @@ func validateSubscription(subscription *models.Subscription) error {
 		default:
 			return fmt.Errorf("invalid event type: %s", eventType)
 		}
+	}
+
+	switch subscription.SubscriptionStatus {
+	case models.ACTIVE:
+	case models.SUSPENDED:
+	default:
+		return fmt.Errorf("unknown subscription status: should be one of [%s, %s]", models.ACTIVE, models.SUSPENDED)
 	}
 
 	return nil
