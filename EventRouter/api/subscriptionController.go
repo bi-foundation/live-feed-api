@@ -92,6 +92,33 @@ func updateSubscription(writer http.ResponseWriter, request *http.Request) {
 	respond(writer, subscription)
 }
 
+func getSubscription(writer http.ResponseWriter, request *http.Request) {
+	// swagger:route PUT /subscribe/{id} subscription GetSubscriptionRequest
+	//
+	// Get a subscription that is subscribed
+	//
+	// Consumes:
+	//   - application/json
+	//
+	// Produces:
+	//   - application/json
+	//
+	// Responses:
+	//        200: GetSubscriptionResponse
+	//        400: ApiError
+	vars := mux.Vars(request)
+
+	id := vars["subscriptionId"]
+
+	subscription, err := repository.SubscriptionRepository.ReadSubscription(id)
+	if err != nil {
+		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
+		return
+	}
+
+	respond(writer, subscription)
+}
+
 func unsubscribe(writer http.ResponseWriter, request *http.Request) {
 	// swagger:route DELETE /subscribe/{id} subscription UnsubscribeRequest
 	//

@@ -82,6 +82,48 @@ func TestSubscriptionApi(t *testing.T) {
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
+		"subscribe-suspended": {
+			URL:          "/subscribe",
+			Method:       http.MethodPost,
+			content:      content(t, suspendedSubscription),
+			responseCode: http.StatusOK,
+			assert:       assertSuspendedSubscribe,
+		},
+		"subscribe-invalid-status": {
+			URL:    "/subscribe",
+			Method: http.MethodPost,
+			content: content(t, &models.Subscription{
+				Callback:           "http://url/callback/suspended",
+				CallbackType:       models.HTTP,
+				SubscriptionStatus: "invalid status",
+			}),
+			responseCode: http.StatusBadRequest,
+			assert:       assertInvalidRequestError,
+		},
+		"subscribe-db-fail": {
+			URL:    "/subscribe",
+			Method: http.MethodPost,
+			content: content(t, &models.Subscription{
+				Callback:     "http://url/callback/internal/error",
+				CallbackType: models.HTTP,
+			}),
+			responseCode: http.StatusInternalServerError,
+			assert:       assertInternalError,
+		},
+		"get-subscription": {
+			URL:          "/subscribe/id",
+			Method:       http.MethodGet,
+			content:      nil,
+			responseCode: http.StatusOK,
+			assert:       assertGetSubscribe,
+		},
+		"get-subscription-unknown": {
+			URL:          "/subscribe/unknown",
+			Method:       http.MethodGet,
+			content:      nil,
+			responseCode: http.StatusBadRequest,
+			assert:       assertInvalidRequestError,
+		},
 		"update-subscription": {
 			URL:          "/subscribe/id",
 			Method:       http.MethodPut,
@@ -136,40 +178,14 @@ func TestSubscriptionApi(t *testing.T) {
 			responseCode: http.StatusMethodNotAllowed,
 			assert:       assertEmptyResponse,
 		},
-		"subscribe-suspended": {
-			URL:          "/subscribe",
-			Method:       http.MethodPost,
-			content:      content(t, suspendedSubscription),
-			responseCode: http.StatusOK,
-			assert:       assertSuspendedSubscribe,
-		},
-		"subscribe-invalid-status": {
-			URL:    "/subscribe",
-			Method: http.MethodPost,
-			content: content(t, &models.Subscription{
-				Callback:           "http://url/callback/suspended",
-				CallbackType:       models.HTTP,
-				SubscriptionStatus: "invalid status",
-			}),
-			responseCode: http.StatusBadRequest,
-			assert:       assertInvalidRequestError,
-		},
-		"subscribe-db-fail": {
-			URL:    "/subscribe",
-			Method: http.MethodPost,
-			content: content(t, &models.Subscription{
-				Callback:     "http://url/callback/internal/error",
-				CallbackType: models.HTTP,
-			}),
-			responseCode: http.StatusInternalServerError,
-			assert:       assertInternalError,
-		},
 	}
 
 	// init mock repository,
 	mockStore := repository.InitMockRepository()
 	mockStore.On("CreateSubscription", "http://url/callback").Return(nil, nil).Twice()
 	mockStore.On("CreateSubscription", "http://url/callback/internal/error").Return(nil, fmt.Errorf("something failed")).Once()
+	mockStore.On("ReadSubscription", "id").Return(suspendedSubscription, nil).Once()
+	mockStore.On("ReadSubscription", "unknown").Return(&models.Subscription{}, fmt.Errorf("subscription not found")).Once()
 	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Once()
 	mockStore.On("DeleteSubscription", "0").Return(nil).Once()
 	mockStore.On("DeleteSubscription", "notfound").Return(fmt.Errorf("subscription not found")).Once()
@@ -200,10 +216,16 @@ func TestSubscriptionApi(t *testing.T) {
 }
 
 func assertTestSubscribe(t *testing.T, body []byte) {
+	testSubscription.SubscriptionInfo = ""
 	assertSubscribe(t, testSubscription, body)
 }
 
+func assertGetSubscribe(t *testing.T, body []byte) {
+	assertSubscribe(t, suspendedSubscription, body)
+}
+
 func assertSuspendedSubscribe(t *testing.T, body []byte) {
+	suspendedSubscription.SubscriptionInfo = ""
 	assertSubscribe(t, suspendedSubscription, body)
 }
 
@@ -223,7 +245,7 @@ func assertSubscribe(t *testing.T, expected *models.Subscription, body []byte) {
 	} else {
 		assert.Equal(t, models.ACTIVE, actual.SubscriptionStatus)
 	}
-	assert.Equal(t, "", actual.SubscriptionInfo)
+	assert.Equal(t, expected.SubscriptionInfo, actual.SubscriptionInfo)
 	assert.NotNil(t, actual.Id)
 }
 

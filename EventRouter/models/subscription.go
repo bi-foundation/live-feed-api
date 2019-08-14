@@ -63,6 +63,25 @@ type subscriptionResponse struct {
 	Subscription *Subscription `json:"subscription"`
 }
 
+// Get a subscription request
+// swagger:parameters GetSubscriptionRequest
+type getSubscriptionRequest struct {
+	// subscription id
+	//
+	// In: path
+	ID string `json:"id"`
+}
+
+// An SubscriptionResponse is the stored subscription
+//
+// swagger:response GetSubscriptionRequest
+type getSubscriptionResponse struct {
+	// The subscription
+	//
+	// in: body
+	Subscription *Subscription `json:"subscription"`
+}
+
 // UpdateSubscriptionRequest
 // summary:
 // An UpdateSubscriptionRequest model.
