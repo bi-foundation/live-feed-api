@@ -33,7 +33,7 @@ func TestReadSubscription(t *testing.T) {
 	repository, mock := initTest(t)
 
 	// subscription to create
-	subscription := &models.Subscription{
+	subscription := models.Subscription{
 		Id:           "1",
 		Callback:     "url",
 		CallbackType: models.HTTP,
@@ -42,21 +42,25 @@ func TestReadSubscription(t *testing.T) {
 			models.COMMIT_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("filtering 2"))},
 		},
 	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     0,
+	}
 
-	columns := []string{"callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
-	mock.ExpectQuery(`SELECT callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
+	columns := []string{"failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
+	mock.ExpectQuery(`SELECT failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
 		WithArgs(subscription.Id).
 		WillReturnRows(sqlmock.NewRows(columns).
-			AddRow(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.ANCHOR_EVENT, subscription.Filters[models.ANCHOR_EVENT].Filtering).
-			AddRow(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.COMMIT_ENTRY, subscription.Filters[models.COMMIT_ENTRY].Filtering))
+			AddRow(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.ANCHOR_EVENT, subscription.Filters[models.ANCHOR_EVENT].Filtering).
+			AddRow(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.COMMIT_ENTRY, subscription.Filters[models.COMMIT_ENTRY].Filtering))
 
 	// now we execute our methods
-	readSubscription, err := repository.ReadSubscription(subscription.Id)
+	readSubscriptionContext, err := repository.ReadSubscription(subscription.Id)
 	if err != nil {
 		t.Errorf("error was not expected creating subscription: %s", err)
 	}
 
-	assertSubscription(t, subscription, readSubscription)
+	assertSubscription(t, subscriptionContext, readSubscriptionContext)
 
 	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -69,26 +73,30 @@ func TestReadSubscriptionWithFilterNil(t *testing.T) {
 	repository, mock := initTest(t)
 
 	// subscription to create
-	subscription := &models.Subscription{
+	subscription := models.Subscription{
 		Id:           "1",
 		Callback:     "url",
 		CallbackType: models.HTTP,
 		Filters:      map[models.EventType]models.Filter{},
 	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     1,
+	}
 
-	columns := []string{"callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
-	mock.ExpectQuery(`SELECT callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
+	columns := []string{"failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
+	mock.ExpectQuery(`SELECT failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
 		WithArgs(subscription.Id).
 		WillReturnRows(sqlmock.NewRows(columns).
-			AddRow(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, nil, nil))
+			AddRow(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, nil, nil))
 
 	// now we execute our methods
-	readSubscription, err := repository.ReadSubscription(subscription.Id)
+	readSubscriptionContext, err := repository.ReadSubscription(subscription.Id)
 	if err != nil {
 		t.Errorf("error was not expected creating subscription: %s", err)
 	}
 
-	assertSubscription(t, subscription, readSubscription)
+	assertSubscription(t, subscriptionContext, readSubscriptionContext)
 
 	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -101,23 +109,27 @@ func TestCreateSubscription(t *testing.T) {
 	repository, mock := initTest(t)
 
 	// subscription to create
-	subscription := &models.Subscription{
+	subscription := models.Subscription{
 		Callback:     "url",
 		CallbackType: models.HTTP,
 	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     0,
+	}
 
 	mock.ExpectBegin()
-	mock.ExpectPrepare(`INSERT INTO subscriptions \(callback, callback_type, status, info, access_token, username, password\) VALUES\(\?, \?, \?, \?, \?, \?, \?\);`)
-	mock.ExpectExec(`INSERT INTO subscriptions`).WithArgs(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectPrepare(`INSERT INTO subscriptions \(failures, callback, callback_type, status, info, access_token, username, password\) VALUES\(\?, \?, \?, \?, \?, \?, \?, \?\);`)
+	mock.ExpectExec(`INSERT INTO subscriptions`).WithArgs(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
 	// now we execute our method
-	createdSubscription, err := repository.CreateSubscription(subscription)
+	createdSubscriptionContext, err := repository.CreateSubscription(subscriptionContext)
 	if err != nil {
 		t.Errorf("error was not expected creating subscription: %s", err)
 	}
 
-	assertSubscription(t, subscription, createdSubscription)
+	assertSubscription(t, subscriptionContext, createdSubscriptionContext)
 
 	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -130,23 +142,26 @@ func TestCreateSubscriptionAddFilter(t *testing.T) {
 	repository, mock := initTest(t)
 
 	// subscription to create
-	subscription := &models.Subscription{
+	subscription := models.Subscription{
 		Callback:     "url",
 		CallbackType: models.HTTP,
 		Filters: map[models.EventType]models.Filter{
 			models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering 1"))},
 		},
 	}
-
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     0,
+	}
 	mock.ExpectBegin()
-	mock.ExpectPrepare(`INSERT INTO subscriptions \(callback, callback_type, status, info, access_token, username, password\) VALUES\(\?, \?, \?, \?, \?, \?, \?\);`)
-	mock.ExpectExec(`INSERT INTO subscriptions`).WithArgs(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectPrepare(`INSERT INTO subscriptions \(failures, callback, callback_type, status, info, access_token, username, password\) VALUES\(\?, \?, \?, \?, \?, \?, \?, \?\);`)
+	mock.ExpectExec(`INSERT INTO subscriptions`).WithArgs(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectPrepare(`INSERT INTO filters \(subscription, event_type, filtering\) VALUES\(\?, \?, \?\);`)
 	mock.ExpectExec(`INSERT INTO filters`).WithArgs(1, models.ANCHOR_EVENT, subscription.Filters[models.ANCHOR_EVENT].Filtering).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
 	// now we execute our method
-	if _, err := repository.CreateSubscription(subscription); err != nil {
+	if _, err := repository.CreateSubscription(subscriptionContext); err != nil {
 		t.Errorf("error was not expected creating subscription: %s", err)
 	}
 
@@ -161,24 +176,28 @@ func TestCreateSubscriptionRollbackOnFailure(t *testing.T) {
 	repository, mock := initTest(t)
 
 	// subscription to create
-	subscription := &models.Subscription{
+	subscription := models.Subscription{
 		Callback:     "url",
 		CallbackType: models.HTTP,
 		Filters: map[models.EventType]models.Filter{
 			models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering 1"))},
 		},
 	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     0,
+	}
 
 	mock.ExpectBegin()
-	mock.ExpectPrepare(`INSERT INTO subscriptions \(callback, callback_type, status, info, access_token, username, password\) VALUES\(\?, \?, \?, \?, \?, \?, \?\);`)
-	mock.ExpectExec(`INSERT INTO subscriptions`).WithArgs(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectPrepare(`INSERT INTO subscriptions \(failures, callback, callback_type, status, info, access_token, username, password\) VALUES\(\?, \?, \?, \?, \?, \?, \?, \?\);`)
+	mock.ExpectExec(`INSERT INTO subscriptions`).WithArgs(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectPrepare(`INSERT INTO filters \(subscription, event_type, filtering\) VALUES\(\?, \?, \?\);`)
 	mock.ExpectExec(`INSERT INTO filters`).WithArgs(1, models.ANCHOR_EVENT, subscription.Filters[models.ANCHOR_EVENT].Filtering).
 		WillReturnError(fmt.Errorf("some error"))
 	mock.ExpectRollback()
 
 	// now we execute our method
-	if _, err := repository.CreateSubscription(subscription); err == nil {
+	if _, err := repository.CreateSubscription(subscriptionContext); err == nil {
 		t.Errorf("was expecting an error, but there was none")
 	}
 
@@ -193,28 +212,32 @@ func TestUpdateSubscription(t *testing.T) {
 	repository, mock := initTest(t)
 
 	// subscription to update
-	subscription := &models.Subscription{
+	subscription := models.Subscription{
 		Id:           "42",
 		Callback:     "url",
 		CallbackType: models.HTTP,
 	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     0,
+	}
 
-	columns := []string{"callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
-	mock.ExpectQuery(`SELECT callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
+	columns := []string{"failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
+	mock.ExpectQuery(`SELECT failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
 		WithArgs(subscription.Id).
-		WillReturnRows(sqlmock.NewRows(columns).AddRow("url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, nil, nil))
+		WillReturnRows(sqlmock.NewRows(columns).AddRow(subscriptionContext.Failures, "url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, nil, nil))
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`UPDATE subscriptions`).WithArgs(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).WillReturnResult(sqlmock.NewResult(42, 1))
+	mock.ExpectExec(`UPDATE subscriptions`).WithArgs(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).WillReturnResult(sqlmock.NewResult(42, 1))
 	mock.ExpectCommit()
 
 	// now we execute our method
-	updatedSubscription, err := repository.UpdateSubscription(subscription)
+	updatedSubscriptionContext, err := repository.UpdateSubscription(subscriptionContext)
 	if err != nil {
 		t.Errorf("error was not expected creating subscription: %s", err)
 	}
 
-	assertSubscription(t, subscription, updatedSubscription)
+	assertSubscription(t, subscriptionContext, updatedSubscriptionContext)
 
 	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -227,7 +250,7 @@ func TestUpdateSubscriptionAddFilter(t *testing.T) {
 	repository, mock := initTest(t)
 
 	// subscription to update
-	subscription := &models.Subscription{
+	subscription := models.Subscription{
 		Id:           "42",
 		Callback:     "url",
 		CallbackType: models.HTTP,
@@ -236,25 +259,29 @@ func TestUpdateSubscriptionAddFilter(t *testing.T) {
 			models.REVEAL_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("insert new filtering"))},
 		},
 	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     0,
+	}
 
-	columns := []string{"callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
-	mock.ExpectQuery(`SELECT callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
+	columns := []string{"failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
+	mock.ExpectQuery(`SELECT failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
 		WithArgs(subscription.Id).
 		WillReturnRows(sqlmock.NewRows(columns).
-			AddRow("url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.ANCHOR_EVENT, "no change filtering"))
+			AddRow(subscriptionContext.Failures, "url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.ANCHOR_EVENT, "no change filtering"))
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`UPDATE subscriptions`).WithArgs(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).WillReturnResult(sqlmock.NewResult(42, 1))
+	mock.ExpectExec(`UPDATE subscriptions`).WithArgs(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).WillReturnResult(sqlmock.NewResult(42, 1))
 	mock.ExpectExec(`INSERT INTO filters`).WithArgs("42", models.REVEAL_ENTRY, subscription.Filters[models.REVEAL_ENTRY].Filtering).WillReturnResult(sqlmock.NewResult(1, 1)).WillReturnResult(sqlmock.NewResult(42, 1))
 	mock.ExpectCommit()
 
 	// now we execute our method
-	updatedSubscription, err := repository.UpdateSubscription(subscription)
+	updatedSubscriptionContext, err := repository.UpdateSubscription(subscriptionContext)
 	if err != nil {
 		t.Errorf("error was not expected creating subscription: %s", err)
 	}
 
-	assertSubscription(t, subscription, updatedSubscription)
+	assertSubscription(t, subscriptionContext, updatedSubscriptionContext)
 
 	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -267,7 +294,7 @@ func TestUpdateSubscriptionUpdateFilter(t *testing.T) {
 	repository, mock := initTest(t)
 
 	// subscription to update
-	subscription := &models.Subscription{
+	subscription := models.Subscription{
 		Id:           "42",
 		Callback:     "url",
 		CallbackType: models.HTTP,
@@ -276,26 +303,30 @@ func TestUpdateSubscriptionUpdateFilter(t *testing.T) {
 			models.COMMIT_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("update this filtering"))},
 		},
 	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     0,
+	}
 
-	columns := []string{"callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
-	mock.ExpectQuery(`SELECT callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
+	columns := []string{"failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
+	mock.ExpectQuery(`SELECT failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
 		WithArgs(subscription.Id).
 		WillReturnRows(sqlmock.NewRows(columns).
-			AddRow("url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.ANCHOR_EVENT, "no change filtering").
-			AddRow("url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.COMMIT_ENTRY, "this will be changed"))
+			AddRow(subscriptionContext.Failures, "url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.ANCHOR_EVENT, "no change filtering").
+			AddRow(subscriptionContext.Failures, "url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.COMMIT_ENTRY, "this will be changed"))
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`UPDATE subscriptions`).WithArgs(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).WillReturnResult(sqlmock.NewResult(42, 1))
+	mock.ExpectExec(`UPDATE subscriptions`).WithArgs(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).WillReturnResult(sqlmock.NewResult(42, 1))
 	mock.ExpectExec(`UPDATE filters`).WithArgs(subscription.Filters[models.COMMIT_ENTRY].Filtering, "42", models.COMMIT_ENTRY).WillReturnResult(sqlmock.NewResult(1, 1)).WillReturnResult(sqlmock.NewResult(42, 1))
 	mock.ExpectCommit()
 
 	// now we execute our method
-	updatedSubscription, err := repository.UpdateSubscription(subscription)
+	updatedSubscriptionContext, err := repository.UpdateSubscription(subscriptionContext)
 	if err != nil {
 		t.Errorf("error was not expected creating subscription: %s", err)
 	}
 
-	assertSubscription(t, subscription, updatedSubscription)
+	assertSubscription(t, subscriptionContext, updatedSubscriptionContext)
 
 	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -308,7 +339,7 @@ func TestUpdateSubscriptionDeleteFilter(t *testing.T) {
 	repository, mock := initTest(t)
 
 	// subscription to update
-	subscription := &models.Subscription{
+	subscription := models.Subscription{
 		Id:           "42",
 		Callback:     "url",
 		CallbackType: models.HTTP,
@@ -316,26 +347,30 @@ func TestUpdateSubscriptionDeleteFilter(t *testing.T) {
 			models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("no change filtering"))},
 		},
 	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     0,
+	}
 
-	columns := []string{"callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
-	mock.ExpectQuery(`SELECT callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
+	columns := []string{"failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
+	mock.ExpectQuery(`SELECT failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
 		WithArgs(subscription.Id).
 		WillReturnRows(sqlmock.NewRows(columns).
-			AddRow("url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.ANCHOR_EVENT, "no change filtering").
-			AddRow("url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.COMMIT_CHAIN, "this will be deleted"))
+			AddRow(subscriptionContext.Failures, "url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.ANCHOR_EVENT, "no change filtering").
+			AddRow(subscriptionContext.Failures, "url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.COMMIT_CHAIN, "this will be deleted"))
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`UPDATE subscriptions`).WithArgs(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).WillReturnResult(sqlmock.NewResult(42, 1))
+	mock.ExpectExec(`UPDATE subscriptions`).WithArgs(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).WillReturnResult(sqlmock.NewResult(42, 1))
 	mock.ExpectExec(`DELETE FROM filters`).WithArgs(subscription.Id, models.COMMIT_CHAIN).WillReturnResult(sqlmock.NewResult(42, 1))
 	mock.ExpectCommit()
 
 	// now we execute our method
-	updatedSubscription, err := repository.UpdateSubscription(subscription)
+	updatedSubscriptionContext, err := repository.UpdateSubscription(subscriptionContext)
 	if err != nil {
 		t.Errorf("error was not expected creating subscription: %s", err)
 	}
 
-	assertSubscription(t, subscription, updatedSubscription)
+	assertSubscription(t, subscriptionContext, updatedSubscriptionContext)
 
 	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -348,27 +383,31 @@ func TestUpdateSubscriptionRollbackOnUpdateFailure(t *testing.T) {
 	repository, mock := initTest(t)
 
 	// subscription to update
-	subscription := &models.Subscription{
+	subscription := models.Subscription{
 		Id:           "42",
 		Callback:     "url",
 		CallbackType: models.HTTP,
 		Filters:      map[models.EventType]models.Filter{},
 	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     0,
+	}
 
-	columns := []string{"callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
-	mock.ExpectQuery(`SELECT callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
+	columns := []string{"failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
+	mock.ExpectQuery(`SELECT failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
 		WithArgs(subscription.Id).
 		WillReturnRows(sqlmock.NewRows(columns).
-			AddRow("url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.COMMIT_ENTRY, "filtering"))
+			AddRow(subscriptionContext.Failures, "url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.COMMIT_ENTRY, "filtering"))
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`UPDATE subscriptions`).
-		WithArgs(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).
+		WithArgs(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).
 		WillReturnError(fmt.Errorf("some error"))
 	mock.ExpectRollback()
 
 	// now we execute our method
-	if _, err := repository.UpdateSubscription(subscription); err == nil {
+	if _, err := repository.UpdateSubscription(subscriptionContext); err == nil {
 		t.Errorf("was expecting an error, but there was none")
 	}
 
@@ -383,26 +422,30 @@ func TestUpdateSubscriptionRollbackOnDeleteFailure(t *testing.T) {
 	repository, mock := initTest(t)
 
 	// subscription to update
-	subscription := &models.Subscription{
+	subscription := models.Subscription{
 		Id:           "42",
 		Callback:     "url",
 		CallbackType: models.HTTP,
 		Filters:      map[models.EventType]models.Filter{},
 	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     0,
+	}
 
-	columns := []string{"callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
-	mock.ExpectQuery(`SELECT callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
+	columns := []string{"failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
+	mock.ExpectQuery(`SELECT failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
 		WithArgs(subscription.Id).
 		WillReturnRows(sqlmock.NewRows(columns).
-			AddRow("url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.COMMIT_ENTRY, "this will be deleted"))
+			AddRow(subscriptionContext.Failures, "url-change", subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, models.COMMIT_ENTRY, "this will be deleted"))
 
 	mock.ExpectBegin()
-	mock.ExpectExec(`UPDATE subscriptions`).WithArgs(subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).WillReturnResult(sqlmock.NewResult(42, 1))
+	mock.ExpectExec(`UPDATE subscriptions`).WithArgs(subscriptionContext.Failures, subscription.Callback, subscription.CallbackType, subscription.SubscriptionStatus, subscription.SubscriptionInfo, subscription.Credentials.AccessToken, subscription.Credentials.BasicAuthUsername, subscription.Credentials.BasicAuthPassword, subscription.Id).WillReturnResult(sqlmock.NewResult(42, 1))
 	mock.ExpectExec(`DELETE FROM filters`).WithArgs(subscription.Id, models.COMMIT_ENTRY).WillReturnError(fmt.Errorf("some error"))
 	mock.ExpectRollback()
 
 	// now we execute our method
-	if _, err := repository.UpdateSubscription(subscription); err == nil {
+	if _, err := repository.UpdateSubscription(subscriptionContext); err == nil {
 		t.Errorf("was expecting an error, but there was none")
 	}
 
@@ -458,22 +501,22 @@ func TestDeleteSubscriptionRollbackOnFailure(t *testing.T) {
 func TestGetSubscriptions(t *testing.T) {
 	repository, mock := initTest(t)
 
-	columns := []string{"subscription", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
-	mock.ExpectQuery(`SELECT subscription, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE event_type = \?`).
+	columns := []string{"subscription", "failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
+	mock.ExpectQuery(`SELECT subscription, failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE event_type = \?`).
 		WithArgs(models.ANCHOR_EVENT).
 		WillReturnRows(sqlmock.NewRows(columns).
-			AddRow(1, "url", models.HTTP, models.ACTIVE, "", "", "", "", models.ANCHOR_EVENT, "should be returned").
-			AddRow(1, "url", models.HTTP, models.ACTIVE, "", "", "", "", models.COMMIT_ENTRY, "should be returned").
-			AddRow(2, "url", models.HTTP, models.ACTIVE, "", "", "", "", nil, nil).
-			AddRow(3, "url", models.HTTP, models.ACTIVE, "", "", "", "", models.ANCHOR_EVENT, "return"))
+			AddRow(1, 0, "url", models.HTTP, models.ACTIVE, "", "", "", "", models.ANCHOR_EVENT, "should be returned").
+			AddRow(1, 0, "url", models.HTTP, models.ACTIVE, "", "", "", "", models.COMMIT_ENTRY, "should be returned").
+			AddRow(2, 1, "url", models.HTTP, models.ACTIVE, "", "", "", "", nil, nil).
+			AddRow(3, 2, "url", models.HTTP, models.ACTIVE, "", "", "", "", models.ANCHOR_EVENT, "return"))
 
 	// now we execute our methods
-	subscriptions, err := repository.GetSubscriptions(models.ANCHOR_EVENT)
+	subscriptionContexts, err := repository.GetSubscriptions(models.ANCHOR_EVENT)
 	if err != nil {
 		t.Errorf("error was not expected creating subscription: %s", err)
 	}
 
-	assert.Equal(t, 3, len(subscriptions))
+	assert.Equal(t, 3, len(subscriptionContexts))
 
 	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -481,23 +524,24 @@ func TestGetSubscriptions(t *testing.T) {
 	}
 }
 
-func assertSubscription(t *testing.T, expected *models.Subscription, actual *models.Subscription) {
+func assertSubscription(t *testing.T, expected *models.SubscriptionContext, actual *models.SubscriptionContext) {
 	if actual == nil {
 		assert.Fail(t, "subscription is nil")
 		return
 	}
-	assert.NotNil(t, actual.Id)
-	assert.Equal(t, expected.Callback, actual.Callback)
-	assert.Equal(t, expected.CallbackType, actual.CallbackType)
-	assert.Equal(t, expected.SubscriptionStatus, actual.SubscriptionStatus)
-	assert.Equal(t, expected.SubscriptionInfo, actual.SubscriptionInfo)
-	assert.Equal(t, expected.Credentials.AccessToken, actual.Credentials.AccessToken)
-	assert.Equal(t, expected.Credentials.BasicAuthUsername, actual.Credentials.BasicAuthUsername)
-	assert.Equal(t, expected.Credentials.BasicAuthPassword, actual.Credentials.BasicAuthPassword)
-	assert.Equal(t, len(expected.Filters), len(actual.Filters))
+	assert.NotNil(t, actual.Subscription.Id)
+	assert.Equal(t, expected.Failures, actual.Failures)
+	assert.Equal(t, expected.Subscription.Callback, actual.Subscription.Callback)
+	assert.Equal(t, expected.Subscription.CallbackType, actual.Subscription.CallbackType)
+	assert.Equal(t, expected.Subscription.SubscriptionStatus, actual.Subscription.SubscriptionStatus)
+	assert.Equal(t, expected.Subscription.SubscriptionInfo, actual.Subscription.SubscriptionInfo)
+	assert.Equal(t, expected.Subscription.Credentials.AccessToken, actual.Subscription.Credentials.AccessToken)
+	assert.Equal(t, expected.Subscription.Credentials.BasicAuthUsername, actual.Subscription.Credentials.BasicAuthUsername)
+	assert.Equal(t, expected.Subscription.Credentials.BasicAuthPassword, actual.Subscription.Credentials.BasicAuthPassword)
+	assert.Equal(t, len(expected.Subscription.Filters), len(actual.Subscription.Filters))
 
-	for eventType, filter := range expected.Filters {
-		assert.NotNil(t, actual.Filters[eventType])
-		assert.Equal(t, filter.Filtering, actual.Filters[eventType].Filtering)
+	for eventType, filter := range expected.Subscription.Filters {
+		assert.NotNil(t, actual.Subscription.Filters[eventType])
+		assert.Equal(t, filter.Filtering, actual.Subscription.Filters[eventType].Filtering)
 	}
 }

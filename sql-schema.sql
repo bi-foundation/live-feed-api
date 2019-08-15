@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS subscriptions (
 	id SERIAL PRIMARY KEY,
+	failures int NOT NULL,
 	callback VARCHAR(2083) NOT NULL,
 	callback_type VARCHAR(20) NOT NULL,
 	status VARCHAR(20) NOT NULL,

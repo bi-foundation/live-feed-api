@@ -1,6 +1,8 @@
 // Live Feed API
 //
-// API to receive events from factomd
+// The live feed API is a service for receiving events from the factom blockchain. The API is connected to a factomd
+// node. The received events will be emitted to the subscriptions in the API. Users can subscribe a callback url where
+// able to receive different types of events.
 //
 //     Schemes: http
 //     Host: localhost:8700

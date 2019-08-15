@@ -12,6 +12,10 @@ import (
 	"net/http"
 )
 
+const MAX_FAILURES_DEFAULT = 3
+
+var maxFailures = MAX_FAILURES_DEFAULT
+
 type EventRouter struct {
 	eventsInQueue chan *eventmessages.FactomEvent
 }
@@ -36,13 +40,13 @@ func (evr *EventRouter) handleEvents() {
 
 		log.Info("Received %s with event source %v: %v", eventType, factomEvent.GetEventSource(), factomEvent.GetAnchorEvent())
 
-		subscriptions, err := repository.SubscriptionRepository.GetSubscriptions(eventType)
+		subscriptionContexts, err := repository.SubscriptionRepository.GetSubscriptions(eventType)
 		if err != nil {
 			log.Error("%v", err)
 			continue
 		}
 
-		err = send(subscriptions, factomEvent)
+		err = send(subscriptionContexts, factomEvent)
 		if err != nil {
 			log.Error("%v", err)
 			continue
@@ -67,7 +71,7 @@ func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, err
 	}
 }
 
-func send(subscriptions []*models.Subscription, factomEvent *eventmessages.FactomEvent) error {
+func send(subscriptions []*models.SubscriptionContext, factomEvent *eventmessages.FactomEvent) error {
 	event, err := json.Marshal(factomEvent)
 	if err != nil {
 		return fmt.Errorf("failed to create json from factom event")
@@ -78,12 +82,15 @@ func send(subscriptions []*models.Subscription, factomEvent *eventmessages.Facto
 	return nil
 }
 
-func sendEvent(subscription *models.Subscription, event []byte) {
+func sendEvent(subscriptionContext *models.SubscriptionContext, event []byte) {
+	subscription := subscriptionContext.Subscription
 	url := subscription.Callback
+
 	// Create a new request
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(event))
 	if err != nil || request == nil {
 		log.Error("failed to create request to '%s': %v", url, err)
+		sendEventFailure(subscriptionContext, fmt.Sprintf("create request failed to '%s': %v", url, err))
 		return
 	}
 
@@ -104,14 +111,49 @@ func sendEvent(subscription *models.Subscription, event []byte) {
 	// TODO handle endpoint failure
 	if err != nil {
 		log.Error("failed to send event to '%s': %v", url, err)
+		sendEventFailure(subscriptionContext, fmt.Sprintf("send event failed to '%s': %v", url, err))
 		return
 	}
 	if response == nil {
 		log.Error("failed to receive correct response from '%s': no response", url)
+		sendEventFailure(subscriptionContext, fmt.Sprintf("incorrect response from '%s': no response", url))
 		return
 	}
 	if response.StatusCode != http.StatusOK {
 		log.Error("failed to receive correct response from '%s': code=%d, body=%v", url, response.StatusCode, response)
+		sendEventFailure(subscriptionContext, fmt.Sprintf("incorrect response from '%s': code=%d, body=%v", url, response.StatusCode, response))
 		return
+	}
+
+	sendEventSuccessful(subscriptionContext)
+}
+
+// emit event fails, if the number of failures pass a threshold, suspend the subscription
+// set the reason in the subscription info
+func sendEventFailure(subscriptionContext *models.SubscriptionContext, reason string) {
+	subscriptionContext.Failures++
+	if subscriptionContext.Failures > maxFailures {
+		subscriptionContext.Subscription.SubscriptionStatus = models.SUSPENDED
+		subscriptionContext.Subscription.SubscriptionInfo = reason
+	}
+	// update the database
+	_, err := repository.SubscriptionRepository.UpdateSubscription(subscriptionContext)
+	if err != nil {
+		log.Error("failed update subscription after delivery failure: %v", err)
+	}
+}
+
+func sendEventSuccessful(subscriptionContext *models.SubscriptionContext) {
+	if subscriptionContext.Failures > 0 {
+		subscriptionContext.Failures = 0
+		subscriptionContext.Subscription.SubscriptionStatus = models.ACTIVE
+		subscriptionContext.Subscription.SubscriptionInfo = ""
+
+		// update the database
+		repository.SubscriptionRepository.UpdateSubscription(subscriptionContext)
+		_, err := repository.SubscriptionRepository.UpdateSubscription(subscriptionContext)
+		if err != nil {
+			log.Error("failed update subscription after delivery failure: %v", err)
+		}
 	}
 }

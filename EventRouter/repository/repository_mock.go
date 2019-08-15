@@ -10,28 +10,28 @@ type MockRepository struct {
 	mock.Mock
 }
 
-func (m *MockRepository) CreateSubscription(subscription *models.Subscription) (*models.Subscription, error) {
-	rets := m.Called(subscription.Callback)
+func (m *MockRepository) CreateSubscription(subscriptionContext *models.SubscriptionContext) (*models.SubscriptionContext, error) {
+	rets := m.Called(subscriptionContext.Subscription.Callback)
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
 	 * we need to typecast it to the type we expect, which in this case is []*subscription
 	 */
-	return subscription, rets.Error(1)
+	return subscriptionContext, rets.Error(1)
 }
 
-func (m *MockRepository) ReadSubscription(id string) (*models.Subscription, error) {
+func (m *MockRepository) ReadSubscription(id string) (*models.SubscriptionContext, error) {
 	rets := m.Called(id)
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
 	 * we need to typecast it to the type we expect, which in this case is []*subscription
 	 */
-	return rets.Get(0).(*models.Subscription), rets.Error(1)
+	return rets.Get(0).(*models.SubscriptionContext), rets.Error(1)
 }
 
-func (m *MockRepository) UpdateSubscription(subscription *models.Subscription) (*models.Subscription, error) {
-	rets := m.Called(subscription.Id)
+func (m *MockRepository) UpdateSubscription(subscriptionContext *models.SubscriptionContext) (*models.SubscriptionContext, error) {
+	rets := m.Called(subscriptionContext.Subscription.Id)
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
 	 * we need to typecast it to the type we expect, which in this case is []*subscription
 	 */
-	return subscription, rets.Error(1)
+	return subscriptionContext, rets.Error(1)
 }
 
 func (m *MockRepository) DeleteSubscription(id string) error {
@@ -43,12 +43,12 @@ func (m *MockRepository) DeleteSubscription(id string) error {
 	return rets.Error(0)
 }
 
-func (m *MockRepository) GetSubscriptions(eventType models.EventType) ([]*models.Subscription, error) {
+func (m *MockRepository) GetSubscriptions(eventType models.EventType) ([]*models.SubscriptionContext, error) {
 	rets := m.Called(eventType)
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
 	 * we need to typecast it to the type we expect, which in this case is []*subscription
 	 */
-	return rets.Get(0).([]*models.Subscription), rets.Error(1)
+	return rets.Get(0).([]*models.SubscriptionContext), rets.Error(1)
 }
 
 func InitMockRepository() *MockRepository {

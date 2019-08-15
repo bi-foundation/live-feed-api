@@ -44,6 +44,11 @@ var suspendedSubscription = &models.Subscription{
 	SubscriptionInfo:   "read only information",
 }
 
+var suspendedSubscriptionContext = &models.SubscriptionContext{
+	Subscription: *suspendedSubscription,
+	Failures:     0,
+}
+
 func TestSubscriptionApi(t *testing.T) {
 	testCases := map[string]struct {
 		URL          string
@@ -132,9 +137,31 @@ func TestSubscriptionApi(t *testing.T) {
 			assert:       assertTestSubscribe,
 		},
 		"update-unknown-id ": {
-			URL:          "/subscribe/different-id",
+			URL:          "/subscribe/unknown-id",
 			Method:       http.MethodPut,
 			content:      content(t, testSubscription),
+			responseCode: http.StatusBadRequest,
+			assert:       assertInvalidRequestError,
+		},
+		"update-id-mismatch ": {
+			URL:    "/subscribe/id",
+			Method: http.MethodPut,
+			content: content(t, &models.Subscription{
+				Id:           "id-mismatch",
+				Callback:     "invalid-url",
+				CallbackType: models.HTTP,
+			}),
+			responseCode: http.StatusBadRequest,
+			assert:       assertInvalidRequestError,
+		},
+		"update-subscription-invalid-url": {
+			URL:    "/subscribe/id",
+			Method: http.MethodPut,
+			content: content(t, &models.Subscription{
+				Id:           "id",
+				Callback:     "invalid-url",
+				CallbackType: models.HTTP,
+			}),
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
@@ -184,8 +211,8 @@ func TestSubscriptionApi(t *testing.T) {
 	mockStore := repository.InitMockRepository()
 	mockStore.On("CreateSubscription", "http://url/callback").Return(nil, nil).Twice()
 	mockStore.On("CreateSubscription", "http://url/callback/internal/error").Return(nil, fmt.Errorf("something failed")).Once()
-	mockStore.On("ReadSubscription", "id").Return(suspendedSubscription, nil).Once()
-	mockStore.On("ReadSubscription", "unknown").Return(&models.Subscription{}, fmt.Errorf("subscription not found")).Once()
+	mockStore.On("ReadSubscription", "id").Return(suspendedSubscriptionContext, nil).Once()
+	mockStore.On("ReadSubscription", "unknown").Return(&models.SubscriptionContext{}, fmt.Errorf("subscription not found")).Once()
 	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Once()
 	mockStore.On("DeleteSubscription", "0").Return(nil).Once()
 	mockStore.On("DeleteSubscription", "notfound").Return(fmt.Errorf("subscription not found")).Once()
@@ -225,8 +252,9 @@ func assertGetSubscribe(t *testing.T, body []byte) {
 }
 
 func assertSuspendedSubscribe(t *testing.T, body []byte) {
-	suspendedSubscription.SubscriptionInfo = ""
-	assertSubscribe(t, suspendedSubscription, body)
+	expectedSubscription := models.Subscription(*suspendedSubscription)
+	expectedSubscription.SubscriptionInfo = ""
+	assertSubscribe(t, &expectedSubscription, body)
 }
 
 func assertSubscribe(t *testing.T, expected *models.Subscription, body []byte) {

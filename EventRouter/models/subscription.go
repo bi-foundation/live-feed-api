@@ -45,8 +45,8 @@ type Subscription struct {
 // An SubscriptionRequest model.
 //
 // This is used to subscribe for factom events
-// swagger:parameters SubscriptionRequest
-type subscriptionRequest struct {
+// swagger:parameters CreateSubscriptionRequest
+type createSubscriptionRequest struct {
 	// The subscription registration for receiving information from factomd through the live api.
 	//
 	// in: body
@@ -55,8 +55,8 @@ type subscriptionRequest struct {
 
 // An SubscriptionResponse is the stored subscription
 //
-// swagger:response SubscriptionResponse
-type subscriptionResponse struct {
+// swagger:response CreateSubscriptionResponse
+type createSubscriptionResponse struct {
 	// The subscription
 	//
 	// in: body
@@ -74,7 +74,7 @@ type getSubscriptionRequest struct {
 
 // An SubscriptionResponse is the stored subscription
 //
-// swagger:response GetSubscriptionRequest
+// swagger:response GetSubscriptionResponse
 type getSubscriptionResponse struct {
 	// The subscription
 	//
@@ -111,8 +111,8 @@ type updateSubscriptionResponse struct {
 }
 
 // unsubscription request
-// swagger:parameters UnsubscribeRequest
-type unsubscribeRequest struct {
+// swagger:parameters DeleteSubscriptionRequest
+type deleteSubscriptionRequest struct {
 	// subscription id
 	//
 	// In: path
@@ -121,8 +121,8 @@ type unsubscribeRequest struct {
 
 // A Subscription is returned that is successfully unsubscribed
 //
-// swagger:response UnsubscriptionResponse
-type unsubscriptionResponse struct {
+// swagger:response DeleteSubscriptionResponse
+type deleteSubscriptionResponse struct {
 	// The subscription
 	//
 	// in: body

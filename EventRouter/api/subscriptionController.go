@@ -12,7 +12,7 @@ import (
 )
 
 func subscribe(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route POST /subscribe subscription SubscriptionRequest
+	// swagger:route POST /subscribe subscription CreateSubscriptionRequest
 	//
 	// Subscribe a new application to receive an event
 	//
@@ -23,31 +23,35 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 	//   - application/json
 	//
 	// Responses:
-	//        200: SubscriptionResponse
+	//        201: CreateSubscriptionResponse
 	//        400: ApiError
 	subscription := &models.Subscription{}
 	if decode(writer, request, subscription) {
 		return
 	}
 
+	// ignore user input info message
+	subscription.SubscriptionInfo = ""
 	if subscription.SubscriptionStatus == "" {
 		subscription.SubscriptionStatus = models.ACTIVE
 	}
-	// ignore user input message
-	subscription.SubscriptionInfo = ""
 
 	if err := validateSubscription(subscription); err != nil {
 		log.Debug("invalid subscribe request %v: %v", subscription, err)
 		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
 		return
 	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: *subscription,
+		Failures:     0,
+	}
 
-	subscription, err := repository.SubscriptionRepository.CreateSubscription(subscription)
+	subscriptionContext, err := repository.SubscriptionRepository.CreateSubscription(subscriptionContext)
 	if err != nil {
 		responseError(writer, http.StatusInternalServerError, errors.NewInternalError(fmt.Sprintf("failed to store subscription: %v", err)))
 		return
 	}
-	respond(writer, subscription)
+	respond(writer, subscriptionContext.Subscription)
 }
 
 func updateSubscription(writer http.ResponseWriter, request *http.Request) {
@@ -77,23 +81,34 @@ func updateSubscription(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// ignore user input message
+	subscription.SubscriptionInfo = ""
 	if subscription.SubscriptionStatus == "" {
 		subscription.SubscriptionStatus = models.ACTIVE
 	}
-	// ignore user input message
-	subscription.SubscriptionInfo = ""
 
-	subscription, err := repository.SubscriptionRepository.UpdateSubscription(subscription)
+	if err := validateSubscription(subscription); err != nil {
+		log.Debug("invalid subscribe request %v: %v", subscription, err)
+		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
+		return
+	}
+
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: *subscription,
+		Failures:     0,
+	}
+
+	subscriptionContext, err := repository.SubscriptionRepository.UpdateSubscription(subscriptionContext)
 	if err != nil {
 		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
 		return
 	}
 
-	respond(writer, subscription)
+	respond(writer, subscriptionContext.Subscription)
 }
 
 func getSubscription(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route PUT /subscribe/{id} subscription GetSubscriptionRequest
+	// swagger:route GET /subscribe/{id} subscription GetSubscriptionRequest
 	//
 	// Get a subscription that is subscribed
 	//
@@ -110,17 +125,17 @@ func getSubscription(writer http.ResponseWriter, request *http.Request) {
 
 	id := vars["subscriptionId"]
 
-	subscription, err := repository.SubscriptionRepository.ReadSubscription(id)
+	subscriptionContext, err := repository.SubscriptionRepository.ReadSubscription(id)
 	if err != nil {
 		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
 		return
 	}
 
-	respond(writer, subscription)
+	respond(writer, subscriptionContext.Subscription)
 }
 
 func unsubscribe(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route DELETE /subscribe/{id} subscription UnsubscribeRequest
+	// swagger:route DELETE /subscribe/{id} subscription DeleteSubscriptionRequest
 	//
 	// Unsubscribe an application from receiving events from the api
 	//
@@ -131,7 +146,7 @@ func unsubscribe(writer http.ResponseWriter, request *http.Request) {
 	//   - application/json
 	//
 	// Responses:
-	//        200: UnsubscriptionResponse
+	//        200: DeleteSubscriptionResponse
 	//        400: ApiError
 	vars := mux.Vars(request)
 

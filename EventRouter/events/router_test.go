@@ -42,14 +42,14 @@ func TestSendEvent(t *testing.T) {
 			Credentials: models.Credentials{
 				AccessToken: accessToken,
 			},
-			AuthenticationValidation: ValidateToken(accessToken),
+			AuthenticationValidation: validateToken(accessToken),
 		}, /*
 			"invalid bearer token": {
 				CallbackType: models.BEARER_TOKEN,
 				Credentials: models.Credentials{
 					AccessToken: accessToken,
 				},
-				AuthenticationValidation: ValidateToken("invalid"),
+				AuthenticationValidation: validateToken("invalid"),
 			},*/
 		"basic auth": {
 			CallbackType: models.BASIC_AUTH,
@@ -57,7 +57,7 @@ func TestSendEvent(t *testing.T) {
 				BasicAuthUsername: "username",
 				BasicAuthPassword: "password",
 			},
-			AuthenticationValidation: ValidateUsernamePassword("username", "password"),
+			AuthenticationValidation: validateUsernamePassword("username", "password"),
 		},
 		/*"basic invalid auth": {
 			CallbackType: models.BASIC_AUTH,
@@ -65,7 +65,7 @@ func TestSendEvent(t *testing.T) {
 				BasicAuthUsername: "username",
 				BasicAuthPassword: "password",
 			},
-			AuthenticationValidation: ValidateUsernamePassword("incorrect", "password"),
+			AuthenticationValidation: validateUsernamePassword("incorrect", "password"),
 		},*/
 	}
 
@@ -82,25 +82,125 @@ func TestSendEvent(t *testing.T) {
 			index++
 			port := 23232 + index
 			var eventsReceived int32 = 0
-			subscriptions := &models.Subscription{
-				Callback:     fmt.Sprintf("http://localhost:%[1]d/callback%[1]d", port),
-				CallbackType: testCase.CallbackType,
-				Filters: map[models.EventType]models.Filter{
-					models.COMMIT_CHAIN: {Filtering: ""},
+			subscriptionContext := &models.SubscriptionContext{
+				Subscription: models.Subscription{
+					Callback:     fmt.Sprintf("http://localhost:%[1]d/callback%[1]d", port),
+					CallbackType: testCase.CallbackType,
+					Filters: map[models.EventType]models.Filter{
+						models.COMMIT_CHAIN: {Filtering: ""},
+					},
+					Credentials: testCase.Credentials,
 				},
-				Credentials: testCase.Credentials,
 			}
 
 			// start server to receive events
 			startMockServer(t, port, &eventsReceived, testCase.AuthenticationValidation, event)
 
 			// test send to http oauth2 endpoint
-			sendEvent(subscriptions, event)
+			sendEvent(subscriptionContext, event)
 
 			// wait until server has received events or deadline has passed
 			waitOnEventReceived(&eventsReceived, 1, 10*time.Second)
 		})
 	}
+}
+
+func TestHTTPSEndpoint(t *testing.T) {
+	accessToken := "access-token"
+	subscriptionContexts := []*models.SubscriptionContext{
+		{
+			Subscription: models.Subscription{
+				Callback:     "https://localhost:23232/callback23232",
+				CallbackType: models.BEARER_TOKEN,
+				Filters: map[models.EventType]models.Filter{
+					models.COMMIT_CHAIN: {Filtering: ""},
+				},
+				Credentials: models.Credentials{
+					AccessToken: accessToken,
+				},
+			},
+		},
+	}
+	factomEvent := mockAnchorEvent()
+	expectedEvent, err := json.Marshal(factomEvent)
+	if err != nil {
+		t.Fatalf("failed to marshal event: %v", err)
+	}
+
+	certFile, pkFile, cleanup := testSetupCertificateFiles(t)
+	defer cleanup()
+
+	var eventsReceived int32 = 0
+
+	// as the code makes use of the default client, we allow to ignore expired certificate
+	transCfg := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
+	}
+	http.DefaultClient = &http.Client{Transport: transCfg}
+
+	// start https server to receive event
+	startMockTLSServer(t, 23232, certFile, pkFile, &eventsReceived, nil, expectedEvent)
+
+	// test send to http oauth2 endpoint
+	err = send(subscriptionContexts, factomEvent)
+	assert.Nil(t, err)
+
+	waitOnEventReceived(&eventsReceived, len(subscriptionContexts), 1*time.Minute)
+}
+
+// test sending 5 subscriptions to two different endpoints
+func TestHandleEvents(t *testing.T) {
+	subscription1 := models.Subscription{
+		Callback: "http://localhost:23222/callback23222",
+		Filters: map[models.EventType]models.Filter{
+			models.ANCHOR_EVENT: {Filtering: ""},
+		},
+	}
+	subscription2 := models.Subscription{
+		Callback: "http://localhost:23223/callback23223",
+		Filters: map[models.EventType]models.Filter{
+			models.ANCHOR_EVENT: {Filtering: ""},
+		},
+	}
+	subscriptionContexts := []*models.SubscriptionContext{
+		{Subscription: subscription1},
+		{Subscription: subscription2},
+		{Subscription: subscription2},
+		{Subscription: subscription1},
+		{Subscription: subscription1},
+	}
+
+	// init mock repository
+	mockStore := repository.InitMockRepository()
+	mockStore.On("GetSubscriptions", models.ANCHOR_EVENT).Return(subscriptionContexts, nil).Once()
+
+	var eventsReceived int32 = 0
+	factomEvent := mockAnchorEvent()
+	expectedEvent, err := json.Marshal(factomEvent)
+	if err != nil {
+		t.Fatalf("failed to marshal event: %v", err)
+	}
+
+	queue := make(chan *eventmessages.FactomEvent)
+	router := NewEventRouter(queue)
+	router.Start()
+
+	// start two mock server on different porst
+	startMockServer(t, 23222, &eventsReceived, nil, expectedEvent)
+	startMockServer(t, 23223, &eventsReceived, nil, expectedEvent)
+
+	// test send event if an event is send through the channel
+	queue <- factomEvent
+
+	waitOnEventReceived(&eventsReceived, len(subscriptionContexts), 1*time.Minute)
+}
+
+func TestSendEventFailure(t *testing.T) {
+	//TODO
+}
+
+func TestSendEventSuccessful(t *testing.T) {
+	//TODO
 }
 
 func startMockServer(t *testing.T, port int, eventsReceived *int32, authenticationValidation func(r *http.Request) bool, expectedEvent []byte) {
@@ -152,7 +252,14 @@ func startMockTLSServer(t *testing.T, port int, certFile string, pkFile string, 
 
 }
 
-func ValidateToken(accessToken string) func(r *http.Request) bool {
+func waitOnEventReceived(eventsReceived *int32, n int, timeLimit time.Duration) {
+	deadline := time.Now().Add(timeLimit)
+	for int(atomic.LoadInt32(eventsReceived)) != n && time.Now().Before(deadline) {
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+func validateToken(accessToken string) func(r *http.Request) bool {
 	return func(r *http.Request) bool {
 		authorization := r.Header.Get("authorization")
 		token := strings.TrimPrefix(strings.ToLower(authorization), "bearer ")
@@ -160,7 +267,7 @@ func ValidateToken(accessToken string) func(r *http.Request) bool {
 	}
 }
 
-func ValidateUsernamePassword(username string, password string) func(r *http.Request) bool {
+func validateUsernamePassword(username string, password string) func(r *http.Request) bool {
 	return func(r *http.Request) bool {
 		user, pass, ok := r.BasicAuth()
 		if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 || subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
@@ -168,101 +275,6 @@ func ValidateUsernamePassword(username string, password string) func(r *http.Req
 			return false
 		}
 		return true
-	}
-}
-
-// test sending 5 subscriptions to two different endpoints
-func TestEventRouter_Start(t *testing.T) {
-	subscription1 := &models.Subscription{
-		Callback: "http://localhost:23222/callback23222",
-		Filters: map[models.EventType]models.Filter{
-			models.ANCHOR_EVENT: {Filtering: ""},
-		},
-	}
-	subscription2 := &models.Subscription{
-		Callback: "http://localhost:23223/callback23223",
-		Filters: map[models.EventType]models.Filter{
-			models.ANCHOR_EVENT: {Filtering: ""},
-		},
-	}
-	subscriptions := []*models.Subscription{
-		subscription1,
-		subscription2,
-		subscription2,
-		subscription1,
-		subscription1,
-	}
-
-	// init mock repository
-	mockStore := repository.InitMockRepository()
-	mockStore.On("GetSubscriptions", models.ANCHOR_EVENT).Return(subscriptions, nil).Once()
-
-	var eventsReceived int32 = 0
-	factomEvent := mockAnchorEvent()
-	expectedEvent, err := json.Marshal(factomEvent)
-	if err != nil {
-		t.Fatalf("failed to marshal event: %v", err)
-	}
-
-	queue := make(chan *eventmessages.FactomEvent)
-	router := NewEventRouter(queue)
-	router.Start()
-
-	// start two mock server on different porst
-	startMockServer(t, 23222, &eventsReceived, nil, expectedEvent)
-	startMockServer(t, 23223, &eventsReceived, nil, expectedEvent)
-
-	// test send event if an event is send through the channel
-	queue <- factomEvent
-
-	waitOnEventReceived(&eventsReceived, len(subscriptions), 1*time.Minute)
-}
-
-func TestHTTPSEndpoint(t *testing.T) {
-	accessToken := "access-token"
-	subscriptions := []*models.Subscription{
-		{
-			Callback:     "https://localhost:23232/callback23232",
-			CallbackType: models.BEARER_TOKEN,
-			Filters: map[models.EventType]models.Filter{
-				models.COMMIT_CHAIN: {Filtering: ""},
-			},
-			Credentials: models.Credentials{
-				AccessToken: accessToken,
-			},
-		},
-	}
-	factomEvent := mockAnchorEvent()
-	expectedEvent, err := json.Marshal(factomEvent)
-	if err != nil {
-		t.Fatalf("failed to marshal event: %v", err)
-	}
-
-	certFile, pkFile, cleanup := testSetupCertificateFiles(t)
-	defer cleanup()
-
-	var eventsReceived int32 = 0
-
-	// as the code makes use of the default client, we allow to ignore expired certificate
-	transCfg := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
-	}
-	http.DefaultClient = &http.Client{Transport: transCfg}
-
-	// start https server to receive event
-	startMockTLSServer(t, 23232, certFile, pkFile, &eventsReceived, nil, expectedEvent)
-
-	// test send to http oauth2 endpoint
-	err = send(subscriptions, factomEvent)
-	assert.Nil(t, err)
-
-	waitOnEventReceived(&eventsReceived, len(subscriptions), 1*time.Minute)
-}
-
-func waitOnEventReceived(eventsReceived *int32, n int, timeLimit time.Duration) {
-	deadline := time.Now().Add(timeLimit)
-	for int(atomic.LoadInt32(eventsReceived)) != n && time.Now().Before(deadline) {
-		time.Sleep(100 * time.Millisecond)
 	}
 }
 
