@@ -37,15 +37,23 @@ func (evr *EventRouter) handleEvents() {
 
 		switch factomEvent.Value.(type) {
 		case *eventmessages.FactomEvent_AnchorEvent:
-			log.Info("Received AnchoredEvent with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetAnchorEvent())
+			log.Info("Received AnchoredEvent from node %v\n\twith event source %v:\n\t%v\n", factomEvent.GetIdentityChainID(),
+				factomEvent.GetEventSource(), factomEvent.GetAnchorEvent())
 		case *eventmessages.FactomEvent_CommitChain:
-			log.Info("Received CommitChain with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetCommitChain())
+			log.Info("Received CommitChain from node %v with\n\tevent source %v:\n\t%v\n", factomEvent.GetIdentityChainID(),
+				factomEvent.GetEventSource(), factomEvent.GetCommitChain())
 		case *eventmessages.FactomEvent_CommitEntry:
-			log.Info("Received CommitEntry with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetCommitEntry())
+			log.Info("Received CommitEntry from node %v with\n\tevent source %v:\n\t%v\n", factomEvent.GetIdentityChainID(),
+				factomEvent.GetEventSource(), factomEvent.GetCommitEntry())
 		case *eventmessages.FactomEvent_RevealEntry:
-			log.Info("Received FactomEvent_RevealEntry with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetRevealEntry())
-		case *eventmessages.FactomEvent_NodeMessage:
-			log.Info("Received FactomEvent_NodeMessage with event source %v: %v", factomEvent.GetEventSource(), factomEvent.GetNodeMessage())
+			log.Info("Received FactomEvent_RevealEntry from node %v\n\twith event source %v:\n\t%v\n", factomEvent.GetIdentityChainID(),
+				factomEvent.GetEventSource(), factomEvent.GetRevealEntry())
+		case *eventmessages.FactomEvent_NodeEvent:
+			log.Info("Received FactomEvent_NodeEvent from node %v\n\twith event source %v:\n\t%v\n", factomEvent.GetIdentityChainID(),
+				factomEvent.GetEventSource(), factomEvent.GetNodeEvent())
+		case *eventmessages.FactomEvent_ProcessEvent:
+			log.Info("Received FactomEvent_ProcessEvent from node %v\n\twith event source %v:\n\t%v\n", factomEvent.GetIdentityChainID(),
+				factomEvent.GetEventSource(), factomEvent.GetProcessEvent())
 		}
 	}
 }

@@ -24,9 +24,3 @@ message TransAddress {
     uint64 amount = 1;
     Hash address = 2;
 }
-
-
-message Message {
-    string message = 1;
-    string source = 2;
-}

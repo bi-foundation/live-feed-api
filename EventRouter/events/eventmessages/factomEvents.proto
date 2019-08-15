@@ -15,19 +15,21 @@ enum EventSource {
     ADD_TO_PROCESSLIST = 1;
     ADD_TO_HOLDING = 2;
     DROP_FROM_HOLDING = 3;
-    NODE_INFO = 4;
-    NODE_ERROR = 5;
+    PROCESS_EVENT = 4;
+    NODE_EVENT = 5;
 }
 
 
 message FactomEvent {
     EventSource eventSource = 1;
+    Hash IdentityChainID = 2;
     oneof value {
-        AnchoredEvent anchorEvent = 2;
-        CommitChain commitChain = 3;
-        CommitEntry commitEntry = 4;
-        RevealEntry revealEntry = 5;
-        string nodeMessage = 6;
+        AnchoredEvent anchorEvent = 3;
+        CommitChain commitChain = 4;
+        CommitEntry commitEntry = 5;
+        RevealEntry revealEntry = 6;
+        ProcessMessage processEvent = 7;
+        NodeMessage nodeEvent = 8;
     }
 }
 
@@ -87,3 +89,36 @@ message RevealEntry {
     google.protobuf.Timestamp timestamp = 2;
 }
 
+enum Level {
+    INFO = 0;
+    WARNING = 1;
+    ERROR = 2;
+}
+
+
+enum ProcessMessageCode {
+    OTHER_P = 0;
+    NEW_BLOCK = 1;
+    NEW_MINUTE = 2;
+}
+
+
+message ProcessMessage {
+    ProcessMessageCode messageCode = 1;
+    Level level = 2;
+    string messageText = 3;
+}
+
+
+enum NodeMessageCode {
+    OTHER_N = 0;
+    STARTED = 1;
+    SYNC_COMPLETE = 2;
+    SHUTDOWN = 3;
+}
+
+message NodeMessage {
+    NodeMessageCode messageCode = 1;
+    Level level = 2;
+    string messageText = 3;
+}
