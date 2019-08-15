@@ -64,7 +64,9 @@ func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, err
 		return models.COMMIT_ENTRY, nil
 	case *eventmessages.FactomEvent_RevealEntry:
 		return models.REVEAL_ENTRY, nil
-	case *eventmessages.FactomEvent_NodeMessage:
+	case *eventmessages.FactomEvent_ProcessEvent:
+		return models.PROCESS_MESSAGE, nil
+	case *eventmessages.FactomEvent_NodeEvent:
 		return models.NODE_MESSAGE, nil
 	default:
 		return "", fmt.Errorf("failed to map correct node")

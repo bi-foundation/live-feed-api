@@ -5,11 +5,12 @@ package models
 type EventType string
 
 const (
-	COMMIT_CHAIN EventType = "COMMIT_CHAIN"
-	COMMIT_ENTRY EventType = "COMMIT_ENTRY"
-	ANCHOR_EVENT EventType = "ANCHOR_EVENT"
-	REVEAL_ENTRY EventType = "REVEAL_ENTRY"
-	NODE_MESSAGE EventType = "NODE_MESSAGE"
+	COMMIT_CHAIN    EventType = "COMMIT_CHAIN"
+	COMMIT_ENTRY    EventType = "COMMIT_ENTRY"
+	ANCHOR_EVENT    EventType = "ANCHOR_EVENT"
+	REVEAL_ENTRY    EventType = "REVEAL_ENTRY"
+	PROCESS_MESSAGE EventType = "PROCESS_MESSAGE"
+	NODE_MESSAGE    EventType = "NODE_MESSAGE"
 )
 
 //  Define a filter with GraphQL

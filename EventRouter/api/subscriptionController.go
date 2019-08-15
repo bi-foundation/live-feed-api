@@ -186,6 +186,7 @@ func validateSubscription(subscription *models.Subscription) error {
 		case models.ANCHOR_EVENT:
 		case models.COMMIT_ENTRY:
 		case models.COMMIT_CHAIN:
+		case models.PROCESS_MESSAGE:
 		case models.NODE_MESSAGE:
 		case models.REVEAL_ENTRY:
 		default:
