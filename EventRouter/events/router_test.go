@@ -30,6 +30,7 @@ func TestSendEvent(t *testing.T) {
 
 	// init test cases
 	testCases := map[string]struct {
+		EndpointPostfix          string
 		CallbackType             models.CallbackType
 		Credentials              models.Credentials
 		AuthenticationValidation func(r *http.Request) bool
@@ -43,14 +44,14 @@ func TestSendEvent(t *testing.T) {
 				AccessToken: accessToken,
 			},
 			AuthenticationValidation: validateToken(accessToken),
-		}, /*
-			"invalid bearer token": {
-				CallbackType: models.BEARER_TOKEN,
-				Credentials: models.Credentials{
-					AccessToken: accessToken,
-				},
-				AuthenticationValidation: validateToken("invalid"),
-			},*/
+		},
+		"invalid bearer token": {
+			CallbackType: models.BEARER_TOKEN,
+			Credentials: models.Credentials{
+				AccessToken: accessToken,
+			},
+			AuthenticationValidation: validateToken("invalid"),
+		},
 		"basic auth": {
 			CallbackType: models.BASIC_AUTH,
 			Credentials: models.Credentials{
@@ -59,15 +60,22 @@ func TestSendEvent(t *testing.T) {
 			},
 			AuthenticationValidation: validateUsernamePassword("username", "password"),
 		},
-		/*"basic invalid auth": {
+		"basic invalid auth": {
 			CallbackType: models.BASIC_AUTH,
 			Credentials: models.Credentials{
 				BasicAuthUsername: "username",
 				BasicAuthPassword: "password",
 			},
 			AuthenticationValidation: validateUsernamePassword("incorrect", "password"),
-		},*/
+		},
+		"url not found": {
+			EndpointPostfix: "/not/here",
+			CallbackType:    models.HTTP,
+		},
 	}
+
+	mockStore := repository.InitMockRepository()
+	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Times(3)
 
 	// init data
 	factomEvent := mockAnchorEvent()
@@ -84,7 +92,8 @@ func TestSendEvent(t *testing.T) {
 			var eventsReceived int32 = 0
 			subscriptionContext := &models.SubscriptionContext{
 				Subscription: models.Subscription{
-					Callback:     fmt.Sprintf("http://localhost:%[1]d/callback%[1]d", port),
+					Id:           "id",
+					Callback:     fmt.Sprintf("http://localhost:%[1]d/callback%[1]d%s", port, testCase.EndpointPostfix),
 					CallbackType: testCase.CallbackType,
 					Filters: map[models.EventType]models.Filter{
 						models.COMMIT_CHAIN: {Filtering: ""},
@@ -98,11 +107,9 @@ func TestSendEvent(t *testing.T) {
 
 			// test send to http oauth2 endpoint
 			sendEvent(subscriptionContext, event)
-
-			// wait until server has received events or deadline has passed
-			waitOnEventReceived(&eventsReceived, 1, 10*time.Second)
 		})
 	}
+	mockStore.AssertExpectations(t)
 }
 
 func TestHTTPSEndpoint(t *testing.T) {
@@ -196,11 +203,61 @@ func TestHandleEvents(t *testing.T) {
 }
 
 func TestSendEventFailure(t *testing.T) {
-	//TODO
+	mockStore := repository.InitMockRepository()
+	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Twice()
+	mockStore.On("UpdateSubscription", "error").Return(nil, fmt.Errorf("db failure")).Once()
+
+	testCases := map[string]*models.SubscriptionContext{
+		"update": {
+			Subscription: models.Subscription{Id: "id"},
+			Failures:     0,
+		},
+		"update-max-failures": {
+			Subscription: models.Subscription{Id: "id"},
+			Failures:     2,
+		},
+		"failure": {
+			Subscription: models.Subscription{Id: "error"},
+			Failures:     0,
+		},
+	}
+
+	for name, subscriptionContext := range testCases {
+		t.Run(name, func(t *testing.T) {
+			sendEventFailure(subscriptionContext, "failed to deliver event")
+		})
+
+		mockStore.AssertCalled(t, "UpdateSubscription", subscriptionContext.Subscription.Id)
+	}
+	mockStore.AssertExpectations(t)
 }
 
 func TestSendEventSuccessful(t *testing.T) {
-	//TODO
+	mockStore := repository.InitMockRepository()
+	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Once()
+	mockStore.On("UpdateSubscription", "error").Return(nil, fmt.Errorf("db failure")).Once()
+
+	testCases := map[string]*models.SubscriptionContext{
+		"update": {
+			Subscription: models.Subscription{Id: "id"},
+			Failures:     1,
+		},
+		"update-nothing": {
+			Subscription: models.Subscription{Id: "id"},
+			Failures:     0,
+		},
+		"failure": {
+			Subscription: models.Subscription{Id: "error"},
+			Failures:     1,
+		},
+	}
+
+	for name, subscriptionContext := range testCases {
+		t.Run(name, func(t *testing.T) {
+			sendEventSuccessful(subscriptionContext)
+		})
+	}
+	mockStore.AssertExpectations(t)
 }
 
 func startMockServer(t *testing.T, port int, eventsReceived *int32, authenticationValidation func(r *http.Request) bool, expectedEvent []byte) {
@@ -216,7 +273,6 @@ func startMockTLSServer(t *testing.T, port int, certFile string, pkFile string, 
 		if validAuthentication != nil && !validAuthentication(r) {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("Unauthorised.\n"))
-			t.Error("failed to authentication")
 			return
 		}
 

@@ -105,10 +105,9 @@ func sendEvent(subscriptionContext *models.SubscriptionContext, event []byte) {
 	}
 
 	log.Debug("send event to '%s' %v", subscription.Callback, subscription.CallbackType)
-	// Send request using default http Client
+	// send request using default http Client
 	response, err := http.DefaultClient.Do(request)
 
-	// TODO handle endpoint failure
 	if err != nil {
 		log.Error("failed to send event to '%s': %v", url, err)
 		sendEventFailure(subscriptionContext, fmt.Sprintf("send event failed to '%s': %v", url, err))
@@ -150,7 +149,6 @@ func sendEventSuccessful(subscriptionContext *models.SubscriptionContext) {
 		subscriptionContext.Subscription.SubscriptionInfo = ""
 
 		// update the database
-		repository.SubscriptionRepository.UpdateSubscription(subscriptionContext)
 		_, err := repository.SubscriptionRepository.UpdateSubscription(subscriptionContext)
 		if err != nil {
 			log.Error("failed update subscription after delivery failure: %v", err)

@@ -240,6 +240,8 @@ func TestSubscriptionApi(t *testing.T) {
 			testCase.assert(t, body)
 		})
 	}
+
+	mockStore.AssertExpectations(t)
 }
 
 func assertTestSubscribe(t *testing.T, body []byte) {
