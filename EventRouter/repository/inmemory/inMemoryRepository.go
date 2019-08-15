@@ -5,65 +5,98 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
 	"strconv"
+	"sync"
 )
 
-type Repository struct {
+type inMemoryRepository struct {
+	sync.RWMutex
 	id int
-	db []models.Subscription
+	db []*models.SubscriptionContext
 }
 
-func (repository *Repository) CreateSubscription(subscription *models.Subscription) (*models.Subscription, error) {
-	subscription.Id = strconv.Itoa(repository.id)
-	repository.db = append(repository.db, *subscription)
+func New() *inMemoryRepository {
+	return &inMemoryRepository{
+		id: 0,
+	}
+}
+
+func (repository *inMemoryRepository) CreateSubscription(subscriptionContext *models.SubscriptionContext) (*models.SubscriptionContext, error) {
+	repository.Lock()
+	defer repository.Unlock()
+
+	subscriptionContext.Subscription.Id = strconv.Itoa(repository.id)
+	repository.db = append(repository.db, subscriptionContext)
 	repository.id++
-	log.Debug("stored subscription: %v", subscription)
-	return subscription, nil
+	log.Debug("stored subscription: %v", subscriptionContext)
+	return subscriptionContext, nil
 }
 
-func (repository *Repository) ReadSubscription(id string) (*models.Subscription, error) {
-	_, subscription, err := repository.findSubscription(id)
+func (repository *inMemoryRepository) ReadSubscription(id string) (*models.SubscriptionContext, error) {
+	_, subscriptionContext, err := repository.findSubscription(id)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Info("read subscription: %v", subscription)
-	return subscription, nil
+	log.Info("read subscription: %v", subscriptionContext)
+	return subscriptionContext, nil
 }
 
-func (repository *Repository) UpdateSubscription(id string, substitute *models.Subscription) (*models.Subscription, error) {
-	index, subscription, err := repository.findSubscription(id)
+func (repository *inMemoryRepository) UpdateSubscription(substituteSubscriptionContext *models.SubscriptionContext) (*models.SubscriptionContext, error) {
+	index, subscriptionContext, err := repository.findSubscription(substituteSubscriptionContext.Subscription.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Debug("update subscription: %v with: %v", subscription, substitute)
-	repository.db[index].Callback = substitute.Callback
-	substitute.Id = id
-	return substitute, err
+	repository.Lock()
+	defer repository.Unlock()
+	log.Debug("update subscription: %v with: %v", subscriptionContext, substituteSubscriptionContext.Subscription)
+	repository.db[index].Subscription.Callback = substituteSubscriptionContext.Subscription.Callback
+	repository.db[index].Subscription.CallbackType = substituteSubscriptionContext.Subscription.CallbackType
+	repository.db[index].Subscription.SubscriptionStatus = substituteSubscriptionContext.Subscription.SubscriptionStatus
+	repository.db[index].Subscription.SubscriptionInfo = substituteSubscriptionContext.Subscription.SubscriptionInfo
+	repository.db[index].Subscription.Credentials.AccessToken = substituteSubscriptionContext.Subscription.Credentials.AccessToken
+	repository.db[index].Subscription.Credentials.BasicAuthUsername = substituteSubscriptionContext.Subscription.Credentials.BasicAuthUsername
+	repository.db[index].Subscription.Credentials.BasicAuthPassword = substituteSubscriptionContext.Subscription.Credentials.BasicAuthPassword
+	repository.db[index].Subscription.Filters = substituteSubscriptionContext.Subscription.Filters
+	return substituteSubscriptionContext, err
 }
 
-func (repository *Repository) DeleteSubscription(id string) (*models.Subscription, error) {
-	index, _, err := repository.findSubscription(id)
-	if err != nil {
-		return nil, err
-	}
-	subscription := repository.db[index]
-	repository.db = append(repository.db[:index], repository.db[index+1:]...)
-	log.Debug("deleted subscription: %v", subscription)
-	return &subscription, nil
-}
+func (repository *inMemoryRepository) findSubscription(id string) (int, *models.SubscriptionContext, error) {
+	repository.RLock()
+	defer repository.RUnlock()
 
-func (repository *Repository) findSubscription(id string) (int, *models.Subscription, error) {
-	for i, subscription := range repository.db {
-		if subscription.Id == id {
-			return i, &subscription, nil
+	for i, subscriptionContext := range repository.db {
+		if subscriptionContext.Subscription.Id == id {
+			return i, subscriptionContext, nil
 		}
 	}
 	log.Debug("subscription not found: %s", id)
 	return -1, nil, fmt.Errorf("failed to find subscription '%s'", id)
 }
 
-func (repository *Repository) ReadSubscriptions() []models.Subscription {
-	// TODO filter on events
-	return repository.db
+func (repository *inMemoryRepository) DeleteSubscription(id string) error {
+	index, _, err := repository.findSubscription(id)
+	if err != nil {
+		return fmt.Errorf("failed to delete subscription: %v", err)
+	}
+
+	repository.Lock()
+	defer repository.Unlock()
+	repository.db = append(repository.db[:index], repository.db[index+1:]...)
+	log.Debug("deleted subscription: %s", id)
+	return nil
+}
+
+func (repository *inMemoryRepository) GetSubscriptions(eventType models.EventType) ([]*models.SubscriptionContext, error) {
+	repository.RLock()
+	defer repository.RUnlock()
+
+	subscriptionContexts := repository.db[:0]
+	for _, subscriptionContext := range repository.db {
+		if _, ok := subscriptionContext.Subscription.Filters[eventType]; ok {
+			subscriptionContexts = append(subscriptionContexts, subscriptionContext)
+		}
+	}
+
+	return subscriptionContexts, nil
 }

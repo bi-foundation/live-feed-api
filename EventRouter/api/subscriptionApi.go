@@ -1,6 +1,8 @@
 // Live Feed API
 //
-// API to receive events from factomd
+// The live feed API is a service for receiving events from the factom blockchain. The API is connected to a factomd
+// node. The received events will be emitted to the subscriptions in the API. Users can subscribe a callback url where
+// able to receive different types of events.
 //
 //     Schemes: http
 //     Host: localhost:8700
@@ -45,8 +47,10 @@ func logInterceptor(f http.Handler) http.Handler {
 func (api *api) Start() {
 	router := mux.NewRouter()
 	router.Use(logInterceptor)
-	router.HandleFunc("/subscribe", subscribe).Methods("POST")
-	router.HandleFunc("/unsubscribe/{subscriptionId}", unsubscribe).Methods("DELETE")
+	router.HandleFunc("/subscribe", subscribe).Methods(http.MethodPost)
+	router.HandleFunc("/subscribe/{subscriptionId}", unsubscribe).Methods(http.MethodDelete)
+	router.HandleFunc("/subscribe/{subscriptionId}", getSubscription).Methods(http.MethodGet)
+	router.HandleFunc("/subscribe/{subscriptionId}", updateSubscription).Methods(http.MethodPut)
 	router.HandleFunc("/swagger.json", swagger).Methods("GET")
 	router.Schemes("HTTP")
 
@@ -79,7 +83,7 @@ func responseError(writer http.ResponseWriter, statusCode int, error interface{}
 	err := json.NewEncoder(writer).Encode(error)
 	if err != nil {
 		log.Error("failed to write error '%v': %v", error, err)
-		responseError(writer, http.StatusInternalServerError, errors.NewInternalError())
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to write error"))
 	}
 }
 
@@ -88,6 +92,6 @@ func respond(writer http.ResponseWriter, data interface{}) {
 	err := json.NewEncoder(writer).Encode(data)
 	if err != nil {
 		log.Error("failed to write response '%v': %v", data, err)
-		responseError(writer, http.StatusBadRequest, errors.NewInternalError())
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to write response"))
 	}
 }

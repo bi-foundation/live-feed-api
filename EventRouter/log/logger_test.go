@@ -11,12 +11,13 @@ import (
 func TestLoggers(t *testing.T) {
 	testCases := []struct {
 		Level
+		Expecting string
 	}{
-		{D},
-		{I},
-		{W},
-		{E},
-		{F},
+		{D, "[DEBUG] D: message\n[INFO] I: message\n[WARN] W: message\n[ERROR] E: message\n"},
+		{I, "[INFO] I: message\n[WARN] W: message\n[ERROR] E: message\n"},
+		{W, "[WARN] W: message\n[ERROR] E: message\n"},
+		{E, "[ERROR] E: message\n"},
+		{F, ""},
 	}
 
 	var writer bytes.Buffer
@@ -32,23 +33,9 @@ func TestLoggers(t *testing.T) {
 			Error("E: %s", "message")
 
 			output := writer.String()
-			assertOutput(t, output, testCase.Level)
+			assert.Equal(t, testCase.Expecting, output, "output at level %v wrong", testCase.Level)
+
 			writer.Reset()
 		})
-	}
-}
-
-func assertOutput(t *testing.T, output string, level Level) {
-	switch level {
-	case D:
-		assert.Equal(t, "[DEBUG] D: message\n[INFO] I: message\n[WARN] W: message\n[ERROR] E: message\n", output, "output at level %v wrong", level)
-	case I:
-		assert.Equal(t, "[INFO] I: message\n[WARN] W: message\n[ERROR] E: message\n", output, "output at level %v wrong", level)
-	case W:
-		assert.Equal(t, "[WARN] W: message\n[ERROR] E: message\n", output, "output at level %v wrong", level)
-	case E:
-		assert.Equal(t, "[ERROR] E: message\n", output, "output at level %v wrong", level)
-	case F:
-		assert.Equal(t, "", output, "output at level %v wrong", level)
 	}
 }

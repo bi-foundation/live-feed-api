@@ -19,8 +19,8 @@ type apiErrorResponse struct {
 	apiError *ApiError `json:"error"`
 }
 
-func NewInternalError() *ApiError {
-	return &ApiError{-410800, "internal error", ""}
+func NewInternalError(reason string) *ApiError {
+	return &ApiError{-410800, "internal error", reason}
 }
 
 func NewMethodNotFoundError() *ApiError {

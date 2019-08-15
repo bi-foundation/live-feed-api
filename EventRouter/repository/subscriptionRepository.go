@@ -1,5 +1,7 @@
 package repository
 
-import "github.com/FactomProject/live-api/EventRouter/repository/inmemory"
+import (
+	"github.com/FactomProject/live-api/EventRouter/repository/inmemory"
+)
 
-var SubscriptionRepository = &inmemory.Repository{}
+var SubscriptionRepository Repository = inmemory.New()
