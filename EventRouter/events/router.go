@@ -38,7 +38,7 @@ func (evr *EventRouter) handleEvents() {
 			continue
 		}
 
-		log.Info("Received %s with event source %v: %v", eventType, factomEvent.GetEventSource(), factomEvent.GetAnchorEvent())
+		log.Info("received %s with event source %v: %v", eventType, factomEvent.GetEventSource(), factomEvent.GetAnchorEvent())
 
 		subscriptionContexts, err := repository.SubscriptionRepository.GetSubscriptions(eventType)
 		if err != nil {

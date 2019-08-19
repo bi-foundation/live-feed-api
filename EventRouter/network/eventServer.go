@@ -123,7 +123,7 @@ func (server *Server) readEvents(conn net.Conn) (err error) {
 }
 
 func finalizeConnection(conn net.Conn) {
-	log.Info("connection closed unexpectedly to: %s", getRemoteAddress(conn))
+	log.Info("connection from %s closed unexpectedly", getRemoteAddress(conn))
 	if r := recover(); r != nil {
 		log.Error("recovered during handling connection: %v\n", r)
 	}
