@@ -558,11 +558,11 @@ func TestDeleteSubscriptionRollbackOnFailure(t *testing.T) {
 	}
 }
 
-func TestGetSubscriptions(t *testing.T) {
+func TestGetActiveSubscriptions(t *testing.T) {
 	repository, mock := initTest(t)
 
 	columns := []string{"subscription", "failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
-	mock.ExpectQuery(`SELECT subscription, failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE event_type = \?`).
+	mock.ExpectQuery(`SELECT subscription, failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE event_type = \? AND status = 'ACTIVE'`).
 		WithArgs(models.ANCHOR_EVENT).
 		WillReturnRows(sqlmock.NewRows(columns).
 			AddRow(1, 0, "url", models.HTTP, models.ACTIVE, "", "", "", "", models.ANCHOR_EVENT, "should be returned").
@@ -571,7 +571,7 @@ func TestGetSubscriptions(t *testing.T) {
 			AddRow(3, 2, "url", models.HTTP, models.ACTIVE, "", "", "", "", models.ANCHOR_EVENT, "return"))
 
 	// now we execute our methods
-	subscriptionContexts, err := repository.GetSubscriptions(models.ANCHOR_EVENT)
+	subscriptionContexts, err := repository.GetActiveSubscriptions(models.ANCHOR_EVENT)
 	if err != nil {
 		t.Errorf("error was not expected creating subscription: %s", err)
 	}

@@ -88,13 +88,13 @@ func (repository *inMemoryRepository) DeleteSubscription(id string) error {
 	return nil
 }
 
-func (repository *inMemoryRepository) GetSubscriptions(eventType models.EventType) ([]*models.SubscriptionContext, error) {
+func (repository *inMemoryRepository) GetActiveSubscriptions(eventType models.EventType) ([]*models.SubscriptionContext, error) {
 	repository.RLock()
 	defer repository.RUnlock()
 
 	subscriptionContexts := repository.db[:0]
 	for _, subscriptionContext := range repository.db {
-		if _, ok := subscriptionContext.Subscription.Filters[eventType]; ok {
+		if _, ok := subscriptionContext.Subscription.Filters[eventType]; ok && subscriptionContext.Subscription.SubscriptionStatus == models.ACTIVE {
 			subscriptionContexts = append(subscriptionContexts, subscriptionContext)
 		}
 	}

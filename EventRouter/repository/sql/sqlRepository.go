@@ -12,7 +12,7 @@ import (
 
 const (
 	selectSubscriptionSql   = `SELECT failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = ?;`
-	selectSubscriptionsSql  = `SELECT subscription, failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE event_type = ?;`
+	selectSubscriptionsSql  = `SELECT subscription, failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE event_type = ? AND status = 'ACTIVE';`
 	insertSubscriptionSql   = `INSERT INTO subscriptions (failures, callback, callback_type, status, info, access_token, username, password) VALUES(?, ?, ?, ?, ?, ?, ?, ?);`
 	insertFilterSql         = `INSERT INTO filters (subscription, event_type, filtering) VALUES(?, ?, ?);`
 	updateSubscriptionQuery = `UPDATE subscriptions SET failures = ?, callback = ?, callback_type = ?, status = ?, info = ?, access_token = ?, username = ?, password = ? WHERE id = ?`
@@ -289,7 +289,7 @@ func (repository *sqlRepository) DeleteSubscription(id string) (err error) {
 	return err
 }
 
-func (repository *sqlRepository) GetSubscriptions(eventType models.EventType) (subscriptionContexts []*models.SubscriptionContext, err error) {
+func (repository *sqlRepository) GetActiveSubscriptions(eventType models.EventType) (subscriptionContexts []*models.SubscriptionContext, err error) {
 	subContexts := make(map[string]*models.SubscriptionContext)
 
 	rows, err := connection.Query(selectSubscriptionsSql, eventType)

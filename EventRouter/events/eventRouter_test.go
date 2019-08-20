@@ -179,7 +179,7 @@ func TestHandleEvents(t *testing.T) {
 
 	// init mock repository
 	mockStore := repository.InitMockRepository()
-	mockStore.On("GetSubscriptions", models.ANCHOR_EVENT).Return(subscriptionContexts, nil).Once()
+	mockStore.On("GetActiveSubscriptions", models.ANCHOR_EVENT).Return(subscriptionContexts, nil).Once()
 
 	var eventsReceived int32 = 0
 	factomEvent := mockFactomAnchorEvent()

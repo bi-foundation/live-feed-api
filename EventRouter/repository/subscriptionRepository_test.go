@@ -143,7 +143,8 @@ func TestConcurrency(t *testing.T) {
 func testConcurrency(t *testing.T, repository repository.Repository) {
 	eventType := models.COMMIT_ENTRY
 	subscription := models.Subscription{
-		CallbackUrl: "url",
+		CallbackUrl:        "url",
+		SubscriptionStatus: models.ACTIVE,
 		Filters: map[models.EventType]models.Filter{
 			eventType: {Filtering: ""},
 		},
@@ -155,7 +156,7 @@ func testConcurrency(t *testing.T, repository repository.Repository) {
 
 	// calculate the offset if the database already has entries
 	// Although the database should be clean and clean-up afterwards,
-	previousSubscriptions, err := repository.GetSubscriptions(eventType)
+	previousSubscriptions, err := repository.GetActiveSubscriptions(eventType)
 	offset := len(previousSubscriptions)
 
 	n := 100
@@ -172,7 +173,7 @@ func testConcurrency(t *testing.T, repository repository.Repository) {
 	}
 	wait.Wait()
 
-	subscriptions, err := repository.GetSubscriptions(eventType)
+	subscriptions, err := repository.GetActiveSubscriptions(eventType)
 	assert.Nil(t, err)
 	assert.Equal(t, n, len(subscriptions)-offset)
 }
