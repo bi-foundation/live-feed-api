@@ -110,10 +110,14 @@ func buildSubscriptionApiDefaults() map[string]interface{} {
 func getHomeDir() {
 	var err error
 	if homeDir, err = os.UserHomeDir(); err != nil {
-		panic(fmt.Sprintf("the user home directory could not be retrieved, error: %v.", err))
+		log.Warn(fmt.Sprintf("the user home directory could not be retrieved, the '$HOME/.factom/livefeed' location will be skipped. error: %v.", err))
 	}
 }
 
 func substituteHomeDir(path string) string {
-	return strings.ReplaceAll(path, "$HOME", homeDir)
+	if len(homeDir) > 0 {
+		return strings.ReplaceAll(path, "$HOME", homeDir)
+	} else {
+		return path
+	}
 }
