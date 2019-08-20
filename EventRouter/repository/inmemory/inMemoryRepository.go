@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
+	"github.com/FactomProject/live-api/EventRouter/models/errors"
 	"strconv"
 	"sync"
 )
@@ -71,7 +72,7 @@ func (repository *inMemoryRepository) findSubscription(id string) (int, *models.
 		}
 	}
 	log.Debug("subscription not found: %s", id)
-	return -1, nil, fmt.Errorf("failed to find subscription '%s'", id)
+	return -1, nil, errors.NewSubscriptionNotFound(id)
 }
 
 func (repository *inMemoryRepository) DeleteSubscription(id string) error {

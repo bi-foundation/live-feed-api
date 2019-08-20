@@ -5,6 +5,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
+	"github.com/FactomProject/live-api/EventRouter/models/errors"
 	_ "github.com/proullon/ramsql/driver"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -61,6 +62,30 @@ func TestReadSubscription(t *testing.T) {
 	}
 
 	assertSubscription(t, subscriptionContext, readSubscriptionContext)
+
+	// we make sure that all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestReadSubscriptionUnknownId(t *testing.T) {
+	repository, mock := initTest(t)
+
+	id := "1"
+	columns := []string{"failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
+	mock.ExpectQuery(`SELECT failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
+		WithArgs(id).
+		WillReturnRows(sqlmock.NewRows(columns))
+
+	// now we execute our methods
+	readSubscriptionContext, err := repository.ReadSubscription(id)
+	if err == nil {
+		t.Errorf("was expecting an error, but there was none")
+	}
+
+	assert.IsType(t, errors.SubscriptionNotFound{}, err)
+	assert.Nil(t, readSubscriptionContext)
 
 	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -410,6 +435,41 @@ func TestUpdateSubscriptionRollbackOnUpdateFailure(t *testing.T) {
 	if _, err := repository.UpdateSubscription(subscriptionContext); err == nil {
 		t.Errorf("was expecting an error, but there was none")
 	}
+
+	// we make sure that all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+// test a rollback on update subscription when updating the subscription
+func TestUpdateSubscriptionUnkownId(t *testing.T) {
+	repository, mock := initTest(t)
+
+	subscription := models.Subscription{
+		Id:           "42",
+		CallbackUrl:  "url",
+		CallbackType: models.HTTP,
+		Filters:      map[models.EventType]models.Filter{},
+	}
+	subscriptionContext := &models.SubscriptionContext{
+		Subscription: subscription,
+		Failures:     0,
+	}
+
+	columns := []string{"failures", "callback", "callback_type", "status", "info", "access_token", "username", "password", "event_type", "filtering"}
+	mock.ExpectQuery(`SELECT failures, callback, callback_type, status, info, access_token, username, password, event_type, filtering FROM subscriptions LEFT JOIN filters ON filters.subscription = subscriptions.id WHERE subscriptions.id = \?`).
+		WithArgs(subscription.Id).
+		WillReturnRows(sqlmock.NewRows(columns))
+
+	// now we execute our method
+	updateSubscription, err := repository.UpdateSubscription(subscriptionContext)
+	if err == nil {
+		t.Errorf("was expecting an error, but there was none")
+	}
+
+	assert.IsType(t, errors.SubscriptionNotFound{}, err)
+	assert.Nil(t, updateSubscription)
 
 	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {

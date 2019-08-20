@@ -15,8 +15,8 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/FactomProject/live-api/EventRouter/api/errors"
 	"github.com/FactomProject/live-api/EventRouter/log"
+	"github.com/FactomProject/live-api/EventRouter/models/errors"
 	"github.com/gorilla/mux"
 	"net/http"
 	"time"

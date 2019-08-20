@@ -2,9 +2,9 @@ package api
 
 import (
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/api/errors"
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
+	"github.com/FactomProject/live-api/EventRouter/models/errors"
 	"github.com/FactomProject/live-api/EventRouter/repository"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -69,6 +69,7 @@ func updateSubscription(writer http.ResponseWriter, request *http.Request) {
 	// Responses:
 	//        200: UpdateSubscriptionResponse
 	//        400: ApiError
+	//        404: SubscriptionNotFoundError
 	vars := mux.Vars(request)
 
 	subscription := &models.Subscription{}
@@ -101,7 +102,10 @@ func updateSubscription(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	subscriptionContext, err := repository.SubscriptionRepository.UpdateSubscription(subscriptionContext)
-	if err != nil {
+	if notFoundError, ok := err.(errors.SubscriptionNotFound); ok {
+		responseError(writer, http.StatusNotFound, errors.NewInvalidRequestDetailed(notFoundError.Error()))
+		return
+	} else if err != nil {
 		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed(err.Error()))
 		return
 	}
@@ -123,6 +127,7 @@ func getSubscription(writer http.ResponseWriter, request *http.Request) {
 	// Responses:
 	//        200: GetSubscriptionResponse
 	//        400: ApiError
+	//        404: SubscriptionNotFoundError
 	vars := mux.Vars(request)
 
 	id := vars["subscriptionId"]

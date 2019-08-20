@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// The mock repository contains additonal methods for inspection
+// The mock repository contains additional methods for inspection
 type MockRepository struct {
 	mock.Mock
 }

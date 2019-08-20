@@ -16,10 +16,20 @@ type ApiError struct {
 	Details string `json:"details"`
 }
 
-// ApiErrorResponse
+// An error has occurred
 //
 // swagger:response ApiError
 type apiErrorResponse struct {
+	// API Error
+	//
+	// in: body
+	apiError *ApiError `json:"error"`
+}
+
+// Subscription not found
+//
+// swagger:response SubscriptionNotFoundError
+type subscriptionNotFoundError struct {
 	// API Error
 	//
 	// in: body

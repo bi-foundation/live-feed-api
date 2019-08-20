@@ -1,0 +1,327 @@
+{
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "The live feed API is a service for receiving events from the factom blockchain. The API is connected to a factomd\nnode. The received events will be emitted to the subscriptions in the API. Users can subscribe a callback url where\nable to receive different types of events.",
+    "title": "Live Feed API",
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    },
+    "version": "0.0.1"
+  },
+  "host": "localhost:8700",
+  "paths": {
+    "/subscriptions": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subscription"
+        ],
+        "summary": "Subscribe an application to receive events.",
+        "operationId": "CreateSubscriptionRequest",
+        "parameters": [
+          {
+            "x-go-name": "Subscription",
+            "description": "The subscription registration for receiving information from factomd through the live api.",
+            "name": "subscription",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Subscription"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/CreateSubscriptionResponse"
+          },
+          "400": {
+            "$ref": "#/responses/ApiError"
+          }
+        }
+      }
+    },
+    "/subscriptions/{id}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subscription"
+        ],
+        "summary": "Return a subscription with the given id.",
+        "operationId": "GetSubscriptionRequest",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ID",
+            "description": "subscription id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetSubscriptionResponse"
+          },
+          "400": {
+            "$ref": "#/responses/ApiError"
+          },
+          "404": {
+            "$ref": "#/responses/SubscriptionNotFoundError"
+          }
+        }
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subscription"
+        ],
+        "summary": "Update a subscription for receiving events.",
+        "operationId": "UpdateSubscriptionRequest",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ID",
+            "description": "subscription id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "x-go-name": "Subscription",
+            "description": "The subscription registration for receiving information from factomd through the live api.",
+            "name": "subscription",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Subscription"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UpdateSubscriptionResponse"
+          },
+          "400": {
+            "$ref": "#/responses/ApiError"
+          },
+          "404": {
+            "$ref": "#/responses/SubscriptionNotFoundError"
+          }
+        }
+      },
+      "delete": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subscription"
+        ],
+        "summary": "Unsubscribe a subscription from receiving events.",
+        "operationId": "DeleteSubscriptionRequest",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ID",
+            "description": "subscription id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DeleteSubscriptionResponse"
+          },
+          "400": {
+            "$ref": "#/responses/ApiError"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ApiError": {
+      "description": "An error occurred. This can be an invalid input of other unexpected error occurred.",
+      "type": "object",
+      "title": "ApiError",
+      "properties": {
+        "code": {
+          "description": "Error code.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Code"
+        },
+        "details": {
+          "description": "Error details",
+          "type": "string",
+          "x-go-name": "Details"
+        },
+        "message": {
+          "description": "Error message.",
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+    },
+    "Credentials": {
+      "description": "Credentials of api to deliver events to the callback endpoint.",
+      "type": "object",
+      "title": "Credentials",
+      "properties": {
+        "accessToken": {
+          "description": "Access token for setting the bearer token when authenticating on at the callback url. This is required when the callback type is set on BEARER_TOKEN.",
+          "type": "string",
+          "x-go-name": "AccessToken"
+        },
+        "basicAuthPassword": {
+          "description": "Password for authenticating with basic authentication. This is required when the callback type is set on BASIC_AUTH.",
+          "type": "string",
+          "x-go-name": "BasicAuthPassword"
+        },
+        "basicAuthUsername": {
+          "description": "Username for authenticating with basic authentication. This is required when the callback type is set on BASIC_AUTH.",
+          "type": "string",
+          "x-go-name": "BasicAuthUsername"
+        }
+      },
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+    },
+    "EventType": {
+      "description": "A filtering is linked to event type: [COMMIT_CHAIN, COMMIT_ENTRY, ANCHOR_EVENT, REVEAL_ENTRY, NODE_MESSAGE]",
+      "type": "string",
+      "title": "EventType",
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+    },
+    "Filter": {
+      "description": "Define a Filter on an EventType to filter the event. This allows to reduce the network traffic.",
+      "type": "object",
+      "title": "Filter",
+      "properties": {
+        "filtering": {
+          "description": "Filtering with GraphQL",
+          "type": "string",
+          "x-go-name": "Filtering"
+        }
+      },
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+    },
+    "Subscription": {
+      "description": "An application is able to have a subscription for events.\nEvents will be send to the callback url endpoint of the subscription.",
+      "type": "object",
+      "title": "Subscription",
+      "required": [
+        "callbackUrl",
+        "callbackType"
+      ],
+      "properties": {
+        "callbackType": {
+          "description": "Type of callback [HTTP, BEARER_TOKEN, BASIC_AUTH].\nHTTP to deliver the events to a http/https endpoint.\nBEARER_TOKEN to deliver the events to a http/https endpoint with a bearer token for authentication.\nBASIC_AUTH to deliver the events to a http/https endpoint with a basic authentication.",
+          "x-go-name": "CallbackType",
+          "example": "HTTP"
+        },
+        "callbackUrl": {
+          "description": "The endpoint to receive the events.",
+          "type": "string",
+          "x-go-name": "CallbackUrl",
+          "example": "https://servser.com/events"
+        },
+        "credentials": {
+          "$ref": "#/definitions/Credentials"
+        },
+        "filters": {
+          "description": "The emitted event can be filter to receive not all data from an event type. Subscribe on one or more event types. For every event type a filtering can be defined.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Filter"
+          },
+          "x-go-name": "Filters",
+          "example": {
+            "COMMIT_CHAIN": {
+              "filtering": "string"
+            },
+            "NODE_MESSAGE": {
+              "filtering": "string"
+            }
+          }
+        },
+        "id": {
+          "description": "The id of the subscription.",
+          "type": "string",
+          "x-go-name": "Id",
+          "readOnly": true
+        },
+        "info": {
+          "description": "Information of the subscription. An information message can be for example about why the subscription is suspended.",
+          "type": "string",
+          "x-go-name": "SubscriptionInfo",
+          "readOnly": true
+        },
+        "status": {
+          "description": "Status of subscription. Normally a subscription is active. When events fail to be delivered the subscription will be suspended. The subscription can become active again by updating the subscription. When the subscription is suspended, the error information is set in the info field",
+          "x-go-name": "SubscriptionStatus",
+          "example": "ACTIVE"
+        }
+      },
+      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+    }
+  },
+  "responses": {
+    "ApiError": {
+      "description": "An error has occurred",
+      "schema": {
+        "$ref": "#/definitions/ApiError"
+      }
+    },
+    "CreateSubscriptionResponse": {
+      "description": "An SubscriptionResponse is the stored subscription",
+      "schema": {
+        "$ref": "#/definitions/Subscription"
+      }
+    },
+    "DeleteSubscriptionResponse": {
+      "description": "A Subscription is returned that is successfully unsubscribed",
+      "schema": {
+        "$ref": "#/definitions/Subscription"
+      }
+    },
+    "GetSubscriptionResponse": {
+      "description": "An SubscriptionResponse is the stored subscription",
+      "schema": {
+        "$ref": "#/definitions/Subscription"
+      }
+    },
+    "SubscriptionNotFoundError": {
+      "description": "Subscription not found",
+      "schema": {
+        "$ref": "#/definitions/ApiError"
+      }
+    },
+    "UpdateSubscriptionResponse": {
+      "description": "An SubscriptionResponse is the stored subscription",
+      "schema": {
+        "$ref": "#/definitions/Subscription"
+      }
+    }
+  }
+}

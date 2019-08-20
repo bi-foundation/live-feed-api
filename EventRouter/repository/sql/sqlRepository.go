@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
+	"github.com/FactomProject/live-api/EventRouter/models/errors"
 	_ "github.com/go-sql-driver/mysql"
 	"strconv"
 )
@@ -95,7 +96,7 @@ func (repository *sqlRepository) CreateSubscription(createSubscriptionContext *m
 	}
 	rows, err := result.RowsAffected()
 	if rows != 1 || err != nil {
-		err = fmt.Errorf("failed to create subscription: no subscription found")
+		err = fmt.Errorf("failed to create subscription: %v", err)
 		return nil, err
 	}
 
@@ -172,8 +173,7 @@ func (repository *sqlRepository) ReadSubscription(id string) (subscriptionContex
 	}
 
 	if !found {
-		err = fmt.Errorf("failed to read subscription: no subscriptions found with if '%s'", id)
-		return nil, err
+		return nil, errors.NewSubscriptionNotFound(id)
 	}
 
 	log.Debug("read subscription: %v", subscriptionContext)

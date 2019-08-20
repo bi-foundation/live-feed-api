@@ -3,6 +3,7 @@ package inmemory
 import (
 	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/models"
+	"github.com/FactomProject/live-api/EventRouter/models/errors"
 	"github.com/stretchr/testify/assert"
 	"strconv"
 	"sync"
@@ -52,7 +53,7 @@ func TestCRUD(t *testing.T) {
 	assert.Nil(t, err)
 
 	unknownSubscription, err := repo.ReadSubscription(subscriptionContext.Subscription.Id)
-	assert.NotNil(t, err)
+	assert.IsType(t, errors.SubscriptionNotFound{}, err)
 	assert.Nil(t, unknownSubscription)
 }
 

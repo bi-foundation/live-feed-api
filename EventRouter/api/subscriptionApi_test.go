@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/api/errors"
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
+	"github.com/FactomProject/live-api/EventRouter/models/errors"
 	"github.com/FactomProject/live-api/EventRouter/repository"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -129,6 +129,13 @@ func TestSubscriptionApi(t *testing.T) {
 			assert:       assertInvalidRequestError,
 		},
 		"update-subscription": {
+			URL:          "/subscriptions/id",
+			Method:       http.MethodPut,
+			content:      content(t, testSubscription),
+			responseCode: http.StatusOK,
+			assert:       assertTestSubscribe,
+		},
+		"update-subscription-with-id-in-body": {
 			URL:    "/subscriptions/id",
 			Method: http.MethodPut,
 			content: content(t, &models.Subscription{
@@ -147,18 +154,11 @@ func TestSubscriptionApi(t *testing.T) {
 			responseCode: http.StatusOK,
 			assert:       assertTestSubscribe,
 		},
-		"update-subscription-no-id-in-body": {
-			URL:          "/subscriptions/id",
-			Method:       http.MethodPut,
-			content:      content(t, testSubscription),
-			responseCode: http.StatusOK,
-			assert:       assertTestSubscribe,
-		},
 		"update-unknown-id ": {
 			URL:          "/subscriptions/unknown-id",
 			Method:       http.MethodPut,
 			content:      content(t, testSubscription),
-			responseCode: http.StatusBadRequest,
+			responseCode: http.StatusNotFound,
 			assert:       assertInvalidRequestError,
 		},
 		"update-id-mismatch": {
@@ -200,21 +200,12 @@ func TestSubscriptionApi(t *testing.T) {
 			responseCode: http.StatusOK,
 			assert:       assertEmptyResponse,
 		},
-		"unsubscribe not found": {
+		"unsubscribe no id": {
 			URL:          "/subscriptions/",
 			Method:       http.MethodDelete,
 			content:      nil,
 			responseCode: http.StatusNotFound,
 			assert:       assertNotFound,
-		},
-		"unsubscribe-invalid": {
-			URL:    "/subscriptions/notfound",
-			Method: http.MethodDelete,
-			content: content(t, &models.Subscription{
-				CallbackUrl: "invalid url",
-			}),
-			responseCode: http.StatusBadRequest,
-			assert:       assertInvalidRequestError,
 		},
 		"subscribe-wrong-method": {
 			URL:          "/subscriptions",
@@ -230,11 +221,10 @@ func TestSubscriptionApi(t *testing.T) {
 	mockStore.On("CreateSubscription", "http://url/callback").Return(nil, nil).Twice()
 	mockStore.On("CreateSubscription", "http://url/callback/internal/error").Return(nil, fmt.Errorf("something failed")).Once()
 	mockStore.On("ReadSubscription", "id").Return(suspendedSubscriptionContext, nil).Once()
-	mockStore.On("ReadSubscription", "unknown").Return(&models.SubscriptionContext{}, fmt.Errorf("subscription not found")).Once()
+	mockStore.On("ReadSubscription", "unknown").Return(&models.SubscriptionContext{}, errors.NewSubscriptionNotFound("unknown")).Once()
 	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Twice()
-	mockStore.On("UpdateSubscription", "unknown-id").Return(nil, fmt.Errorf("subscription not found")).Once()
+	mockStore.On("UpdateSubscription", "unknown-id").Return(nil, errors.NewSubscriptionNotFound("unknown")).Once()
 	mockStore.On("DeleteSubscription", "0").Return(nil).Once()
-	mockStore.On("DeleteSubscription", "notfound").Return(fmt.Errorf("subscription not found")).Once()
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
