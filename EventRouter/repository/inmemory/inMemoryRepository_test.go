@@ -20,8 +20,8 @@ func init() {
 func TestCRUD(t *testing.T) {
 	subscriptionContext := &models.SubscriptionContext{
 		Subscription: models.Subscription{
-			Id:       "ID",
-			Callback: "url",
+			Id:          "ID",
+			CallbackUrl: "url",
 		},
 	}
 	createdSubscription, err := repo.CreateSubscription(subscriptionContext)
@@ -30,23 +30,23 @@ func TestCRUD(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, id, createdSubscription.Subscription.Id)
-	assert.Equal(t, subscriptionContext.Subscription.Callback, createdSubscription.Subscription.Callback)
+	assert.Equal(t, subscriptionContext.Subscription.CallbackUrl, createdSubscription.Subscription.CallbackUrl)
 
 	readSubscription, err := repo.ReadSubscription(subscriptionContext.Subscription.Id)
 	assert.Nil(t, err)
 	assert.Equal(t, id, readSubscription.Subscription.Id)
-	assert.Equal(t, subscriptionContext.Subscription.Callback, readSubscription.Subscription.Callback)
+	assert.Equal(t, subscriptionContext.Subscription.CallbackUrl, readSubscription.Subscription.CallbackUrl)
 
 	substituteSubscriptionContext := &models.SubscriptionContext{
 		Subscription: models.Subscription{
-			Id:       createdSubscription.Subscription.Id,
-			Callback: "updated-url",
+			Id:          createdSubscription.Subscription.Id,
+			CallbackUrl: "updated-url",
 		},
 	}
 	updatedSubscription, err := repo.UpdateSubscription(substituteSubscriptionContext)
 	assert.Nil(t, err)
 	assert.Equal(t, id, updatedSubscription.Subscription.Id)
-	assert.Equal(t, substituteSubscriptionContext.Subscription.Callback, updatedSubscription.Subscription.Callback)
+	assert.Equal(t, substituteSubscriptionContext.Subscription.CallbackUrl, updatedSubscription.Subscription.CallbackUrl)
 
 	err = repo.DeleteSubscription(subscriptionContext.Subscription.Id)
 	assert.Nil(t, err)
@@ -65,7 +65,7 @@ func TestConcurrency(t *testing.T) {
 			defer wait.Done()
 			subscriptionContext := &models.SubscriptionContext{
 				Subscription: models.Subscription{
-					Callback: fmt.Sprintf("url: %d", x),
+					CallbackUrl: fmt.Sprintf("url: %d", x),
 				},
 			}
 

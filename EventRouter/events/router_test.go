@@ -93,7 +93,7 @@ func TestSendEvent(t *testing.T) {
 			subscriptionContext := &models.SubscriptionContext{
 				Subscription: models.Subscription{
 					Id:           "id",
-					Callback:     fmt.Sprintf("http://localhost:%[1]d/callback%[1]d%s", port, testCase.EndpointPostfix),
+					CallbackUrl:  fmt.Sprintf("http://localhost:%[1]d/callback%[1]d%s", port, testCase.EndpointPostfix),
 					CallbackType: testCase.CallbackType,
 					Filters: map[models.EventType]models.Filter{
 						models.COMMIT_CHAIN: {Filtering: ""},
@@ -117,7 +117,7 @@ func TestHTTPSEndpoint(t *testing.T) {
 	subscriptionContexts := []*models.SubscriptionContext{
 		{
 			Subscription: models.Subscription{
-				Callback:     "https://localhost:23232/callback23232",
+				CallbackUrl:  "https://localhost:23232/callback23232",
 				CallbackType: models.BEARER_TOKEN,
 				Filters: map[models.EventType]models.Filter{
 					models.COMMIT_CHAIN: {Filtering: ""},
@@ -158,13 +158,13 @@ func TestHTTPSEndpoint(t *testing.T) {
 // test sending 5 subscriptions to two different endpoints
 func TestHandleEvents(t *testing.T) {
 	subscription1 := models.Subscription{
-		Callback: "http://localhost:23222/callback23222",
+		CallbackUrl: "http://localhost:23222/callback23222",
 		Filters: map[models.EventType]models.Filter{
 			models.ANCHOR_EVENT: {Filtering: ""},
 		},
 	}
 	subscription2 := models.Subscription{
-		Callback: "http://localhost:23223/callback23223",
+		CallbackUrl: "http://localhost:23223/callback23223",
 		Filters: map[models.EventType]models.Filter{
 			models.ANCHOR_EVENT: {Filtering: ""},
 		},

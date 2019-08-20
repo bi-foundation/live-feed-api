@@ -1,40 +1,23 @@
 package errors
 
-// ApiError
-// An error occurred. This can be an invalid input of other unexpected error occurred.
-// swagger:model ApiError
-type ApiError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Details string `json:"details"`
+import "github.com/FactomProject/live-api/EventRouter/models"
+
+func NewInternalError(reason string) *models.ApiError {
+	return &models.ApiError{-410800, "internal error", reason}
 }
 
-// ApiErrorResponse
-//
-// swagger:response ApiError
-type apiErrorResponse struct {
-	// API Error
-	//
-	// in: body
-	apiError *ApiError `json:"error"`
+func NewMethodNotFoundError() *models.ApiError {
+	return &models.ApiError{-410801, "method not found", ""}
 }
 
-func NewInternalError(reason string) *ApiError {
-	return &ApiError{-410800, "internal error", reason}
-}
-
-func NewMethodNotFoundError() *ApiError {
-	return &ApiError{-410801, "method not found", ""}
-}
-
-func NewInvalidRequest() *ApiError {
+func NewInvalidRequest() *models.ApiError {
 	return NewInvalidRequestDetailed("")
 }
 
-func NewInvalidRequestDetailed(reason string) *ApiError {
-	return &ApiError{-410810, "invalid request", reason}
+func NewInvalidRequestDetailed(reason string) *models.ApiError {
+	return &models.ApiError{-410810, "invalid request", reason}
 }
 
-func NewParseError() *ApiError {
-	return &ApiError{-410800, "parse error", ""}
+func NewParseError() *models.ApiError {
+	return &models.ApiError{-410800, "parse error", ""}
 }

@@ -1,8 +1,7 @@
 package models
 
-// status of subscription: [ACTIVE, SUSPENDED]
-// Normally a subscription is active. When events fail to be delivered the subscription will be suspended. The subscription can become active again by updating the subscription.
-// swagger:model SubscriptionStatuss
+// SubscriptionStatus
+// swagger:enum SubscriptionStatus
 type SubscriptionStatus string
 
 const (

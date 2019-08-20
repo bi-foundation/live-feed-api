@@ -50,7 +50,7 @@ func (repository *inMemoryRepository) UpdateSubscription(substituteSubscriptionC
 	repository.Lock()
 	defer repository.Unlock()
 	log.Debug("update subscription: %v with: %v", subscriptionContext, substituteSubscriptionContext.Subscription)
-	repository.db[index].Subscription.Callback = substituteSubscriptionContext.Subscription.Callback
+	repository.db[index].Subscription.CallbackUrl = substituteSubscriptionContext.Subscription.CallbackUrl
 	repository.db[index].Subscription.CallbackType = substituteSubscriptionContext.Subscription.CallbackType
 	repository.db[index].Subscription.SubscriptionStatus = substituteSubscriptionContext.Subscription.SubscriptionStatus
 	repository.db[index].Subscription.SubscriptionInfo = substituteSubscriptionContext.Subscription.SubscriptionInfo

@@ -86,7 +86,7 @@ func send(subscriptions []*models.SubscriptionContext, factomEvent *eventmessage
 
 func sendEvent(subscriptionContext *models.SubscriptionContext, event []byte) {
 	subscription := subscriptionContext.Subscription
-	url := subscription.Callback
+	url := subscription.CallbackUrl
 
 	// Create a new request
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(event))
@@ -106,7 +106,7 @@ func sendEvent(subscriptionContext *models.SubscriptionContext, event []byte) {
 		request.Header.Add("Authorization", bearer)
 	}
 
-	log.Debug("send event to '%s' %v", subscription.Callback, subscription.CallbackType)
+	log.Debug("send event to '%s' %v", subscription.CallbackUrl, subscription.CallbackType)
 	// send request using default http Client
 	response, err := http.DefaultClient.Do(request)
 

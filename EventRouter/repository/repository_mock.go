@@ -11,7 +11,7 @@ type MockRepository struct {
 }
 
 func (m *MockRepository) CreateSubscription(subscriptionContext *models.SubscriptionContext) (*models.SubscriptionContext, error) {
-	rets := m.Called(subscriptionContext.Subscription.Callback)
+	rets := m.Called(subscriptionContext.Subscription.CallbackUrl)
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
 	 * we need to typecast it to the type we expect, which in this case is []*subscription
 	 */

@@ -25,7 +25,7 @@ func init() {
 
 var testSubscription = &models.Subscription{
 	Id:           "id",
-	Callback:     "http://url/callback",
+	CallbackUrl:  "http://url/callback",
 	CallbackType: models.HTTP,
 	Filters: map[models.EventType]models.Filter{
 		models.COMMIT_CHAIN: {
@@ -38,7 +38,7 @@ var testSubscription = &models.Subscription{
 }
 
 var suspendedSubscription = &models.Subscription{
-	Callback:           "http://url/callback",
+	CallbackUrl:        "http://url/callback",
 	CallbackType:       models.HTTP,
 	SubscriptionStatus: models.SUSPENDED,
 	SubscriptionInfo:   "read only information",
@@ -58,47 +58,47 @@ func TestSubscriptionApi(t *testing.T) {
 		assert       func(*testing.T, []byte)
 	}{
 		"subscribe": {
-			URL:          "/subscribe",
+			URL:          "/subscriptions",
 			Method:       http.MethodPost,
 			content:      content(t, testSubscription),
 			responseCode: http.StatusOK,
 			assert:       assertTestSubscribe,
 		},
 		"subscribe-invalid": {
-			URL:    "/subscribe",
+			URL:    "/subscriptions",
 			Method: http.MethodPost,
 			content: content(t, &models.Subscription{
-				Callback: "invalid url",
+				CallbackUrl: "invalid url",
 			}),
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
 		"subscribe-nothing": {
-			URL:          "/subscribe",
+			URL:          "/subscriptions",
 			Method:       http.MethodPost,
 			content:      nil,
 			responseCode: http.StatusBadRequest,
 			assert:       assertParseError,
 		},
 		"subscribe-something-else": {
-			URL:          "/subscribe",
+			URL:          "/subscriptions",
 			Method:       http.MethodPost,
 			content:      []byte(`{"message":"invalid object"}`),
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
 		"subscribe-suspended": {
-			URL:          "/subscribe",
+			URL:          "/subscriptions",
 			Method:       http.MethodPost,
 			content:      content(t, suspendedSubscription),
 			responseCode: http.StatusOK,
 			assert:       assertSuspendedSubscribe,
 		},
 		"subscribe-invalid-status": {
-			URL:    "/subscribe",
+			URL:    "/subscriptions",
 			Method: http.MethodPost,
 			content: content(t, &models.Subscription{
-				Callback:           "http://url/callback/suspended",
+				CallbackUrl:        "http://url/callback/suspended",
 				CallbackType:       models.HTTP,
 				SubscriptionStatus: "invalid status",
 			}),
@@ -106,100 +106,100 @@ func TestSubscriptionApi(t *testing.T) {
 			assert:       assertInvalidRequestError,
 		},
 		"subscribe-db-fail": {
-			URL:    "/subscribe",
+			URL:    "/subscriptions",
 			Method: http.MethodPost,
 			content: content(t, &models.Subscription{
-				Callback:     "http://url/callback/internal/error",
+				CallbackUrl:  "http://url/callback/internal/error",
 				CallbackType: models.HTTP,
 			}),
 			responseCode: http.StatusInternalServerError,
 			assert:       assertInternalError,
 		},
 		"get-subscription": {
-			URL:          "/subscribe/id",
+			URL:          "/subscriptions/id",
 			Method:       http.MethodGet,
 			content:      nil,
 			responseCode: http.StatusOK,
 			assert:       assertGetSubscribe,
 		},
 		"get-subscription-unknown": {
-			URL:          "/subscribe/unknown",
+			URL:          "/subscriptions/unknown",
 			Method:       http.MethodGet,
 			content:      nil,
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
 		"update-subscription": {
-			URL:          "/subscribe/id",
+			URL:          "/subscriptions/id",
 			Method:       http.MethodPut,
 			content:      content(t, testSubscription),
 			responseCode: http.StatusOK,
 			assert:       assertTestSubscribe,
 		},
 		"update-unknown-id ": {
-			URL:          "/subscribe/unknown-id",
+			URL:          "/subscriptions/unknown-id",
 			Method:       http.MethodPut,
 			content:      content(t, testSubscription),
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
 		"update-id-mismatch ": {
-			URL:    "/subscribe/id",
+			URL:    "/subscriptions/id",
 			Method: http.MethodPut,
 			content: content(t, &models.Subscription{
 				Id:           "id-mismatch",
-				Callback:     "invalid-url",
+				CallbackUrl:  "invalid-url",
 				CallbackType: models.HTTP,
 			}),
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
 		"update-subscription-invalid-url": {
-			URL:    "/subscribe/id",
+			URL:    "/subscriptions/id",
 			Method: http.MethodPut,
 			content: content(t, &models.Subscription{
 				Id:           "id",
-				Callback:     "invalid-url",
+				CallbackUrl:  "invalid-url",
 				CallbackType: models.HTTP,
 			}),
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
 		"update-invalid-subscription ": {
-			URL:    "/subscribe/id",
+			URL:    "/subscriptions/id",
 			Method: http.MethodPut,
 			content: content(t, &models.Subscription{
-				Callback:     "http://url/test",
+				CallbackUrl:  "http://url/test",
 				CallbackType: "invalid",
 			}),
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
 		"unsubscribe": {
-			URL:          "/subscribe/0",
+			URL:          "/subscriptions/0",
 			Method:       http.MethodDelete,
 			content:      nil,
 			responseCode: http.StatusOK,
 			assert:       assertEmptyResponse,
 		},
 		"unsubscribe not found": {
-			URL:          "/subscribe/",
+			URL:          "/subscriptions/",
 			Method:       http.MethodDelete,
 			content:      nil,
 			responseCode: http.StatusNotFound,
 			assert:       assertNotFound,
 		},
 		"unsubscribe-invalid": {
-			URL:    "/subscribe/notfound",
+			URL:    "/subscriptions/notfound",
 			Method: http.MethodDelete,
 			content: content(t, &models.Subscription{
-				Callback: "invalid url",
+				CallbackUrl: "invalid url",
 			}),
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
 		"subscribe-wrong-method": {
-			URL:          "/subscribe",
+			URL:          "/subscriptions",
 			Method:       http.MethodDelete,
 			content:      content(t, testSubscription),
 			responseCode: http.StatusMethodNotAllowed,
@@ -266,7 +266,7 @@ func assertSubscribe(t *testing.T, expected *models.Subscription, body []byte) {
 		t.Fatalf("unmarshalling failed: %v", err)
 	}
 
-	assert.Equal(t, expected.Callback, actual.Callback)
+	assert.Equal(t, expected.CallbackUrl, actual.CallbackUrl)
 	assert.Equal(t, expected.CallbackType, actual.CallbackType)
 	assert.EqualValues(t, expected.Filters, actual.Filters)
 	assert.Equal(t, expected.Credentials, actual.Credentials)
@@ -308,8 +308,8 @@ func assertNotFound(t *testing.T, body []byte) {
 	assert.Equal(t, "404 page not found\n", string(body))
 }
 
-func parseApiBody(t *testing.T, body []byte) errors.ApiError {
-	var result errors.ApiError
+func parseApiBody(t *testing.T, body []byte) models.ApiError {
+	var result models.ApiError
 	err := json.Unmarshal(body, &result)
 	if err != nil {
 		t.Fatalf("unmarshalling failed: %v", err)

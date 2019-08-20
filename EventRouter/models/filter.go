@@ -1,7 +1,9 @@
 package models
 
-// A filtering is linked to event type [COMMIT_CHAIN, COMMIT_ENTRY, ANCHOR_EVENT, REVEAL_ENTRY, NODE_MESSAGE]
-// swagger:enum EventType
+// EventType
+//
+// A filtering is linked to event type: [COMMIT_CHAIN, COMMIT_ENTRY, ANCHOR_EVENT, REVEAL_ENTRY, NODE_MESSAGE]
+// swagger:model EventType
 type EventType string
 
 const (
@@ -13,14 +15,12 @@ const (
 	NODE_MESSAGE    EventType = "NODE_MESSAGE"
 )
 
-//  Define a filter with GraphQL
-// swagger:model GraphQL
-type GraphQL string
-
-// Define a Filter on an EventType to filter the event. This allows to reduce the network traffic
+// Filter
+//
+// Define a Filter on an EventType to filter the event. This allows to reduce the network traffic.
 // swagger:model Filter
 type Filter struct {
-	// Filtering with graph ql
+	// Filtering with GraphQL
 	// required: false
-	Filtering GraphQL
+	Filtering string `json:"filtering"`
 }

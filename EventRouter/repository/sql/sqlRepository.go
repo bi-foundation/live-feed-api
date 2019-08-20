@@ -88,7 +88,7 @@ func (repository *sqlRepository) CreateSubscription(createSubscriptionContext *m
 
 	// insert subscription
 	createSubscription := &createSubscriptionContext.Subscription
-	result, err := subscriptionStmt.Exec(createSubscriptionContext.Failures, createSubscription.Callback, createSubscription.CallbackType, createSubscription.SubscriptionStatus, createSubscription.SubscriptionInfo, createSubscription.Credentials.AccessToken, createSubscription.Credentials.BasicAuthUsername, createSubscription.Credentials.BasicAuthPassword)
+	result, err := subscriptionStmt.Exec(createSubscriptionContext.Failures, createSubscription.CallbackUrl, createSubscription.CallbackType, createSubscription.SubscriptionStatus, createSubscription.SubscriptionInfo, createSubscription.Credentials.AccessToken, createSubscription.Credentials.BasicAuthUsername, createSubscription.Credentials.BasicAuthPassword)
 	if err != nil {
 		err = fmt.Errorf("failed to create subscription: %v", err)
 		return nil, err
@@ -155,7 +155,7 @@ func (repository *sqlRepository) ReadSubscription(id string) (subscriptionContex
 		var eventTypeValue sql.NullString
 		var filteringValue sql.NullString
 
-		err = rows.Scan(&subscriptionContext.Failures, &subscription.Callback, &subscription.CallbackType, &subscription.SubscriptionStatus, &subscription.SubscriptionInfo, &subscription.Credentials.AccessToken, &subscription.Credentials.BasicAuthUsername, &subscription.Credentials.BasicAuthPassword, &eventTypeValue, &filteringValue)
+		err = rows.Scan(&subscriptionContext.Failures, &subscription.CallbackUrl, &subscription.CallbackType, &subscription.SubscriptionStatus, &subscription.SubscriptionInfo, &subscription.Credentials.AccessToken, &subscription.Credentials.BasicAuthUsername, &subscription.Credentials.BasicAuthPassword, &eventTypeValue, &filteringValue)
 		if err != nil {
 			err = fmt.Errorf("failed to read subscription: %v", err)
 			return nil, err
@@ -164,7 +164,7 @@ func (repository *sqlRepository) ReadSubscription(id string) (subscriptionContex
 		if eventTypeValue.Valid {
 			filter := models.Filter{}
 			if filteringValue.Valid {
-				filter.Filtering = models.GraphQL(filteringValue.String)
+				filter.Filtering = filteringValue.String
 			}
 			eventType := models.EventType(eventTypeValue.String)
 			subscription.Filters[eventType] = filter
@@ -205,7 +205,7 @@ func (repository *sqlRepository) UpdateSubscription(updateSubscriptionContext *m
 	// check if the subscription needs to be updated
 	oldSubscription := &oldSubscriptionContext.Subscription
 	if updateSubscriptionContext.Failures != oldSubscriptionContext.Failures ||
-		updateSubscription.Callback != oldSubscription.Callback ||
+		updateSubscription.CallbackUrl != oldSubscription.CallbackUrl ||
 		updateSubscription.CallbackType != oldSubscription.CallbackType ||
 		updateSubscription.SubscriptionStatus != oldSubscription.SubscriptionStatus ||
 		updateSubscription.SubscriptionInfo != oldSubscription.SubscriptionInfo ||
@@ -213,7 +213,7 @@ func (repository *sqlRepository) UpdateSubscription(updateSubscriptionContext *m
 		updateSubscription.Credentials.BasicAuthUsername != oldSubscription.Credentials.BasicAuthUsername ||
 		updateSubscription.Credentials.BasicAuthPassword != oldSubscription.Credentials.BasicAuthPassword {
 
-		_, err = tx.Exec(updateSubscriptionQuery, updateSubscriptionContext.Failures, updateSubscription.Callback, updateSubscription.CallbackType, updateSubscription.SubscriptionStatus, updateSubscription.SubscriptionInfo, updateSubscription.Credentials.AccessToken, updateSubscription.Credentials.BasicAuthUsername, updateSubscription.Credentials.BasicAuthPassword, updateSubscription.Id)
+		_, err = tx.Exec(updateSubscriptionQuery, updateSubscriptionContext.Failures, updateSubscription.CallbackUrl, updateSubscription.CallbackType, updateSubscription.SubscriptionStatus, updateSubscription.SubscriptionInfo, updateSubscription.Credentials.AccessToken, updateSubscription.Credentials.BasicAuthUsername, updateSubscription.Credentials.BasicAuthPassword, updateSubscription.Id)
 		if err != nil {
 			err = fmt.Errorf("failed to update subscription: %v", err)
 			return nil, err
@@ -311,7 +311,7 @@ func (repository *sqlRepository) GetSubscriptions(eventType models.EventType) (s
 		var eventTypeValue sql.NullString
 		var filteringValue sql.NullString
 
-		err = rows.Scan(&subscription.Id, &subscriptionContext.Failures, &subscription.Callback, &subscription.CallbackType, &subscription.SubscriptionStatus, &subscription.SubscriptionInfo, &subscription.Credentials.AccessToken, &subscription.Credentials.BasicAuthUsername, &subscription.Credentials.BasicAuthPassword, &eventTypeValue, &filteringValue)
+		err = rows.Scan(&subscription.Id, &subscriptionContext.Failures, &subscription.CallbackUrl, &subscription.CallbackType, &subscription.SubscriptionStatus, &subscription.SubscriptionInfo, &subscription.Credentials.AccessToken, &subscription.Credentials.BasicAuthUsername, &subscription.Credentials.BasicAuthPassword, &eventTypeValue, &filteringValue)
 		if err != nil {
 			err = fmt.Errorf("failed to get subscriptions: %v", err)
 			return nil, err
@@ -320,7 +320,7 @@ func (repository *sqlRepository) GetSubscriptions(eventType models.EventType) (s
 		if eventTypeValue.Valid {
 			filter := models.Filter{}
 			if filteringValue.Valid {
-				filter.Filtering = models.GraphQL(filteringValue.String)
+				filter.Filtering = filteringValue.String
 			}
 			eventType := models.EventType(eventTypeValue.String)
 			subscription.Filters[eventType] = filter

@@ -12,9 +12,9 @@ import (
 )
 
 func subscribe(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route POST /subscribe subscription CreateSubscriptionRequest
+	// swagger:route POST /subscriptions subscription CreateSubscriptionRequest
 	//
-	// Subscribe a new application to receive an event
+	// Subscribe an application to receive events.
 	//
 	// Consumes:
 	//   - application/json
@@ -55,9 +55,9 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 }
 
 func updateSubscription(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route PUT /subscribe/{id} subscription UpdateSubscriptionRequest
+	// swagger:route PUT /subscriptions/{id} subscription UpdateSubscriptionRequest
 	//
-	// Update a subscription for receiving events from the api
+	// Update a subscription for receiving events.
 	//
 	// Consumes:
 	//   - application/json
@@ -108,9 +108,9 @@ func updateSubscription(writer http.ResponseWriter, request *http.Request) {
 }
 
 func getSubscription(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route GET /subscribe/{id} subscription GetSubscriptionRequest
+	// swagger:route GET /subscriptions/{id} subscription GetSubscriptionRequest
 	//
-	// Get a subscription that is subscribed
+	// Return a subscription with the given id.
 	//
 	// Consumes:
 	//   - application/json
@@ -135,9 +135,9 @@ func getSubscription(writer http.ResponseWriter, request *http.Request) {
 }
 
 func unsubscribe(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route DELETE /subscribe/{id} subscription DeleteSubscriptionRequest
+	// swagger:route DELETE /subscriptions/{id} subscription DeleteSubscriptionRequest
 	//
-	// Unsubscribe an application from receiving events from the api
+	// Unsubscribe a subscription from receiving events.
 	//
 	// Consumes:
 	//   - application/json
@@ -159,7 +159,7 @@ func unsubscribe(writer http.ResponseWriter, request *http.Request) {
 }
 
 func validateSubscription(subscription *models.Subscription) error {
-	u, err := url.ParseRequestURI(subscription.Callback)
+	u, err := url.ParseRequestURI(subscription.CallbackUrl)
 	if err != nil || u.Scheme == "" || u.Host == "" {
 		return fmt.Errorf("invalid callback url: %v", err)
 	}

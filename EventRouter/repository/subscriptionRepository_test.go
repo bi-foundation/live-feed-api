@@ -32,13 +32,13 @@ func TestCRUD(t *testing.T) {
 
 	subscriptionContext := &models.SubscriptionContext{
 		Subscription: models.Subscription{
-			Callback:           "url",
+			CallbackUrl:        "url",
 			CallbackType:       models.BEARER_TOKEN,
 			SubscriptionStatus: models.ACTIVE,
 			Filters: map[models.EventType]models.Filter{
-				models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering 1"))},
-				models.COMMIT_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("filtering 2"))},
-				models.COMMIT_CHAIN: {Filtering: models.GraphQL(fmt.Sprintf("filtering 3"))},
+				models.ANCHOR_EVENT: {Filtering: fmt.Sprintf("filtering 1")},
+				models.COMMIT_ENTRY: {Filtering: fmt.Sprintf("filtering 2")},
+				models.COMMIT_CHAIN: {Filtering: fmt.Sprintf("filtering 3")},
 			},
 			Credentials: models.Credentials{
 				AccessToken: "token",
@@ -49,13 +49,13 @@ func TestCRUD(t *testing.T) {
 
 	substituteSubscriptionContext := &models.SubscriptionContext{
 		Subscription: models.Subscription{
-			Callback:           "updated-url",
+			CallbackUrl:        "updated-url",
 			CallbackType:       models.BASIC_AUTH,
 			SubscriptionStatus: models.SUSPENDED,
 			SubscriptionInfo:   "reason",
 			Filters: map[models.EventType]models.Filter{
-				models.ANCHOR_EVENT: {Filtering: models.GraphQL(fmt.Sprintf("filtering update 1"))},
-				models.COMMIT_ENTRY: {Filtering: models.GraphQL(fmt.Sprintf("filtering update 2"))},
+				models.ANCHOR_EVENT: {Filtering: fmt.Sprintf("filtering update 1")},
+				models.COMMIT_ENTRY: {Filtering: fmt.Sprintf("filtering update 2")},
 			},
 			Credentials: models.Credentials{
 				BasicAuthUsername: "username",
@@ -117,7 +117,7 @@ func assertSubscription(t *testing.T, expected *models.SubscriptionContext, actu
 	}
 	assert.NotNil(t, actual.Subscription.Id)
 	assert.Equal(t, expected.Failures, actual.Failures)
-	assert.Equal(t, expected.Subscription.Callback, actual.Subscription.Callback)
+	assert.Equal(t, expected.Subscription.CallbackUrl, actual.Subscription.CallbackUrl)
 	assert.Equal(t, expected.Subscription.CallbackType, actual.Subscription.CallbackType)
 	assert.Equal(t, expected.Subscription.SubscriptionStatus, actual.Subscription.SubscriptionStatus)
 	assert.Equal(t, expected.Subscription.SubscriptionInfo, actual.Subscription.SubscriptionInfo)
@@ -143,7 +143,7 @@ func TestConcurrency(t *testing.T) {
 func testConcurrency(t *testing.T, repository repository.Repository) {
 	eventType := models.COMMIT_ENTRY
 	subscription := models.Subscription{
-		Callback: "url",
+		CallbackUrl: "url",
 		Filters: map[models.EventType]models.Filter{
 			eventType: {Filtering: ""},
 		},

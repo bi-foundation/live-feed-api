@@ -47,11 +47,11 @@ func logInterceptor(f http.Handler) http.Handler {
 func (api *api) Start() {
 	router := mux.NewRouter()
 	router.Use(logInterceptor)
-	router.HandleFunc("/subscribe", subscribe).Methods(http.MethodPost)
-	router.HandleFunc("/subscribe/{subscriptionId}", unsubscribe).Methods(http.MethodDelete)
-	router.HandleFunc("/subscribe/{subscriptionId}", getSubscription).Methods(http.MethodGet)
-	router.HandleFunc("/subscribe/{subscriptionId}", updateSubscription).Methods(http.MethodPut)
-	router.HandleFunc("/swagger.json", swagger).Methods("GET")
+	router.HandleFunc("/subscriptions", subscribe).Methods(http.MethodPost)
+	router.HandleFunc("/subscriptions/{subscriptionId}", unsubscribe).Methods(http.MethodDelete)
+	router.HandleFunc("/subscriptions/{subscriptionId}", getSubscription).Methods(http.MethodGet)
+	router.HandleFunc("/subscriptions/{subscriptionId}", updateSubscription).Methods(http.MethodPut)
+	router.HandleFunc("/swagger.json", swagger).Methods(http.MethodGet)
 	router.Schemes("HTTP")
 
 	go func() {
