@@ -1,10 +1,10 @@
-package network
+package events
 
 import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
+	"github.com/FactomProject/live-api/EventRouter/gen/eventmessages"
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/gogo/protobuf/proto"
@@ -22,7 +22,7 @@ const (
 	defaultConnectionProtocol = "tcp"
 )
 
-type EventServer interface {
+type EventReceiver interface {
 	Start()
 	Stop()
 	GetState() models.RunState
@@ -30,7 +30,7 @@ type EventServer interface {
 	GetAddress() string
 }
 
-type Server struct {
+type Receiver struct {
 	eventQueue chan *eventmessages.FactomEvent
 	state      models.RunState
 	listener   net.Listener
@@ -38,8 +38,8 @@ type Server struct {
 	address    string
 }
 
-func NewServer(protocol string, address string) EventServer {
-	return &Server{
+func NewReceiver(protocol string, address string) EventReceiver {
+	return &Receiver{
 		eventQueue: make(chan *eventmessages.FactomEvent, StandardChannelSize),
 		state:      models.New,
 		protocol:   protocol,
@@ -47,51 +47,51 @@ func NewServer(protocol string, address string) EventServer {
 	}
 }
 
-func NewDefaultServer() EventServer {
-	return NewServer(defaultConnectionProtocol, fmt.Sprintf("%s:%s", defaultConnectionHost, defaultConnectionPort))
+func NewDefaultReceiver() EventReceiver {
+	return NewReceiver(defaultConnectionProtocol, fmt.Sprintf("%s:%s", defaultConnectionHost, defaultConnectionPort))
 }
 
-func (server *Server) Start() {
-	go server.listenIncomingConnections()
-	server.state = models.Running
+func (receiver *Receiver) Start() {
+	go receiver.listenIncomingConnections()
+	receiver.state = models.Running
 }
 
-func (server *Server) Stop() {
-	server.state = models.Stopping
-	err := server.listener.Close()
+func (receiver *Receiver) Stop() {
+	receiver.state = models.Stopping
+	err := receiver.listener.Close()
 	if err != nil {
 		log.Error("failed to close listener: %v", err)
 	}
-	server.state = models.Stopped
+	receiver.state = models.Stopped
 }
 
-func (server *Server) listenIncomingConnections() {
-	listener, err := net.Listen(server.protocol, server.address)
-	log.Info(" event server listening: '%s' at %s", server.protocol, server.address)
+func (receiver *Receiver) listenIncomingConnections() {
+	listener, err := net.Listen(receiver.protocol, receiver.address)
+	log.Info(" event receiver listening: '%s' at %s", receiver.protocol, receiver.address)
 	if err != nil {
-		log.Error("failed to listen to %s on %s: %v", server.protocol, server.address, err)
+		log.Error("failed to listen to %s on %s: %v", receiver.protocol, receiver.address, err)
 		return
 	}
-	server.listener = listener
+	receiver.listener = listener
 
 	for {
-		conn, err := server.listener.Accept()
+		conn, err := receiver.listener.Accept()
 		if err != nil {
 			log.Error("connection from factomd failed: %v", err)
 		}
 
-		go server.handleConnection(conn)
+		go receiver.handleConnection(conn)
 	}
 }
 
-func (server *Server) handleConnection(conn net.Conn) {
+func (receiver *Receiver) handleConnection(conn net.Conn) {
 	defer finalizeConnection(conn)
-	if err := server.readEvents(conn); err != nil {
+	if err := receiver.readEvents(conn); err != nil {
 		log.Error("failed to read events: %v", err)
 	}
 }
 
-func (server *Server) readEvents(conn net.Conn) (err error) {
+func (receiver *Receiver) readEvents(conn net.Conn) (err error) {
 	log.Debug("read events from: %s", getRemoteAddress(conn))
 
 	var dataSize int32
@@ -118,7 +118,7 @@ func (server *Server) readEvents(conn net.Conn) (err error) {
 			return fmt.Errorf("failed to unmarshal event from %s: %v", getRemoteAddress(conn), err)
 		}
 		log.Debug("read factom event... %v", factomEvent)
-		server.eventQueue <- factomEvent
+		receiver.eventQueue <- factomEvent
 	}
 }
 
@@ -127,7 +127,7 @@ func finalizeConnection(conn net.Conn) {
 	if r := recover(); r != nil {
 		log.Error("recovered during handling connection: %v\n", r)
 	}
-	conn.Close()
+	_ = conn.Close()
 }
 
 func getRemoteAddress(conn net.Conn) string {
@@ -141,17 +141,17 @@ func getRemoteAddress(conn net.Conn) string {
 	return addrString
 }
 
-func (server *Server) GetState() models.RunState {
-	return server.state
+func (receiver *Receiver) GetState() models.RunState {
+	return receiver.state
 }
 
-func (server *Server) GetAddress() string {
-	if server.listener == nil {
-		return server.address
+func (receiver *Receiver) GetAddress() string {
+	if receiver.listener == nil {
+		return receiver.address
 	}
-	return server.listener.Addr().String()
+	return receiver.listener.Addr().String()
 }
 
-func (server *Server) GetEventQueue() chan *eventmessages.FactomEvent {
-	return server.eventQueue
+func (receiver *Receiver) GetEventQueue() chan *eventmessages.FactomEvent {
+	return receiver.eventQueue
 }

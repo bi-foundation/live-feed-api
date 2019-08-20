@@ -6,7 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
+	"github.com/FactomProject/live-api/EventRouter/gen/eventmessages"
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/FactomProject/live-api/EventRouter/repository"
@@ -78,7 +78,7 @@ func TestSendEvent(t *testing.T) {
 	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Times(3)
 
 	// init data
-	factomEvent := mockAnchorEvent()
+	factomEvent := mockFactomAnchorEvent()
 	event, err := json.Marshal(factomEvent)
 	if err != nil {
 		t.Fatalf("failed to marshal event: %v", err)
@@ -128,7 +128,7 @@ func TestHTTPSEndpoint(t *testing.T) {
 			},
 		},
 	}
-	factomEvent := mockAnchorEvent()
+	factomEvent := mockFactomAnchorEvent()
 	expectedEvent, err := json.Marshal(factomEvent)
 	if err != nil {
 		t.Fatalf("failed to marshal event: %v", err)
@@ -182,7 +182,7 @@ func TestHandleEvents(t *testing.T) {
 	mockStore.On("GetSubscriptions", models.ANCHOR_EVENT).Return(subscriptionContexts, nil).Once()
 
 	var eventsReceived int32 = 0
-	factomEvent := mockAnchorEvent()
+	factomEvent := mockFactomAnchorEvent()
 	expectedEvent, err := json.Marshal(factomEvent)
 	if err != nil {
 		t.Fatalf("failed to marshal event: %v", err)
@@ -334,7 +334,7 @@ func validateUsernamePassword(username string, password string) func(r *http.Req
 	}
 }
 
-func mockAnchorEvent() *eventmessages.FactomEvent {
+func mockFactomAnchorEvent() *eventmessages.FactomEvent {
 	now := time.Now()
 	testHash := []byte("12345678901234567890123456789012")
 	return &eventmessages.FactomEvent{

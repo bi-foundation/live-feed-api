@@ -4,11 +4,11 @@
 package eventmessages
 
 import (
-	fmt "fmt"
-	types "github.com/gogo/protobuf/types"
-	proto "github.com/golang/protobuf/proto"
-	io "io"
-	math "math"
+	"fmt"
+	"github.com/gogo/protobuf/types"
+	"github.com/golang/protobuf/proto"
+	"io"
+	"math"
 	math_bits "math/bits"
 )
 

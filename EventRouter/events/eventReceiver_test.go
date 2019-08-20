@@ -1,9 +1,9 @@
-package network
+package events
 
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/events/eventmessages"
+	"github.com/FactomProject/live-api/EventRouter/gen/eventmessages"
 	"github.com/gogo/protobuf/proto"
 	"github.com/gogo/protobuf/types"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +19,7 @@ var address string
 
 func init() {
 	// Start the new server at random port
-	server := NewServer("tcp", ":0")
+	server := NewReceiver("tcp", ":0")
 	server.Start()
 	time.Sleep(10 * time.Millisecond) // sleep to allow the server to start before making a connection
 	address = server.GetAddress()

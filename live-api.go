@@ -7,12 +7,11 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/events"
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
-	"github.com/FactomProject/live-api/EventRouter/network"
 	"time"
 )
 
 var (
-	eventServer = network.NewDefaultServer()
+	eventServer = events.NewDefaultReceiver()
 	eventRouter = events.NewEventRouter(eventServer.GetEventQueue())
 )
 
