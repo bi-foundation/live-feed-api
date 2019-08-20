@@ -15,10 +15,13 @@ import (
 	"time"
 )
 
+var evrConfig = config.LoadEventRouterConfig()
+
 func init() {
 	log.SetLevel(log.D)
 
-	server := NewSubscriptionApi(":8070")
+	// Start the new server at random port
+	server := NewSubscriptionApi(evrConfig.SubscriptionApiConfig)
 	server.Start()
 	time.Sleep(1 * time.Second)
 }
@@ -207,6 +210,15 @@ func TestSubscriptionApi(t *testing.T) {
 			responseCode: http.StatusNotFound,
 			assert:       assertNotFound,
 		},
+		"unsubscribe-invalid": {
+			URL:    "/subscribe/notfound",
+			Method: http.MethodDelete,
+			content: content(t, &models.Subscription{
+				Callback: "invalid url",
+			}),
+			responseCode: http.StatusBadRequest,
+			assert:       assertInvalidRequestError,
+		},
 		"subscribe-wrong-method": {
 			URL:          "/subscriptions",
 			Method:       http.MethodDelete,
@@ -225,6 +237,7 @@ func TestSubscriptionApi(t *testing.T) {
 	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Twice()
 	mockStore.On("UpdateSubscription", "unknown-id").Return(nil, errors.NewSubscriptionNotFound("unknown")).Once()
 	mockStore.On("DeleteSubscription", "0").Return(nil).Once()
+	mockStore.On("DeleteSubscription", "notfound").Return(fmt.Errorf("subscription not found")).Once()
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {

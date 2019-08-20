@@ -93,14 +93,24 @@ func (receiver *Receiver) readEvents(conn net.Conn) (err error) {
 		// read the size of the factom event
 		err = binary.Read(reader, binary.LittleEndian, &dataSize)
 		if err != nil {
-			return fmt.Errorf("failed to data size from %s:, %v", getRemoteAddress(conn), err)
+			if err == io.EOF {
+				log.Warn("the client at %s disconnected", getRemoteAddress(conn))
+				return nil
+			} else {
+				return fmt.Errorf("failed to data size from %s:, %v", getRemoteAddress(conn), err)
+			}
 		}
 
 		// read the factom event
 		data := make([]byte, dataSize)
 		bytesRead, err := io.ReadFull(reader, data)
 		if err != nil {
-			return fmt.Errorf("failed to data from %s:, %v", getRemoteAddress(conn), err)
+			if err == io.EOF {
+				log.Warn("the client at %s disconnected", getRemoteAddress(conn))
+				return nil
+			} else {
+				return fmt.Errorf("failed to data from %s:, %v", getRemoteAddress(conn), err)
+			}
 		}
 
 		factomEvent := &eventmessages.FactomEvent{}

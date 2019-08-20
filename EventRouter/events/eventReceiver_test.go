@@ -50,10 +50,11 @@ func TestWriteEvents(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		t.Logf("written %d, %v", dataSize, status)
+		t.Logf("bytes offered: %d, bytes written: %v", dataSize, status)
 	}
 
 	correctSendEvents := listenForEvents("WRITE", n, 20*time.Second)
+	t.Logf("number of events sent: %d, number of events received: %d", n, correctSendEvents)
 	assert.EqualValues(t, n, correctSendEvents, "failed to receive the correct number of events %d != %d", n, correctSendEvents)
 }
 
