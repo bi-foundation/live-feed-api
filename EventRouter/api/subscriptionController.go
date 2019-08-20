@@ -51,7 +51,8 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 		responseError(writer, http.StatusInternalServerError, errors.NewInternalError(fmt.Sprintf("failed to store subscription: %v", err)))
 		return
 	}
-	respond(writer, subscriptionContext.Subscription)
+
+	respondCode(writer, http.StatusCreated, subscriptionContext.Subscription)
 }
 
 func updateSubscription(writer http.ResponseWriter, request *http.Request) {
@@ -76,10 +77,11 @@ func updateSubscription(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	id := vars["subscriptionId"]
-	if subscription.Id != id {
+	if subscription.Id != "" && subscription.Id != id {
 		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed("subscription id doesn't match"))
 		return
 	}
+	subscription.Id = id
 
 	// ignore user input message
 	subscription.SubscriptionInfo = ""

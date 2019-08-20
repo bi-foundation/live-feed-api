@@ -24,7 +24,6 @@ func init() {
 }
 
 var testSubscription = &models.Subscription{
-	Id:           "id",
 	CallbackUrl:  "http://url/callback",
 	CallbackType: models.HTTP,
 	Filters: map[models.EventType]models.Filter{
@@ -61,7 +60,7 @@ func TestSubscriptionApi(t *testing.T) {
 			URL:          "/subscriptions",
 			Method:       http.MethodPost,
 			content:      content(t, testSubscription),
-			responseCode: http.StatusOK,
+			responseCode: http.StatusCreated,
 			assert:       assertTestSubscribe,
 		},
 		"subscribe-invalid": {
@@ -91,7 +90,7 @@ func TestSubscriptionApi(t *testing.T) {
 			URL:          "/subscriptions",
 			Method:       http.MethodPost,
 			content:      content(t, suspendedSubscription),
-			responseCode: http.StatusOK,
+			responseCode: http.StatusCreated,
 			assert:       assertSuspendedSubscribe,
 		},
 		"subscribe-invalid-status": {
@@ -130,6 +129,25 @@ func TestSubscriptionApi(t *testing.T) {
 			assert:       assertInvalidRequestError,
 		},
 		"update-subscription": {
+			URL:    "/subscriptions/id",
+			Method: http.MethodPut,
+			content: content(t, &models.Subscription{
+				Id:           "id",
+				CallbackUrl:  "http://url/callback",
+				CallbackType: models.HTTP,
+				Filters: map[models.EventType]models.Filter{
+					models.COMMIT_CHAIN: {
+						Filtering: "filtering 1",
+					},
+					models.COMMIT_ENTRY: {
+						Filtering: "filtering 2",
+					},
+				},
+			}),
+			responseCode: http.StatusOK,
+			assert:       assertTestSubscribe,
+		},
+		"update-subscription-no-id-in-body": {
 			URL:          "/subscriptions/id",
 			Method:       http.MethodPut,
 			content:      content(t, testSubscription),
@@ -143,7 +161,7 @@ func TestSubscriptionApi(t *testing.T) {
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
 		},
-		"update-id-mismatch ": {
+		"update-id-mismatch": {
 			URL:    "/subscriptions/id",
 			Method: http.MethodPut,
 			content: content(t, &models.Subscription{
@@ -213,7 +231,8 @@ func TestSubscriptionApi(t *testing.T) {
 	mockStore.On("CreateSubscription", "http://url/callback/internal/error").Return(nil, fmt.Errorf("something failed")).Once()
 	mockStore.On("ReadSubscription", "id").Return(suspendedSubscriptionContext, nil).Once()
 	mockStore.On("ReadSubscription", "unknown").Return(&models.SubscriptionContext{}, fmt.Errorf("subscription not found")).Once()
-	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Once()
+	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Twice()
+	mockStore.On("UpdateSubscription", "unknown-id").Return(nil, fmt.Errorf("subscription not found")).Once()
 	mockStore.On("DeleteSubscription", "0").Return(nil).Once()
 	mockStore.On("DeleteSubscription", "notfound").Return(fmt.Errorf("subscription not found")).Once()
 

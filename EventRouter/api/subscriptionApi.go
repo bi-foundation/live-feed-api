@@ -88,6 +88,11 @@ func responseError(writer http.ResponseWriter, statusCode int, error interface{}
 }
 
 func respond(writer http.ResponseWriter, data interface{}) {
+	respondCode(writer, http.StatusOK, data)
+}
+
+func respondCode(writer http.ResponseWriter, statusCode int, data interface{}) {
+	writer.WriteHeader(statusCode)
 	writer.Header().Add("Content-Type", "application/json")
 	err := json.NewEncoder(writer).Encode(data)
 	if err != nil {
