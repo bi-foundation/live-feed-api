@@ -1,17 +1,16 @@
-package config
+package eventrouterconfig
 
 import (
+	"errors"
 	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/spf13/viper"
 	"os"
 	"strings"
-	"syscall"
 )
 
 const (
-	configName                 = "livefeed"
-	defaultConfigFileDir       = "$HOME/.factom/livefeed"
+	defaultConfigName          = "livefeed"
 	defaultListenerBindAddress = ""
 	defaultListenerPort        = "8040"
 	defaultListenerProtocol    = "tcp"
@@ -21,7 +20,7 @@ const (
 )
 
 var defaultSubscriptionApiSchemes = []string{"HTTP", "HTTPS"}
-var possibleConfigPaths = []string{"./conf", "$HOME/.factom/livefeed", "/etc/factom-livefeed"}
+var possibleConfigPaths = []string{}
 
 type EventRouterConfig struct {
 	EventListenerConfig   *EventListenerConfig
@@ -42,12 +41,25 @@ type SubscriptionApiConfig struct {
 
 var homeDir string
 
-func LoadEventRouterConfig() *EventRouterConfig {
-	getHomeDir()
+func LoadEventRouterConfig() (*EventRouterConfig, error) {
+	return LoadEventRouterConfigFrom("")
+}
+
+func LoadEventRouterConfigFrom(configFilePath string) (*EventRouterConfig, error) {
+	vp := viper.New()
+	vp.SetConfigName(defaultConfigName)
+	if len(configFilePath) > 0 {
+		vp.SetConfigFile(configFilePath)
+	} else {
+		possibleConfigPaths = append(possibleConfigPaths, "./conf")
+		possibleConfigPaths = append(possibleConfigPaths, "/etc/factom-livefeed")
+		getHomeDir()
+		if len(homeDir) > 0 {
+			possibleConfigPaths = append(possibleConfigPaths, "$HOME/.factom/livefeed")
+		}
+	}
 
 	eventRouterConfig := &EventRouterConfig{}
-	vp := viper.New()
-	vp.SetConfigName(configName)
 	for _, path := range possibleConfigPaths {
 		vp.AddConfigPath(path)
 	}
@@ -56,34 +68,22 @@ func LoadEventRouterConfig() *EventRouterConfig {
 	vp.AutomaticEnv()
 	setDefaults(vp)
 	if err := vp.ReadInConfig(); err != nil {
-		handleConfigFileErrors(err, vp)
+		return nil, reformatConfigFileErrors(err, vp)
 	}
 	if err := vp.Unmarshal(&eventRouterConfig); err != nil {
 		log.Error("could not read configuration file")
 	}
-	return eventRouterConfig
+	return eventRouterConfig, nil
 }
 
-func handleConfigFileErrors(readErr error, vp *viper.Viper) {
-	log.Warn("no configuration file could be found, running with default values")
-	if _, ok := readErr.(viper.ConfigFileNotFoundError); ok {
-		configFileDir := substituteHomeDir(defaultConfigFileDir)
-		if _, err := os.Stat(configFileDir); os.IsNotExist(err) {
-			oldMask := syscall.Umask(0)
-			defer syscall.Umask(oldMask)
-
-			if err = os.MkdirAll(configFileDir, os.ModeDir|OS_ALL_RWX); err != nil {
-				log.Warn("the config file directory %s could not be created, error: %v.", configFileDir, err)
-				return
-			}
-		}
-
-		configFile := fmt.Sprint(configFileDir, "/", configName, ".toml")
-		if err := vp.WriteConfigAs(configFile); err != nil {
-			log.Warn("a default config file could not be written to %s, error: %v.", configFile, err)
-			return
-		}
+func reformatConfigFileErrors(readErr error, vp *viper.Viper) error {
+	var builder strings.Builder
+	fmt.Fprintln(&builder, "no configuration file could be loaded from one of the following locations:")
+	for _, path := range possibleConfigPaths {
+		fmt.Fprintln(&builder, "\t", path)
 	}
+	fmt.Fprintf(&builder, "error: %v", readErr)
+	return errors.New(builder.String())
 }
 
 func setDefaults(vp *viper.Viper) {

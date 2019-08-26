@@ -241,7 +241,7 @@ func TestSubscriptionApi(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			url := fmt.Sprintf("http://localhost:8070%s", testCase.URL)
+			url := fmt.Sprintf("http://localhost:%d%s", config.SubscriptionApiConfig.Port, testCase.URL)
 			request, err := http.NewRequest(testCase.Method, url, bytes.NewBuffer(testCase.content))
 
 			assert.Nil(t, err, "failed to create request")

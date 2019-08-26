@@ -1,4 +1,4 @@
-package config
+package eventrouterconfig
 
 import (
 	"fmt"
@@ -32,31 +32,29 @@ func Test(t *testing.T) {
 	files := renameConfigFiles()
 	defer restoreRenamedFiles(files)
 
-	t.Run("TestDefaultConfig", testDefaultConfig)
-	t.Run("TestLocations", testLocations)
-	t.Run("TestEnvVarOverrides", TestEnvVarOverrides)
+	t.Run("TestNoConfigFound", testNoConfigFound)
+	t.Run("TestLocateConfigFile", testLocateConfigFile)
+	t.Run("TestSpecificConfigFile", testSpecificConfigFile)
+	t.Run("testEnvVarOverrides", testEnvVarOverrides)
 }
 
-func testDefaultConfig(t *testing.T) {
-	config := LoadEventRouterConfig()
-	assert.NotNil(t, config)
-	listenerConfig := config.EventListenerConfig
-	assert.NotNil(t, listenerConfig, "EventListenerConfig shouldn't be nil")
-	assert.EqualValues(t, defaultListenerBindAddress, listenerConfig.BindAddress,
-		"EventListenerConfig.BindAddress mismatch %s != %s", defaultListenerBindAddress, listenerConfig.BindAddress)
-	assert.EqualValues(t, defaultListenerPort, strconv.Itoa(int(listenerConfig.Port)),
-		"EventListenerConfig.Port mismatch %s != %d", defaultListenerPort, listenerConfig.Port)
-	assert.EqualValues(t, defaultListenerProtocol, listenerConfig.Protocol,
-		"EventListenerConfig.Protocol mismatch %s != %s", defaultListenerProtocol, listenerConfig.Protocol)
+func testNoConfigFound(t *testing.T) {
+	_, err := LoadEventRouterConfigFrom("")
+	if err == nil {
+		t.Fatal("Expected a config not found error")
+	}
 }
 
-func testLocations(t *testing.T) {
-	testLocation(t, "./conf")
-	testLocation(t, "$HOME/.factom/livefeed")
-	testLocation(t, "/etc/factom-livefeed")
+func testLocateConfigFile(t *testing.T) {
+	testLocateAndVerifyConfigFile(t, "")
 }
 
-func testLocation(t *testing.T, configFileDir string) {
+func testSpecificConfigFile(t *testing.T) {
+	testLocateAndVerifyConfigFile(t, "test-config")
+}
+
+func testLocateAndVerifyConfigFile(t *testing.T, specifiedConfigFileName string) {
+	configFileDir := "$HOME/.factom/livefeed"
 	configFileDir = substituteHomeDir(configFileDir)
 	err := makeDirs(configFileDir)
 	if err != nil {
@@ -69,7 +67,12 @@ func testLocation(t *testing.T, configFileDir string) {
 		}
 	}
 
-	configFile := fmt.Sprint(configFileDir, "/", configName, ".toml")
+	var configFile string
+	if len(specifiedConfigFileName) == 0 {
+		configFile = fmt.Sprint(configFileDir, "/", defaultConfigName, ".toml")
+	} else {
+		configFile = fmt.Sprint(configFileDir, "/", specifiedConfigFileName, ".toml")
+	}
 	err = ioutil.WriteFile(configFile, []byte(testConfig), 0644)
 	if err != nil {
 		message := fmt.Sprintf("could not test location %s because we don't have permissions here", configFileDir)
@@ -82,7 +85,8 @@ func testLocation(t *testing.T, configFileDir string) {
 	}
 	defer deleteTestConfigFile(configFile)
 
-	config := LoadEventRouterConfig()
+	config, err := LoadEventRouterConfigFrom(configFile)
+	assert.Nil(t, err)
 	assert.NotNil(t, config)
 	listenerConfig := config.EventListenerConfig
 	assert.NotNil(t, listenerConfig, "EventListenerConfig shouldn't be nil")
@@ -102,9 +106,9 @@ func testLocation(t *testing.T, configFileDir string) {
 		"SubscriptionApiConfig.Schemes mismatch %v != %v", []string{"HTTP", "HTTPS"}, subscriptionConfig.Schemes)
 }
 
-func TestEnvVarOverrides(t *testing.T) {
+func testEnvVarOverrides(t *testing.T) {
 	configFileDir := substituteHomeDir("$HOME/.factom/livefeed")
-	configFile := fmt.Sprint(configFileDir, "/", configName, ".toml")
+	configFile := fmt.Sprint(configFileDir, "/", defaultConfigName, ".toml")
 	err := ioutil.WriteFile(configFile, []byte(testConfig), 0644)
 	if err != nil {
 		t.Errorf("Could not write config file, error: %v", err)
@@ -113,7 +117,8 @@ func TestEnvVarOverrides(t *testing.T) {
 
 	os.Setenv("FACTOMLF_EVENTLISTENERCONFIG_PORT", "8666")
 	os.Setenv("FACTOMLF_SUBSCRIPTIONAPICONFIG_SCHEMES", "HTTPS,HTTP")
-	config := LoadEventRouterConfig()
+	config, err := LoadEventRouterConfigFrom(configFile)
+	assert.Nil(t, err)
 	assert.NotNil(t, config)
 	listenerConfig := config.EventListenerConfig
 	assert.NotNil(t, listenerConfig, "EventListenerConfig shouldn't be nil")
@@ -172,11 +177,11 @@ func restoreRenamedFiles(files []string) {
 }
 
 func renameConfigFile(configFileDir string, postFix string, result []string) []string {
-	configFile := substituteHomeDir(fmt.Sprint(configFileDir, "/", configName, ".toml"))
+	configFile := substituteHomeDir(fmt.Sprint(configFileDir, "/", defaultConfigName, ".toml"))
 	_, err := os.Stat(configFile)
 	if err == nil {
 		backupFile := configFile + postFix
-		os.Rename(configFile, backupFile)
+		err := os.Rename(configFile, backupFile)
 		if err != nil {
 			panic(fmt.Sprintf("Could not restore renamed file %s to %s", configFile, backupFile))
 		}

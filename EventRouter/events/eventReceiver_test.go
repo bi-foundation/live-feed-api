@@ -1,4 +1,4 @@
-package events
+package network
 
 import (
 	"encoding/binary"
@@ -19,7 +19,7 @@ var eventsQueue chan *eventmessages.FactomEvent
 var address string
 
 func init() {
-	config := config.LoadEventRouterConfig()
+	config, _ := eventrouterconfig.LoadEventRouterConfigFrom("../../conf/livefeed.toml")
 
 	// Start the new server at random port
 	config.EventListenerConfig.Port = 0

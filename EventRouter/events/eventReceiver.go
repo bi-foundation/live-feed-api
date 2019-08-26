@@ -69,6 +69,7 @@ func (receiver *Receiver) listenIncomingConnections() {
 		conn, err := receiver.listener.Accept()
 		if err != nil {
 			log.Error("connection from factomd failed: %v", err)
+			continue
 		}
 
 		go receiver.handleConnection(conn)
@@ -121,6 +122,14 @@ func (receiver *Receiver) readEvents(conn net.Conn) (err error) {
 		log.Debug("read factom event... %v", factomEvent)
 		receiver.eventQueue <- factomEvent
 	}
+}
+
+func handleReadErrors(err error, element string, conn net.Conn) error {
+	if err != io.EOF {
+		return fmt.Errorf("failed to read %s from %s:, %v", element, getRemoteAddress(conn), err)
+	}
+	log.Warn("the client at %s disconnected", getRemoteAddress(conn))
+	return nil
 }
 
 func finalizeConnection(conn net.Conn) {

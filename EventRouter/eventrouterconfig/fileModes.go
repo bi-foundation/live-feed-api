@@ -1,4 +1,4 @@
-package config
+package eventrouterconfig
 
 const (
 	OS_READ        = 04
