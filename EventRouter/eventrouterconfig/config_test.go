@@ -32,10 +32,10 @@ func Test(t *testing.T) {
 	files := renameConfigFiles()
 	defer restoreRenamedFiles(files)
 
-	t.Run("TestNoConfigFound", testNoConfigFound)
 	t.Run("TestLocateConfigFile", testLocateConfigFile)
 	t.Run("TestSpecificConfigFile", testSpecificConfigFile)
 	t.Run("testEnvVarOverrides", testEnvVarOverrides)
+	t.Run("TestNoConfigFound", testNoConfigFound)
 }
 
 func testNoConfigFound(t *testing.T) {
@@ -55,6 +55,7 @@ func testSpecificConfigFile(t *testing.T) {
 
 func testLocateAndVerifyConfigFile(t *testing.T, specifiedConfigFileName string) {
 	configFileDir := "$HOME/.factom/livefeed"
+	getHomeDir()
 	configFileDir = substituteHomeDir(configFileDir)
 	err := makeDirs(configFileDir)
 	if err != nil {
@@ -71,7 +72,7 @@ func testLocateAndVerifyConfigFile(t *testing.T, specifiedConfigFileName string)
 	if len(specifiedConfigFileName) == 0 {
 		configFile = fmt.Sprint(configFileDir, "/", defaultConfigName, ".toml")
 	} else {
-		configFile = fmt.Sprint(configFileDir, "/", specifiedConfigFileName, ".toml")
+		configFile = fmt.Sprint(configFileDir, "/", specifiedConfigFileName, ".conf")
 	}
 	err = ioutil.WriteFile(configFile, []byte(testConfig), 0644)
 	if err != nil {
@@ -86,10 +87,16 @@ func testLocateAndVerifyConfigFile(t *testing.T, specifiedConfigFileName string)
 	defer deleteTestConfigFile(configFile)
 
 	config, err := LoadEventRouterConfigFrom(configFile)
-	assert.Nil(t, err)
-	assert.NotNil(t, config)
+	if !assert.Nil(t, err) {
+		return
+	}
+	if !assert.NotNil(t, config) {
+		return
+	}
 	listenerConfig := config.EventListenerConfig
-	assert.NotNil(t, listenerConfig, "EventListenerConfig shouldn't be nil")
+	if !assert.NotNil(t, listenerConfig, "EventListenerConfig shouldn't be nil") {
+		return
+	}
 	assert.EqualValues(t, "127.0.0.1", listenerConfig.BindAddress,
 		"EventListenerConfig.BindAddress mismatch %s != %s", "127.0.0.1", listenerConfig.BindAddress)
 	assert.EqualValues(t, "8044", strconv.Itoa(int(listenerConfig.Port)),
@@ -97,7 +104,9 @@ func testLocateAndVerifyConfigFile(t *testing.T, specifiedConfigFileName string)
 	assert.EqualValues(t, "udp", listenerConfig.Protocol,
 		"EventListenerConfig.Protocol mismatch %s != %s", "udp", listenerConfig.Protocol)
 	subscriptionConfig := config.SubscriptionApiConfig
-	assert.NotNil(t, subscriptionConfig, "SubscriptionApiConfig shouldn't be nil")
+	if !assert.NotNil(t, subscriptionConfig, "SubscriptionApiConfig shouldn't be nil") {
+		return
+	}
 	assert.EqualValues(t, "0.0.0.0", subscriptionConfig.BindAddress,
 		"SubscriptionApiConfig.BindAddress mismatch %s != %s", "127.0.0.1", subscriptionConfig.BindAddress)
 	assert.EqualValues(t, "8777", strconv.Itoa(int(subscriptionConfig.Port)),

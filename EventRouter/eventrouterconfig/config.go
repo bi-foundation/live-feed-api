@@ -6,6 +6,7 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/spf13/viper"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -50,6 +51,9 @@ func LoadEventRouterConfigFrom(configFilePath string) (*EventRouterConfig, error
 	vp.SetConfigName(defaultConfigName)
 	if len(configFilePath) > 0 {
 		vp.SetConfigFile(configFilePath)
+		if strings.HasPrefix(path.Ext(configFilePath), ".conf") {
+			vp.SetConfigType("toml")
+		}
 	} else {
 		possibleConfigPaths = append(possibleConfigPaths, "./conf")
 		possibleConfigPaths = append(possibleConfigPaths, "/etc/factom-livefeed")
@@ -59,7 +63,7 @@ func LoadEventRouterConfigFrom(configFilePath string) (*EventRouterConfig, error
 		}
 	}
 
-	eventRouterConfig := &EventRouterConfig{}
+	config := &EventRouterConfig{}
 	for _, path := range possibleConfigPaths {
 		vp.AddConfigPath(path)
 	}
@@ -70,10 +74,10 @@ func LoadEventRouterConfigFrom(configFilePath string) (*EventRouterConfig, error
 	if err := vp.ReadInConfig(); err != nil {
 		return nil, reformatConfigFileErrors(err, vp)
 	}
-	if err := vp.Unmarshal(&eventRouterConfig); err != nil {
+	if err := vp.Unmarshal(&config); err != nil {
 		log.Error("could not read configuration file")
 	}
-	return eventRouterConfig, nil
+	return config, nil
 }
 
 func reformatConfigFileErrors(readErr error, vp *viper.Viper) error {
@@ -110,7 +114,7 @@ func buildSubscriptionApiDefaults() map[string]interface{} {
 func getHomeDir() {
 	var err error
 	if homeDir, err = os.UserHomeDir(); err != nil {
-		log.Warn(fmt.Sprintf("the user home directory could not be retrieved, the '$HOME/.factom/livefeed' location will be skipped. error: %v.", err))
+		log.Warn("the user home directory could not be retrieved, the '$HOME/.factom/livefeed' location will be skipped. error: %v.", err)
 	}
 }
 
