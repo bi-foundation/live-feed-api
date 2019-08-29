@@ -10,7 +10,7 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/FactomProject/live-api/EventRouter/repository"
-	"github.com/gogo/protobuf/types"
+	"github.com/opsee/protobuf/opseeproto/types"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"

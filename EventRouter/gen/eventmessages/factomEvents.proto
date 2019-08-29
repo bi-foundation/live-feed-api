@@ -3,12 +3,14 @@ package eventmessages;
 option go_package = "eventmessages";
 option java_package = "com.factom.factomd.eventmessages";
 
-import "events/eventmessages/generalTypes.proto";
-import "events/eventmessages/adminBlock.proto";
-import "events/eventmessages/factoidBlock.proto";
-import "events/eventmessages/entryCredit.proto";
-import "google/protobuf/timestamp.proto";
+import "eventmessages/generalTypes.proto";
+import "eventmessages/adminBlock.proto";
+import "eventmessages/factoidBlock.proto";
+import "eventmessages/entryCredit.proto";
+import "github.com/opsee/protobuf/opseeproto/opsee.proto";
+import "github.com/opsee/protobuf/opseeproto/types/timestamp.proto";
 
+option (opseeproto.graphql) = true;
 
 enum EventSource {
     COMMIT_DIRECTORY_BLOCK = 0;
@@ -43,7 +45,6 @@ message AnchoredEvent {
     repeated EntryBlockEntry entryBlockEntries = 6;
 }
 
-
 message DirectoryBlock {
     DirectoryBlockHeader header = 1;
     repeated Entry entries = 2;
@@ -53,9 +54,9 @@ message DirectoryBlockHeader {
     Hash bodyMerkleRoot = 1;
     Hash previousKeyMerkleRoot = 2;
     Hash previousFullHash = 3;
-    google.protobuf.Timestamp timestamp = 4;
-    uint32 blockHeight = 5;
-    uint32 blockCount = 6;
+    opsee.types.Timestamp timestamp = 4;
+    uint64 blockHeight = 5;
+    uint64 blockCount = 6;
 }
 
 message EntryBlock {
@@ -68,9 +69,9 @@ message EntryBlockHeader {
     Hash chainID = 2;
     Hash previousFullHash = 3;
     Hash previousKeyMerkleRoot = 4;
-    uint32 blockHeight = 5;
-    uint32 blockSequence = 6;
-    uint32 entryCount = 7;
+    uint64 blockHeight = 5;
+    uint64 blockSequence = 6;
+    uint64 entryCount = 7;
 }
 
 message EntryBlockEntry {
@@ -86,7 +87,7 @@ message Entry {
 
 message RevealEntry {
     EntryBlockEntry entry = 1;
-    google.protobuf.Timestamp timestamp = 2;
+    opsee.types.Timestamp timestamp = 2;
 }
 
 enum Level {
@@ -104,7 +105,7 @@ enum ProcessMessageCode {
 
 
 message ProcessMessage {
-    ProcessMessageCode messageCode = 1;
+    ProcessMessageCode processMessageCode = 1;
     Level level = 2;
     string messageText = 3;
 }
@@ -118,7 +119,7 @@ enum NodeMessageCode {
 }
 
 message NodeMessage {
-    NodeMessageCode messageCode = 1;
+    NodeMessageCode nodeMessageCode = 1;
     Level level = 2;
     string messageText = 3;
 }

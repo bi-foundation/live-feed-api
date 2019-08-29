@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/FactomProject/live-api/EventRouter/gen/eventmessages"
 	"github.com/gogo/protobuf/proto"
-	"github.com/gogo/protobuf/types"
+	"github.com/opsee/protobuf/opseeproto/types"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"net"
@@ -130,7 +130,10 @@ func mockAnchorEvent() *eventmessages.FactomEvent {
 	now := time.Now()
 	testHash := []byte("12345678901234567890123456789012")
 	return &eventmessages.FactomEvent{
-		EventSource: 0,
+		EventSource: eventmessages.EventSource_ADD_TO_HOLDING,
+		IdentityChainID: &eventmessages.Hash{
+			HashValue: []byte("value"),
+		},
 		Value: &eventmessages.FactomEvent_AnchorEvent{
 			AnchorEvent: &eventmessages.AnchoredEvent{
 				DirectoryBlock: &eventmessages.DirectoryBlock{

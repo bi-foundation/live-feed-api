@@ -3,6 +3,11 @@ package eventmessages;
 option go_package = "eventmessages";
 option java_package = "com.factom.factomd.eventmessages";
 
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/opsee/protobuf/opseeproto/opsee.proto";
+
+option (opseeproto.graphql) = true;
+
 message Hash {
     bytes hashValue = 1;
 }
