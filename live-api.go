@@ -1,3 +1,5 @@
+//go:generate make -C EventRouter clean
+//go:generate make -C EventRouter
 //go:generate $GOPATH/bin/swagger generate spec --scan-models -w ./EventRouter -o ./swagger.json
 //go:generate $GOPATH/bin/swagger validate swagger.json
 package main

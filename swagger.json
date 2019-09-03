@@ -182,7 +182,7 @@
           "x-go-name": "Message"
         }
       },
-      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+      "x-go-package": "github.com/FactomProject/live-feed-api/EventRouter/models"
     },
     "Credentials": {
       "description": "Credentials of api to deliver events to the callback endpoint.",
@@ -205,13 +205,13 @@
           "x-go-name": "BasicAuthUsername"
         }
       },
-      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+      "x-go-package": "github.com/FactomProject/live-feed-api/EventRouter/models"
     },
     "EventType": {
       "description": "A filtering is linked to event type: [COMMIT_CHAIN, COMMIT_ENTRY, ANCHOR_EVENT, REVEAL_ENTRY, NODE_MESSAGE]",
       "type": "string",
       "title": "EventType",
-      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+      "x-go-package": "github.com/FactomProject/live-feed-api/EventRouter/models"
     },
     "Filter": {
       "description": "Define a Filter on an EventType to filter the event. This allows to reduce the network traffic.",
@@ -224,7 +224,7 @@
           "x-go-name": "Filtering"
         }
       },
-      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+      "x-go-package": "github.com/FactomProject/live-feed-api/EventRouter/models"
     },
     "Subscription": {
       "description": "An application is able to have a subscription for events.\nEvents will be send to the callback url endpoint of the subscription.",
@@ -283,7 +283,7 @@
           "example": "ACTIVE"
         }
       },
-      "x-go-package": "github.com/FactomProject/live-api/EventRouter/models"
+      "x-go-package": "github.com/FactomProject/live-feed-api/EventRouter/models"
     }
   },
   "responses": {
