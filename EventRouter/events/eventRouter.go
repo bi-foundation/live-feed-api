@@ -9,6 +9,7 @@ import (
 	"github.com/FactomProject/live-api/EventRouter/log"
 	"github.com/FactomProject/live-api/EventRouter/models"
 	"github.com/FactomProject/live-api/EventRouter/repository"
+	"github.com/graphql-go/graphql"
 	"net/http"
 )
 
@@ -18,6 +19,7 @@ var maxFailures = MAX_FAILURES_DEFAULT
 
 type EventRouter struct {
 	eventsInQueue chan *eventmessages.FactomEvent
+	graphQlSchema graphql.Schema
 }
 
 func NewEventRouter(queue chan *eventmessages.FactomEvent) EventRouter {
@@ -25,6 +27,12 @@ func NewEventRouter(queue chan *eventmessages.FactomEvent) EventRouter {
 }
 
 func (evr *EventRouter) Start() {
+	schema, err := graphql.NewSchema(graphql.SchemaConfig{})
+	if err != nil {
+		panic(fmt.Sprintf("could initialize graphql: %v", err))
+	}
+	evr.graphQlSchema = schema
+
 	go evr.handleEvents()
 }
 
@@ -46,12 +54,38 @@ func (evr *EventRouter) handleEvents() {
 			continue
 		}
 
-		err = send(subscriptionContexts, factomEvent)
-		if err != nil {
-			log.Error("%v", err)
-			continue
+		var event *[]byte
+		for _, subscription := range subscriptionContexts {
+			if !evr.filterPass(subscription, factomEvent) {
+				continue
+			}
+
+			if event == nil {
+				eventData, err := json.Marshal(factomEvent)
+				if err != nil {
+					log.Error("failed to create json from factom event: %v", err)
+					continue
+				}
+				event = &eventData
+			}
+			sendEvent(subscription, *event)
 		}
 	}
+}
+
+func (evr *EventRouter) filterPass(context *models.SubscriptionContext, event *eventmessages.FactomEvent) bool {
+	filters := context.Subscription.Filters
+	result := true
+	for _, filter := range filters {
+		if len(filter.Filtering) > 0 {
+			result = result && evr.evalFilter(filter, event)
+		}
+	}
+	return result
+}
+
+func (evr *EventRouter) evalFilter(filter models.Filter, event *eventmessages.FactomEvent) bool {
+	graphql.Do(graphql.Params{})
 }
 
 func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, error) {
@@ -74,17 +108,6 @@ func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, err
 			return "", fmt.Errorf("failed to map correct node")
 		}
 	*/
-}
-
-func send(subscriptions []*models.SubscriptionContext, factomEvent *eventmessages.FactomEvent) error {
-	event, err := json.Marshal(factomEvent)
-	if err != nil {
-		return fmt.Errorf("failed to create json from factom event")
-	}
-	for _, subscription := range subscriptions {
-		sendEvent(subscription, event)
-	}
-	return nil
 }
 
 func sendEvent(subscriptionContext *models.SubscriptionContext, event []byte) {
