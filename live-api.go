@@ -1,12 +1,14 @@
+//go:generate make -C EventRouter clean
+//go:generate make -C EventRouter
 //go:generate $GOPATH/bin/swagger generate spec --scan-models -w ./EventRouter -o ./swagger.json
 //go:generate $GOPATH/bin/swagger validate swagger.json
 package main
 
 import (
-	"github.com/FactomProject/live-api/EventRouter/api"
-	"github.com/FactomProject/live-api/EventRouter/events"
-	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/EventRouter/models"
+	"github.com/FactomProject/live-feed-api/EventRouter/api"
+	"github.com/FactomProject/live-feed-api/EventRouter/events"
+	"github.com/FactomProject/live-feed-api/EventRouter/log"
+	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"time"
 )
 

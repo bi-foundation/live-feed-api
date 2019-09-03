@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/models"
+	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

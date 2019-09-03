@@ -3,9 +3,9 @@ package sql
 import (
 	"fmt"
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/EventRouter/models"
-	"github.com/FactomProject/live-api/EventRouter/models/errors"
+	"github.com/FactomProject/live-feed-api/EventRouter/log"
+	"github.com/FactomProject/live-feed-api/EventRouter/models"
+	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
 	_ "github.com/proullon/ramsql/driver"
 	"github.com/stretchr/testify/assert"
 	"testing"

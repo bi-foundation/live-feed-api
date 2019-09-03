@@ -6,11 +6,11 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/gen/eventmessages"
-	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/EventRouter/models"
-	"github.com/FactomProject/live-api/EventRouter/repository"
-	"github.com/gogo/protobuf/types"
+	"github.com/FactomProject/live-feed-api/EventRouter/events/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/log"
+	"github.com/FactomProject/live-feed-api/EventRouter/models"
+	"github.com/FactomProject/live-feed-api/EventRouter/repository"
+	"github.com/opsee/protobuf/opseeproto/types"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -338,9 +338,9 @@ func mockFactomAnchorEvent() *eventmessages.FactomEvent {
 	now := time.Now()
 	testHash := []byte("12345678901234567890123456789012")
 	return &eventmessages.FactomEvent{
-		EventSource: 0,
-		Value: &eventmessages.FactomEvent_AnchorEvent{
-			AnchorEvent: &eventmessages.AnchoredEvent{
+		StreamSource: 0,
+		Value: &eventmessages.FactomEvent_BlockCommit{
+			BlockCommit: &eventmessages.BlockCommit{
 				DirectoryBlock: &eventmessages.DirectoryBlock{
 					Header: &eventmessages.DirectoryBlockHeader{
 						BodyMerkleRoot: &eventmessages.Hash{

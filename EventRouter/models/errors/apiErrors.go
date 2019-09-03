@@ -1,6 +1,6 @@
 package errors
 
-import "github.com/FactomProject/live-api/EventRouter/models"
+import "github.com/FactomProject/live-feed-api/EventRouter/models"
 
 func NewInternalError(reason string) *models.ApiError {
 	return &models.ApiError{-410800, "internal error", reason}

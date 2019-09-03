@@ -3,9 +3,9 @@ package sql
 import (
 	"database/sql"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/EventRouter/models"
-	"github.com/FactomProject/live-api/EventRouter/models/errors"
+	"github.com/FactomProject/live-feed-api/EventRouter/log"
+	"github.com/FactomProject/live-feed-api/EventRouter/models"
+	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
 	_ "github.com/go-sql-driver/mysql"
 	"strconv"
 )

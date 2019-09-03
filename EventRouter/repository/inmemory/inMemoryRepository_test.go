@@ -2,8 +2,8 @@ package inmemory
 
 import (
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/models"
-	"github.com/FactomProject/live-api/EventRouter/models/errors"
+	"github.com/FactomProject/live-feed-api/EventRouter/models"
+	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
 	"github.com/stretchr/testify/assert"
 	"strconv"
 	"sync"
