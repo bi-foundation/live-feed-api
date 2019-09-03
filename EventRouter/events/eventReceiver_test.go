@@ -3,7 +3,7 @@ package events
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/events/eventmessages"
 	"github.com/gogo/protobuf/proto"
 	"github.com/opsee/protobuf/opseeproto/types"
 	"github.com/stretchr/testify/assert"
@@ -130,12 +130,11 @@ func mockAnchorEvent() *eventmessages.FactomEvent {
 	now := time.Now()
 	testHash := []byte("12345678901234567890123456789012")
 	return &eventmessages.FactomEvent{
-		EventSource: eventmessages.EventSource_ADD_TO_HOLDING,
 		IdentityChainID: &eventmessages.Hash{
 			HashValue: []byte("value"),
 		},
-		Value: &eventmessages.FactomEvent_AnchorEvent{
-			AnchorEvent: &eventmessages.AnchoredEvent{
+		Value: &eventmessages.FactomEvent_BlockCommit{
+			BlockCommit: &eventmessages.BlockCommit{
 				DirectoryBlock: &eventmessages.DirectoryBlock{
 					Header: &eventmessages.DirectoryBlockHeader{
 						BodyMerkleRoot: &eventmessages.Hash{

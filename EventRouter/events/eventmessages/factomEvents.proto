@@ -3,46 +3,47 @@ package eventmessages;
 option go_package = "eventmessages";
 option java_package = "com.factom.factomd.eventmessages";
 
-import "eventmessages/generalTypes.proto";
-import "eventmessages/adminBlock.proto";
-import "eventmessages/factoidBlock.proto";
-import "eventmessages/entryCredit.proto";
+import "events/eventmessages/generalTypes.proto";
+import "events/eventmessages/adminBlock.proto";
+import "events/eventmessages/factoidBlock.proto";
+import "events/eventmessages/entryCredit.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "github.com/opsee/protobuf/opseeproto/opsee.proto";
 import "github.com/opsee/protobuf/opseeproto/types/timestamp.proto";
 
 option (opseeproto.graphql) = true;
 
-enum EventSource {
-    COMMIT_DIRECTORY_BLOCK = 0;
-    ADD_TO_PROCESSLIST = 1;
-    ADD_TO_HOLDING = 2;
-    DROP_FROM_HOLDING = 3;
-    PROCESS_MESSAGE = 4;
-    NODE_MESSAGE = 5;
+enum StreamSource {
+    LIVE = 0;
+    REPLAY = 1;
 }
 
-
 message FactomEvent {
-    EventSource eventSource = 1;
-    Hash IdentityChainID = 2;
+    StreamSource streamSource = 1;
+    Hash identityChainID = 2;
     oneof value {
-        AnchoredEvent anchorEvent = 3;
-        CommitChain commitChain = 4;
-        CommitEntry commitEntry = 5;
-        RevealEntry revealEntry = 6;
-        ProcessMessage processEvent = 7;
-        NodeMessage nodeEvent = 8;
+        ChainRegistration chainRegistration = 3;
+        EntryRegistration entryRegistration = 4;
+        EntryContentRegistration entryContentRegistration = 5;
+        StateChange stateChange = 6;
+        BlockCommit blockCommit = 7;
+        ProcessMessage processMessage = 8;
+        NodeMessage nodeMessage = 9;
     }
 }
 
-
-message AnchoredEvent {
+message BlockCommit {
     DirectoryBlock directoryBlock = 1;
     AdminBlock adminBlock = 2;
     FactoidBlock factoidBlock = 3;
     EntryCreditBlock entryCreditBlock = 4;
     repeated EntryBlock entryBlocks = 5;
     repeated EntryBlockEntry entryBlockEntries = 6;
+}
+
+message StateChange {
+    Hash entityHash = 1;
+    EntityState entityState = 2;
 }
 
 message DirectoryBlock {
@@ -55,8 +56,8 @@ message DirectoryBlockHeader {
     Hash previousKeyMerkleRoot = 2;
     Hash previousFullHash = 3;
     opsee.types.Timestamp timestamp = 4;
-    uint64 blockHeight = 5;
-    uint64 blockCount = 6;
+    uint32 blockHeight = 5;
+    uint32 blockCount = 6;
 }
 
 message EntryBlock {
@@ -69,25 +70,9 @@ message EntryBlockHeader {
     Hash chainID = 2;
     Hash previousFullHash = 3;
     Hash previousKeyMerkleRoot = 4;
-    uint64 blockHeight = 5;
-    uint64 blockSequence = 6;
-    uint64 entryCount = 7;
-}
-
-message EntryBlockEntry {
-    Hash hash = 1;
-    repeated ExternalId externalIDs = 2;
-    Content content = 3;
-}
-
-message Entry {
-    Hash chainID = 1;
-    Hash keyMerkleRoot = 2;
-}
-
-message RevealEntry {
-    EntryBlockEntry entry = 1;
-    opsee.types.Timestamp timestamp = 2;
+    uint32 blockHeight = 5;
+    uint32 blockSequence = 6;
+    uint32 entryCount = 7;
 }
 
 enum Level {
@@ -96,20 +81,17 @@ enum Level {
     ERROR = 2;
 }
 
-
 enum ProcessMessageCode {
     OTHER_P = 0;
     NEW_BLOCK = 1;
     NEW_MINUTE = 2;
 }
 
-
 message ProcessMessage {
-    ProcessMessageCode processMessageCode = 1;
+    ProcessMessageCode messageCode = 1;
     Level level = 2;
     string messageText = 3;
 }
-
 
 enum NodeMessageCode {
     OTHER_N = 0;
@@ -119,7 +101,7 @@ enum NodeMessageCode {
 }
 
 message NodeMessage {
-    NodeMessageCode nodeMessageCode = 1;
+    NodeMessageCode messageCode = 1;
     Level level = 2;
     string messageText = 3;
 }

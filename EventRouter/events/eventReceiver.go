@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
-	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/events/eventmessages"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/gogo/protobuf/proto"

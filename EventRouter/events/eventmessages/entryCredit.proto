@@ -3,9 +3,8 @@ package eventmessages;
 option go_package = "eventmessages";
 option java_package = "com.factom.factomd.eventmessages";
 
-import "eventmessages/generalTypes.proto";
+import "events/eventmessages/generalTypes.proto";
 import "github.com/opsee/protobuf/opseeproto/opsee.proto";
-import "github.com/opsee/protobuf/opseeproto/types/timestamp.proto";
 
 option (opseeproto.graphql) = true;
 
@@ -18,7 +17,7 @@ message EntryCreditBlockHeader {
     Hash bodyHash = 1;
     Hash previousHeaderHash = 2;
     Hash previousFullHash = 3;
-    uint64 blockHeight = 4;
+    uint32 blockHeight = 4;
     bytes HeaderExpansionArea = 5;
     uint64 objectCount = 6;
     uint64 bodySize = 7;
@@ -26,30 +25,12 @@ message EntryCreditBlockHeader {
 
 message EntryCreditBlockEntry {
     oneof value {
-        CommitChain commitChain = 1;
-        CommitEntry commitEntry = 2;
+        ChainRegistration commitChain = 1;
+        EntryRegistration commitEntry = 2;
         IncreaseBalance increaseBalance = 3;
         MinuteNumber minuteNumber = 4;
         ServerIndexNumber serverIndexNumber = 5;
     }
-}
-
-message CommitChain {
-    Hash chainIDHash = 1;
-    Hash entryHash = 2;
-    Hash weld = 3;
-    opsee.types.Timestamp timestamp = 4;
-    uint64 credits = 5;
-    bytes ecPubKey = 6;
-    bytes sig = 7;
-}
-
-message CommitEntry {
-    Hash entryHash = 1;
-    opsee.types.Timestamp timestamp = 2;
-    uint64 credits = 3;
-    bytes ecPubKey = 4;
-    bytes sig = 5;
 }
 
 message IncreaseBalance {

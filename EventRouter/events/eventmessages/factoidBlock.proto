@@ -3,7 +3,7 @@ package eventmessages;
 option go_package = "eventmessages";
 option java_package = "com.factom.factomd.eventmessages";
 
-import "eventmessages/generalTypes.proto";
+import "events/eventmessages/generalTypes.proto";
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "github.com/opsee/protobuf/opseeproto/opsee.proto";
 import "github.com/opsee/protobuf/opseeproto/types/timestamp.proto";
@@ -15,13 +15,13 @@ message FactoidBlock {
     Hash previousKeyMerkleRoot = 2;
     Hash previousLedgerKeyMerkleRoot = 3;
     uint64 ExchRate = 4;
-    uint64 blockHeight = 5;
+    uint32 blockHeight = 5;
     repeated Transaction transactions = 6;
 }
 
 message Transaction {
     Hash transactionId = 1;
-    uint64 blockHeight = 2;
+    uint32 blockHeight = 2;
     opsee.types.Timestamp timestamp = 3;
     repeated TransactionAddress inputs = 4;
     repeated TransactionAddress outputs = 5;
@@ -36,7 +36,7 @@ message TransactionAddress {
 }
 
 message RCD {
-    oneof rcd {
+    oneof value {
         RCD1 rcd1 = 1;
         RCD2 rcd2 = 2;
     }

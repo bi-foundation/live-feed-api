@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/events/eventmessages"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/FactomProject/live-feed-api/EventRouter/repository"
@@ -38,7 +38,7 @@ func (evr *EventRouter) handleEvents() {
 			continue
 		}
 
-		log.Info("received %s with event source %v: %v", eventType, factomEvent.GetEventSource(), factomEvent.GetAnchorEvent())
+		log.Info("received %s with event source %v", eventType, factomEvent /*.GetEventSource(), factomEvent.GetAnchorEvent()*/)
 
 		subscriptionContexts, err := repository.SubscriptionRepository.GetActiveSubscriptions(eventType)
 		if err != nil {
@@ -55,22 +55,25 @@ func (evr *EventRouter) handleEvents() {
 }
 
 func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, error) {
-	switch factomEvent.Value.(type) {
-	case *eventmessages.FactomEvent_AnchorEvent:
-		return models.ANCHOR_EVENT, nil
-	case *eventmessages.FactomEvent_CommitChain:
-		return models.COMMIT_CHAIN, nil
-	case *eventmessages.FactomEvent_CommitEntry:
-		return models.COMMIT_ENTRY, nil
-	case *eventmessages.FactomEvent_RevealEntry:
-		return models.REVEAL_ENTRY, nil
-	case *eventmessages.FactomEvent_ProcessEvent:
-		return models.PROCESS_MESSAGE, nil
-	case *eventmessages.FactomEvent_NodeEvent:
-		return models.NODE_MESSAGE, nil
-	default:
-		return "", fmt.Errorf("failed to map correct node")
-	}
+	// TODO fix models, and proto
+	return models.ANCHOR_EVENT, nil
+	/*	switch factomEvent.Value.(type) {
+		case *eventmessages.FactomEvent_AnchorEvent:
+			return models.ANCHOR_EVENT, nil
+		case *eventmessages.FactomEvent_CommitChain:
+			return models.COMMIT_CHAIN, nil
+		case *eventmessages.FactomEvent_CommitEntry:
+			return models.COMMIT_ENTRY, nil
+		case *eventmessages.FactomEvent_RevealEntry:
+			return models.REVEAL_ENTRY, nil
+		case *eventmessages.FactomEvent_ProcessEvent:
+			return models.PROCESS_MESSAGE, nil
+		case *eventmessages.FactomEvent_NodeEvent:
+			return models.NODE_MESSAGE, nil
+		default:
+			return "", fmt.Errorf("failed to map correct node")
+		}
+	*/
 }
 
 func send(subscriptions []*models.SubscriptionContext, factomEvent *eventmessages.FactomEvent) error {

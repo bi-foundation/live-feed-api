@@ -3,7 +3,7 @@ package events
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/events/eventmessages"
 	"github.com/graphql-go/graphql"
 )
 
