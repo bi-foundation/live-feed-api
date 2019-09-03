@@ -4,14 +4,50 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/gen/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages"
 	"github.com/graphql-go/graphql"
+	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
 )
 
-func TestQueryFilter(t *testing.T) {
-	schema, err := queryScheme()
+func TestQueryNodeMessage(t *testing.T) {
+	// Query
+	query := ` { 
+		IdentityChainID {
+			hashValue 
+		}
+		value {
+			... on NodeMessage {
+				nodeMessageCode
+				messageText
+			}
+		}
+	}`
+	expectedJson := `{ 
+		"event": {
+			"IdentityChainID": {
+				"hashValue": "OLqxRVt71+Xv0VxTx3fHnQyYjpIQ8dpJqZ2Vs6ZBe+k="
+			},
+			"value": {
+				"messageText": "New minute [6]",
+				"nodeMessageCode": "SYNC_COMPLETE"
+			}
+		}
+	}`
+
+	result, err := Filter(query, mockNodeMessage())
+	if err != nil {
+		fmt.Printf("query: %s \n", jsonPrettyPrint(query))
+		fmt.Printf("result: %s \n", jsonPrettyPrint(string(result)))
+		t.Fatalf("failed to marshal result: %v - %v", err, result)
+	}
+
+	assert.JSONEq(t, expectedJson, string(result))
+}
+
+func testQueryFilter(t *testing.T) {
+	schema, err := queryScheme(mockNodeMessage())
 	if err != nil {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
@@ -36,23 +72,6 @@ func TestQueryFilter(t *testing.T) {
 	fmt.Printf("result: %s \n", jsonPrettyPrint(string(rJSON)))
 }
 
-func queryScheme() (graphql.Schema, error) {
-	schema, err := graphql.NewSchema(graphql.SchemaConfig{
-		Query: graphql.NewObject(graphql.ObjectConfig{
-			Name: "Query",
-			Fields: graphql.Fields{
-				"event": &graphql.Field{
-					Type: eventmessages.GraphQLFactomEventType,
-					Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-						return mockAnchorEvent(), nil
-					},
-				},
-			},
-		}),
-	})
-	return schema, err
-}
-
 func jsonPrettyPrint(in string) string {
 	var out bytes.Buffer
 	err := json.Indent(&out, []byte(in), "", "\t")
@@ -60,4 +79,18 @@ func jsonPrettyPrint(in string) string {
 		return in
 	}
 	return out.String()
+}
+
+func mockNodeMessage() *eventmessages.FactomEvent {
+	return &eventmessages.FactomEvent{
+		IdentityChainID: &eventmessages.Hash{
+			HashValue: []byte("OLqxRVt71+Xv0VxTx3fHnQyYjpIQ8dpJqZ2Vs6ZBe+k="),
+		},
+		Value: &eventmessages.FactomEvent_NodeEvent{
+			NodeEvent: &eventmessages.NodeMessage{
+				NodeMessageCode: 2,
+				MessageText:     "New minute [6]",
+			},
+		},
+	}
 }

@@ -2,10 +2,10 @@ package api
 
 import (
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/EventRouter/models"
-	"github.com/FactomProject/live-api/EventRouter/models/errors"
-	"github.com/FactomProject/live-api/EventRouter/repository"
+	"github.com/FactomProject/live-feed-api/EventRouter/log"
+	"github.com/FactomProject/live-feed-api/EventRouter/models"
+	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
+	"github.com/FactomProject/live-feed-api/EventRouter/repository"
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/url"

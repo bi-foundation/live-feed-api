@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/FactomProject/live-api/EventRouter/models"
+import "github.com/FactomProject/live-feed-api/EventRouter/models"
 
 type Repository interface {
 	CreateSubscription(subscription *models.SubscriptionContext) (*models.SubscriptionContext, error)

@@ -3,10 +3,10 @@
 package main
 
 import (
-	"github.com/FactomProject/live-api/EventRouter/api"
-	"github.com/FactomProject/live-api/EventRouter/events"
-	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/EventRouter/models"
+	"github.com/FactomProject/live-feed-api/EventRouter/api"
+	"github.com/FactomProject/live-feed-api/EventRouter/events"
+	"github.com/FactomProject/live-feed-api/EventRouter/log"
+	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"time"
 )
 

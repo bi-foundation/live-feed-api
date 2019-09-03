@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/gen/eventmessages"
-	"github.com/FactomProject/live-api/EventRouter/log"
-	"github.com/FactomProject/live-api/EventRouter/models"
-	"github.com/FactomProject/live-api/EventRouter/repository"
+	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/log"
+	"github.com/FactomProject/live-feed-api/EventRouter/models"
+	"github.com/FactomProject/live-feed-api/EventRouter/repository"
 	"net/http"
 )
 
