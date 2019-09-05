@@ -4,7 +4,9 @@ option go_package = "eventmessages";
 option java_package = "com.factom.factomd.eventmessages";
 
 import "eventmessages/generalTypes.proto";
+import "github.com/opsee/protobuf/opseeproto/opsee.proto";
 
+option (opseeproto.graphql) = true;
 
 message EntryCreditBlock {
     EntryCreditBlockHeader header = 1;
@@ -27,8 +29,8 @@ message EntryCreditBlockEntry {
         ChainRegistration commitChain = 1;
         EntryRegistration commitEntry = 2;
         IncreaseBalance increaseBalance = 3;
-        uint32 minuteNumber = 4;
-        uint32 serverIndexNumber = 5;
+        MinuteNumber minuteNumber = 4;
+        ServerIndexNumber serverIndexNumber = 5;
     }
 }
 
@@ -40,3 +42,10 @@ message IncreaseBalance {
     uint64 ecAmount = 4;
 }
 
+message MinuteNumber {
+    uint32 minuteNumber = 1;
+}
+
+message ServerIndexNumber {
+    uint32 serverIndexNumber = 1;
+}

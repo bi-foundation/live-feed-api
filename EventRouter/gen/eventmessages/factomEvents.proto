@@ -3,12 +3,14 @@ package eventmessages;
 option go_package = "eventmessages";
 option java_package = "com.factom.factomd.eventmessages";
 
+import "github.com/opsee/protobuf/opseeproto/opsee.proto";
+import "github.com/opsee/protobuf/opseeproto/types/timestamp.proto";
 import "eventmessages/generalTypes.proto";
 import "eventmessages/adminBlock.proto";
 import "eventmessages/factoidBlock.proto";
 import "eventmessages/entryCredit.proto";
-import "google/protobuf/timestamp.proto";
 
+option (opseeproto.graphql) = true;
 
 enum StreamSource {
     LIVE = 0;
@@ -54,7 +56,7 @@ message DirectoryBlockHeader {
     Hash bodyMerkleRoot = 1;
     Hash previousKeyMerkleRoot = 2;
     Hash previousFullHash = 3;
-    google.protobuf.Timestamp timestamp = 4;
+    opsee.types.Timestamp timestamp = 4;
     uint32 blockHeight = 5;
     uint32 blockCount = 6;
 }
