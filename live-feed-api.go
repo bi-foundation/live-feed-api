@@ -20,7 +20,7 @@ var (
 func main() {
 	log.SetLevel(log.D)
 
-	go eventServer.Start()
+	eventServer.Start()
 	eventRouter.Start()
 
 	api.NewSubscriptionApi(":8700").Start()

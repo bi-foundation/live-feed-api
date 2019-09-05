@@ -208,7 +208,7 @@
       "x-go-package": "github.com/FactomProject/live-feed-api/EventRouter/models"
     },
     "EventType": {
-      "description": "A filtering is linked to event type: [COMMIT_CHAIN, COMMIT_ENTRY, ANCHOR_EVENT, REVEAL_ENTRY, NODE_MESSAGE]",
+      "description": "A filtering is linked to event type: [CHAIN_REGISTRATION, ENTRY_REGISTRATION, BLOCK_COMMIT, ENTRY_CONTENT_REGISTRATION, NODE_MESSAGE]",
       "type": "string",
       "title": "EventType",
       "x-go-package": "github.com/FactomProject/live-feed-api/EventRouter/models"
@@ -257,7 +257,7 @@
           },
           "x-go-name": "Filters",
           "example": {
-            "COMMIT_CHAIN": {
+            "CHAIN_REGISTRATION": {
               "filtering": "string"
             },
             "NODE_MESSAGE": {
