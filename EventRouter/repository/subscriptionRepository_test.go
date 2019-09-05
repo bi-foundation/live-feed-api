@@ -6,7 +6,6 @@ import (
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/FactomProject/live-feed-api/EventRouter/repository"
 	"github.com/FactomProject/live-feed-api/EventRouter/repository/inmemory"
-	"github.com/FactomProject/live-feed-api/EventRouter/repository/sql"
 	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
@@ -17,14 +16,8 @@ var repositories map[string]repository.Repository
 func init() {
 	log.SetLevel(log.D)
 
-	sqlRepository, err := sql.New()
-	if err != nil {
-		log.Error("setup test: %v", err)
-	}
-
 	repositories = map[string]repository.Repository{
 		"inmemory": inmemory.New(),
-		"sql":      sqlRepository,
 	}
 }
 
@@ -36,9 +29,9 @@ func TestCRUD(t *testing.T) {
 			CallbackType:       models.BEARER_TOKEN,
 			SubscriptionStatus: models.ACTIVE,
 			Filters: map[models.EventType]models.Filter{
-				models.ANCHOR_EVENT: {Filtering: fmt.Sprintf("filtering 1")},
-				models.COMMIT_ENTRY: {Filtering: fmt.Sprintf("filtering 2")},
-				models.COMMIT_CHAIN: {Filtering: fmt.Sprintf("filtering 3")},
+				models.BLOCK_COMMIT:       {Filtering: fmt.Sprintf("filtering 1")},
+				models.ENTRY_REGISTRATION: {Filtering: fmt.Sprintf("filtering 2")},
+				models.CHAIN_REGISTRATION: {Filtering: fmt.Sprintf("filtering 3")},
 			},
 			Credentials: models.Credentials{
 				AccessToken: "token",
@@ -54,8 +47,8 @@ func TestCRUD(t *testing.T) {
 			SubscriptionStatus: models.SUSPENDED,
 			SubscriptionInfo:   "reason",
 			Filters: map[models.EventType]models.Filter{
-				models.ANCHOR_EVENT: {Filtering: fmt.Sprintf("filtering update 1")},
-				models.COMMIT_ENTRY: {Filtering: fmt.Sprintf("filtering update 2")},
+				models.BLOCK_COMMIT:       {Filtering: fmt.Sprintf("filtering update 1")},
+				models.ENTRY_REGISTRATION: {Filtering: fmt.Sprintf("filtering update 2")},
 			},
 			Credentials: models.Credentials{
 				BasicAuthUsername: "username",
@@ -141,7 +134,7 @@ func TestConcurrency(t *testing.T) {
 }
 
 func testConcurrency(t *testing.T, repository repository.Repository) {
-	eventType := models.COMMIT_ENTRY
+	eventType := models.ENTRY_REGISTRATION
 	subscription := models.Subscription{
 		CallbackUrl:        "url",
 		SubscriptionStatus: models.ACTIVE,

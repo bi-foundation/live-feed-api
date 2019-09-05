@@ -6,7 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/FactomProject/live-feed-api/EventRouter/events/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/FactomProject/live-feed-api/EventRouter/repository"
@@ -96,7 +96,7 @@ func TestSendEvent(t *testing.T) {
 					CallbackUrl:  fmt.Sprintf("http://localhost:%[1]d/callback%[1]d%s", port, testCase.EndpointPostfix),
 					CallbackType: testCase.CallbackType,
 					Filters: map[models.EventType]models.Filter{
-						models.COMMIT_CHAIN: {Filtering: ""},
+						models.CHAIN_REGISTRATION: {Filtering: ""},
 					},
 					Credentials: testCase.Credentials,
 				},
@@ -120,7 +120,7 @@ func TestHTTPSEndpoint(t *testing.T) {
 				CallbackUrl:  "https://localhost:23232/callback23232",
 				CallbackType: models.BEARER_TOKEN,
 				Filters: map[models.EventType]models.Filter{
-					models.COMMIT_CHAIN: {Filtering: ""},
+					models.CHAIN_REGISTRATION: {Filtering: ""},
 				},
 				Credentials: models.Credentials{
 					AccessToken: accessToken,
@@ -160,13 +160,13 @@ func TestHandleEvents(t *testing.T) {
 	subscription1 := models.Subscription{
 		CallbackUrl: "http://localhost:23222/callback23222",
 		Filters: map[models.EventType]models.Filter{
-			models.ANCHOR_EVENT: {Filtering: ""},
+			models.BLOCK_COMMIT: {Filtering: ""},
 		},
 	}
 	subscription2 := models.Subscription{
 		CallbackUrl: "http://localhost:23223/callback23223",
 		Filters: map[models.EventType]models.Filter{
-			models.ANCHOR_EVENT: {Filtering: ""},
+			models.BLOCK_COMMIT: {Filtering: ""},
 		},
 	}
 	subscriptionContexts := []*models.SubscriptionContext{
@@ -179,7 +179,7 @@ func TestHandleEvents(t *testing.T) {
 
 	// init mock repository
 	mockStore := repository.InitMockRepository()
-	mockStore.On("GetActiveSubscriptions", models.ANCHOR_EVENT).Return(subscriptionContexts, nil).Once()
+	mockStore.On("GetActiveSubscriptions", models.BLOCK_COMMIT).Return(subscriptionContexts, nil).Once()
 
 	var eventsReceived int32 = 0
 	factomEvent := mockFactomAnchorEvent()

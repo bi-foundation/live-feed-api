@@ -42,6 +42,32 @@ message BlockCommit {
     repeated EntryBlockEntry entryBlockEntries = 6;
 }
 
+message ChainRegistration {
+    EntityState entityState = 1;
+    Hash chainIDHash = 2;
+    Hash entryHash = 3;
+    Hash weld = 4;
+    opsee.types.Timestamp timestamp = 5;
+    uint32 credits = 6;
+    bytes ecPubKey = 7;
+    bytes sig = 8;
+}
+
+message EntryRegistration {
+    EntityState entityState = 1;
+    Hash entryHash = 2;
+    opsee.types.Timestamp timestamp = 3;
+    uint32 credits = 4;
+    bytes ecPubKey = 5;
+    bytes sig = 6;
+}
+
+message EntryContentRegistration {
+    EntityState entityState = 1;
+    EntryBlockEntry entry = 2;
+    opsee.types.Timestamp timestamp = 3;
+}
+
 message StateChange {
     Hash entityHash = 1;
     EntityState entityState = 2;

@@ -27,10 +27,10 @@ var testSubscription = &models.Subscription{
 	CallbackUrl:  "http://url/callback",
 	CallbackType: models.HTTP,
 	Filters: map[models.EventType]models.Filter{
-		models.COMMIT_CHAIN: {
+		models.CHAIN_REGISTRATION: {
 			Filtering: "filtering 1",
 		},
-		models.COMMIT_ENTRY: {
+		models.ENTRY_REGISTRATION: {
 			Filtering: "filtering 2",
 		},
 	},
@@ -143,10 +143,10 @@ func TestSubscriptionApi(t *testing.T) {
 				CallbackUrl:  "http://url/callback",
 				CallbackType: models.HTTP,
 				Filters: map[models.EventType]models.Filter{
-					models.COMMIT_CHAIN: {
+					models.CHAIN_REGISTRATION: {
 						Filtering: "filtering 1",
 					},
-					models.COMMIT_ENTRY: {
+					models.ENTRY_REGISTRATION: {
 						Filtering: "filtering 2",
 					},
 				},

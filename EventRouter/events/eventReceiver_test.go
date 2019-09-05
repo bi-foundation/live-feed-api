@@ -3,7 +3,7 @@ package events
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/FactomProject/live-feed-api/EventRouter/events/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
 	"github.com/gogo/protobuf/proto"
 	"github.com/opsee/protobuf/opseeproto/types"
 	"github.com/stretchr/testify/assert"

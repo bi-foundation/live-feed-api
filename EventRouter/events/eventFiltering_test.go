@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/FactomProject/live-feed-api/EventRouter/events/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
 	"github.com/graphql-go/graphql"
 	"github.com/stretchr/testify/assert"
 	"log"
@@ -12,27 +12,27 @@ import (
 )
 
 // TODO fix after protos are defined
-func testQueryNodeMessage(t *testing.T) {
+func TestQueryNodeMessage(t *testing.T) {
 	// Query
 	query := ` { 
-		IdentityChainID {
+		identityChainID {
 			hashValue 
 		}
 		value {
 			... on NodeMessage {
-				nodeMessageCode
+				messageCode
 				messageText
 			}
 		}
 	}`
 	expectedJson := `{ 
 		"event": {
-			"IdentityChainID": {
+			"identityChainID": {
 				"hashValue": "OLqxRVt71+Xv0VxTx3fHnQyYjpIQ8dpJqZ2Vs6ZBe+k="
 			},
 			"value": {
 				"messageText": "New minute [6]",
-				"nodeMessageCode": "SYNC_COMPLETE"
+				"messageCode": "SYNC_COMPLETE"
 			}
 		}
 	}`

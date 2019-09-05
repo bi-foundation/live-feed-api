@@ -41,7 +41,7 @@ type Subscription struct {
 
 	// The emitted event can be filter to receive not all data from an event type. Subscribe on one or more event types. For every event type a filtering can be defined.
 	//
-	// example: { "COMMIT_CHAIN": { "filtering": "string" }, "NODE_MESSAGE": { "filtering": "string" } }
+	// example: { "CHAIN_REGISTRATION": { "filtering": "string" }, "NODE_MESSAGE": { "filtering": "string" } }
 	Filters map[EventType]Filter `json:"filters"`
 
 	// the emitted event can be filter to receive not all data from an event type

@@ -14,7 +14,7 @@ message FactoidBlock {
     Hash bodyMerkleRoot = 1;
     Hash previousKeyMerkleRoot = 2;
     Hash previousLedgerKeyMerkleRoot = 3;
-    uint64 ExchRate = 4;
+    uint64 exchRate = 4;
     uint32 blockHeight = 5;
     repeated Transaction transactions = 6;
 }
@@ -26,7 +26,7 @@ message Transaction {
     repeated TransactionAddress inputs = 4;
     repeated TransactionAddress outputs = 5;
     repeated TransactionAddress outputEntryCredits = 6;
-    repeated RCD rCds = 7;
+    repeated RCD rcds = 7;
     repeated FactoidSignatureBlock signatureBlocks = 8;
 }
 
