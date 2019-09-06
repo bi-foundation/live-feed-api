@@ -6,25 +6,27 @@ package main
 
 import (
 	"github.com/FactomProject/live-feed-api/EventRouter/api"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/events"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"time"
 )
 
-var (
-	appConfig   = config.LoadEventRouterConfig()
-	eventServer = events.NewDefaultReceiver(appConfig.EventListenerConfig)
-	eventRouter = events.NewEventRouter(eventServer.GetEventQueue())
-)
-
 func main() {
-	log.SetLevel(log.D)
+	configuration, err := config.LoadConfiguration()
+	if err != nil {
+		log.Fatal("failed to load configuration: %v", err)
+	}
+	log.SetLevel(configuration.Log.Level)
+
+	eventServer := events.NewReceiver(configuration.ReceiverConfig)
+	eventRouter := events.NewEventRouter(eventServer.GetEventQueue())
 
 	eventServer.Start()
 	eventRouter.Start()
 
-	api.NewSubscriptionApi(appConfig.SubscriptionApiConfig).Start()
+	api.NewSubscriptionApi(configuration.SubscriptionConfig).Start()
 
 	for eventServer.GetState() < models.Stopping {
 		time.Sleep(time.Second)

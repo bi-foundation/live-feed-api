@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
@@ -15,13 +16,13 @@ import (
 	"time"
 )
 
-var evrConfig = config.LoadEventRouterConfig()
+var configuration, _ = config.LoadConfiguration()
 
 func init() {
 	log.SetLevel(log.D)
 
 	// Start the new server at random port
-	server := NewSubscriptionApi(evrConfig.SubscriptionApiConfig)
+	server := NewSubscriptionApi(configuration.SubscriptionConfig)
 	server.Start()
 	time.Sleep(1 * time.Second)
 }
@@ -210,15 +211,6 @@ func TestSubscriptionApi(t *testing.T) {
 			responseCode: http.StatusNotFound,
 			assert:       assertNotFound,
 		},
-		"unsubscribe-invalid": {
-			URL:    "/subscribe/notfound",
-			Method: http.MethodDelete,
-			content: content(t, &models.Subscription{
-				Callback: "invalid url",
-			}),
-			responseCode: http.StatusBadRequest,
-			assert:       assertInvalidRequestError,
-		},
 		"subscribe-wrong-method": {
 			URL:          "/subscriptions",
 			Method:       http.MethodDelete,
@@ -237,11 +229,10 @@ func TestSubscriptionApi(t *testing.T) {
 	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Twice()
 	mockStore.On("UpdateSubscription", "unknown-id").Return(nil, errors.NewSubscriptionNotFound("unknown")).Once()
 	mockStore.On("DeleteSubscription", "0").Return(nil).Once()
-	mockStore.On("DeleteSubscription", "notfound").Return(fmt.Errorf("subscription not found")).Once()
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			url := fmt.Sprintf("http://localhost:%d%s", config.SubscriptionApiConfig.Port, testCase.URL)
+			url := fmt.Sprintf("http://localhost:%d%s", configuration.SubscriptionConfig.Port, testCase.URL)
 			request, err := http.NewRequest(testCase.Method, url, bytes.NewBuffer(testCase.content))
 
 			assert.Nil(t, err, "failed to create request")

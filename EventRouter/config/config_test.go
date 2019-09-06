@@ -1,8 +1,8 @@
-package eventrouterconfig
+package config
 
 import (
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/log"
+	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
@@ -13,12 +13,15 @@ import (
 )
 
 const testConfig = `
-[eventlistenerconfig]
+[log]
+  logLevel = info
+
+[receiver]
   bindaddress = "127.0.0.1"
   port = "8044"
   protocol = "udp"
 
-[subscriptionapiconfig]
+[subscription]
   bindaddress = "0.0.0.0"
   port = "8777"
   schemes = ["HTTP","HTTPS"]
@@ -32,14 +35,20 @@ func Test(t *testing.T) {
 	files := renameConfigFiles()
 	defer restoreRenamedFiles(files)
 
-	t.Run("TestLocateConfigFile", testLocateConfigFile)
-	t.Run("TestSpecificConfigFile", testSpecificConfigFile)
-	t.Run("testEnvVarOverrides", testEnvVarOverrides)
-	t.Run("TestNoConfigFound", testNoConfigFound)
+	testCases := map[string]func(*testing.T){
+		"TestLocateConfigFile":   testLocateConfigFile,
+		"TestSpecificConfigFile": testSpecificConfigFile,
+		"TestEnvVarOverrides":    testEnvVarOverrides,
+		"TestNoConfigFound":      testEnvVarOverrides,
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, testCase)
+	}
 }
 
 func testNoConfigFound(t *testing.T) {
-	_, err := LoadEventRouterConfigFrom("")
+	_, err := LoadConfigurationFrom("")
 	if err == nil {
 		t.Fatal("Expected a config not found error")
 	}
@@ -86,33 +95,33 @@ func testLocateAndVerifyConfigFile(t *testing.T, specifiedConfigFileName string)
 	}
 	defer deleteTestConfigFile(configFile)
 
-	config, err := LoadEventRouterConfigFrom(configFile)
+	config, err := LoadConfigurationFrom(configFile)
 	if !assert.Nil(t, err) {
 		return
 	}
 	if !assert.NotNil(t, config) {
 		return
 	}
-	listenerConfig := config.EventListenerConfig
-	if !assert.NotNil(t, listenerConfig, "EventListenerConfig shouldn't be nil") {
+	receiverConfig := config.ReceiverConfig
+	if !assert.NotNil(t, receiverConfig, "ReceiverConfig shouldn't be nil") {
 		return
 	}
-	assert.EqualValues(t, "127.0.0.1", listenerConfig.BindAddress,
-		"EventListenerConfig.BindAddress mismatch %s != %s", "127.0.0.1", listenerConfig.BindAddress)
-	assert.EqualValues(t, "8044", strconv.Itoa(int(listenerConfig.Port)),
-		"EventListenerConfig.Port mismatch %s != %d", 8044, listenerConfig.Port)
-	assert.EqualValues(t, "udp", listenerConfig.Protocol,
-		"EventListenerConfig.Protocol mismatch %s != %s", "udp", listenerConfig.Protocol)
-	subscriptionConfig := config.SubscriptionApiConfig
-	if !assert.NotNil(t, subscriptionConfig, "SubscriptionApiConfig shouldn't be nil") {
+	assert.EqualValues(t, "127.0.0.1", receiverConfig.BindAddress,
+		"ReceiverConfig.BindAddress mismatch %s != %s", "127.0.0.1", receiverConfig.BindAddress)
+	assert.EqualValues(t, "8044", strconv.Itoa(int(receiverConfig.Port)),
+		"ReceiverConfig.Port mismatch %s != %d", 8044, receiverConfig.Port)
+	assert.EqualValues(t, "udp", receiverConfig.Protocol,
+		"ReceiverConfig.Protocol mismatch %s != %s", "udp", receiverConfig.Protocol)
+	subscriptionConfig := config.SubscriptionConfig
+	if !assert.NotNil(t, subscriptionConfig, "SubscriptionConfig shouldn't be nil") {
 		return
 	}
 	assert.EqualValues(t, "0.0.0.0", subscriptionConfig.BindAddress,
-		"SubscriptionApiConfig.BindAddress mismatch %s != %s", "127.0.0.1", subscriptionConfig.BindAddress)
+		"SubscriptionConfig.BindAddress mismatch %s != %s", "127.0.0.1", subscriptionConfig.BindAddress)
 	assert.EqualValues(t, "8777", strconv.Itoa(int(subscriptionConfig.Port)),
-		"SubscriptionApiConfig.Port mismatch %s != %d", 8777, subscriptionConfig.Port)
+		"SubscriptionConfig.Port mismatch %s != %d", 8777, subscriptionConfig.Port)
 	assert.EqualValues(t, []string{"HTTP", "HTTPS"}, subscriptionConfig.Schemes,
-		"SubscriptionApiConfig.Schemes mismatch %v != %v", []string{"HTTP", "HTTPS"}, subscriptionConfig.Schemes)
+		"SubscriptionConfig.Schemes mismatch %v != %v", []string{"HTTP", "HTTPS"}, subscriptionConfig.Schemes)
 }
 
 func testEnvVarOverrides(t *testing.T) {
@@ -126,25 +135,28 @@ func testEnvVarOverrides(t *testing.T) {
 
 	os.Setenv("FACTOMLF_EVENTLISTENERCONFIG_PORT", "8666")
 	os.Setenv("FACTOMLF_SUBSCRIPTIONAPICONFIG_SCHEMES", "HTTPS,HTTP")
-	config, err := LoadEventRouterConfigFrom(configFile)
-	assert.Nil(t, err)
+	config, err := LoadConfigurationFrom(configFile)
+	if err != nil {
+		t.Fatalf("load config failed: %v", err)
+	}
+
 	assert.NotNil(t, config)
-	listenerConfig := config.EventListenerConfig
-	assert.NotNil(t, listenerConfig, "EventListenerConfig shouldn't be nil")
-	assert.EqualValues(t, "127.0.0.1", listenerConfig.BindAddress,
-		"EventListenerConfig.BindAddress mismatch %s != %s", "127.0.0.1", listenerConfig.BindAddress)
-	assert.EqualValues(t, "8666", strconv.Itoa(int(listenerConfig.Port)),
-		"EventListenerConfig.Port mismatch %s != %d", 8666, listenerConfig.Port)
-	assert.EqualValues(t, "udp", listenerConfig.Protocol,
-		"EventListenerConfig.Protocol mismatch %s != %s", "udp", listenerConfig.Protocol)
-	subscriptionConfig := config.SubscriptionApiConfig
-	assert.NotNil(t, subscriptionConfig, "SubscriptionApiConfig shouldn't be nil")
+	receiverConfig := config.ReceiverConfig
+	assert.NotNil(t, receiverConfig, "ReceiverConfig shouldn't be nil")
+	assert.EqualValues(t, "127.0.0.1", receiverConfig.BindAddress,
+		"ReceiverConfig.BindAddress mismatch %s != %s", "127.0.0.1", receiverConfig.BindAddress)
+	assert.EqualValues(t, "8666", strconv.Itoa(int(receiverConfig.Port)),
+		"ReceiverConfig.Port mismatch %s != %d", 8666, receiverConfig.Port)
+	assert.EqualValues(t, "udp", receiverConfig.Protocol,
+		"ReceiverConfig.Protocol mismatch %s != %s", "udp", receiverConfig.Protocol)
+	subscriptionConfig := config.SubscriptionConfig
+	assert.NotNil(t, subscriptionConfig, "SubscriptionConfig shouldn't be nil")
 	assert.EqualValues(t, "0.0.0.0", subscriptionConfig.BindAddress,
-		"SubscriptionApiConfig.BindAddress mismatch %s != %s", "127.0.0.1", subscriptionConfig.BindAddress)
+		"SubscriptionConfig.BindAddress mismatch %s != %s", "127.0.0.1", subscriptionConfig.BindAddress)
 	assert.EqualValues(t, "8777", strconv.Itoa(int(subscriptionConfig.Port)),
-		"SubscriptionApiConfig.Port mismatch %s != %d", 8777, subscriptionConfig.Port)
+		"SubscriptionConfig.Port mismatch %s != %d", 8777, subscriptionConfig.Port)
 	assert.EqualValues(t, []string{"HTTPS", "HTTP"}, subscriptionConfig.Schemes,
-		"SubscriptionApiConfig.Schemes mismatch %v != %v", []string{"HTTPS", "HTTP"}, subscriptionConfig.Schemes)
+		"SubscriptionConfig.Schemes mismatch %v != %v", []string{"HTTPS", "HTTP"}, subscriptionConfig.Schemes)
 }
 
 func makeDirs(configFileDir string) error {
@@ -152,7 +164,7 @@ func makeDirs(configFileDir string) error {
 		oldMask := syscall.Umask(0)
 		defer syscall.Umask(oldMask)
 
-		if err = os.MkdirAll(configFileDir, os.ModeDir|OS_ALL_RWX); err != nil {
+		if err = os.MkdirAll(configFileDir, os.ModePerm); err != nil {
 			return err
 		}
 	}

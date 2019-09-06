@@ -1,10 +1,11 @@
-package network
+package events
 
 import (
 	"encoding/binary"
 	"fmt"
 	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/gogo/protobuf/proto"
 	"github.com/opsee/protobuf/opseeproto/types"
 	"github.com/stretchr/testify/assert"
@@ -19,11 +20,14 @@ var eventsQueue chan *eventmessages.FactomEvent
 var address string
 
 func init() {
-	config, _ := eventrouterconfig.LoadEventRouterConfigFrom("../../conf/livefeed.toml")
+	configuration, err := config.LoadConfiguration()
+	if err != nil {
+		log.Fatal("failed test to load configuration: %v", err)
+	}
 
 	// Start the new server at random port
-	config.EventListenerConfig.Port = 0
-	server := NewReceiver(config.EventListenerConfig)
+	configuration.ReceiverConfig.Port = 0
+	server := NewReceiver(configuration.ReceiverConfig)
 	server.Start()
 	time.Sleep(10 * time.Millisecond) // sleep to allow the server to start before making a connection
 	address = server.GetAddress()

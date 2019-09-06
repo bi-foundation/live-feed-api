@@ -1,4 +1,4 @@
-package network
+package events
 
 import (
 	"bufio"
@@ -33,7 +33,7 @@ type Receiver struct {
 	address    string
 }
 
-func NewReceiver(eventListenerConfig *config.ListenerConfig) EventReceiver {
+func NewReceiver(eventListenerConfig *config.ReceiverConfig) EventReceiver {
 	return &Receiver{
 		eventQueue: make(chan *eventmessages.FactomEvent, StandardChannelSize),
 		state:      models.New,

@@ -29,10 +29,10 @@ type SubscriptionApi interface {
 }
 
 type api struct {
-	apiConfig *config.SubscriptionApiConfig
+	apiConfig *config.SubscriptionConfig
 }
 
-func NewSubscriptionApi(apiConfig *config.SubscriptionApiConfig) SubscriptionApi {
+func NewSubscriptionApi(apiConfig *config.SubscriptionConfig) SubscriptionApi {
 	return &api{
 		apiConfig: apiConfig,
 	}

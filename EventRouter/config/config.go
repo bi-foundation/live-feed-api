@@ -1,9 +1,9 @@
-package eventrouterconfig
+package config
 
 import (
 	"errors"
 	"fmt"
-	"github.com/FactomProject/live-api/EventRouter/log"
+	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/spf13/viper"
 	"os"
 	"path"
@@ -11,7 +11,10 @@ import (
 )
 
 const (
-	defaultConfigName          = "livefeed"
+	defaultConfigName = "livefeed"
+
+	defaultLogLevel = log.D
+
 	defaultListenerBindAddress = ""
 	defaultListenerPort        = "8040"
 	defaultListenerProtocol    = "tcp"
@@ -23,18 +26,23 @@ const (
 var defaultSubscriptionApiSchemes = []string{"HTTP", "HTTPS"}
 var possibleConfigPaths = []string{}
 
-type EventRouterConfig struct {
-	EventListenerConfig   *EventListenerConfig
-	SubscriptionApiConfig *SubscriptionApiConfig
+type Config struct {
+	Log                *LogConfig
+	ReceiverConfig     *ReceiverConfig
+	SubscriptionConfig *SubscriptionConfig
 }
 
-type EventListenerConfig struct {
+type LogConfig struct {
+	LogLevel log.Level
+}
+
+type ReceiverConfig struct {
 	Protocol    string
 	BindAddress string
 	Port        uint16
 }
 
-type SubscriptionApiConfig struct {
+type SubscriptionConfig struct {
 	Schemes     []string
 	BindAddress string // (Duplicated because extended interfaces are not supported by Viper)
 	Port        uint16
@@ -42,19 +50,24 @@ type SubscriptionApiConfig struct {
 
 var homeDir string
 
-func LoadEventRouterConfig() (*EventRouterConfig, error) {
-	return LoadEventRouterConfigFrom("")
+func LoadConfiguration() (*Config, error) {
+	return LoadConfigurationFrom("")
 }
 
-func LoadEventRouterConfigFrom(configFilePath string) (*EventRouterConfig, error) {
+// read configuration from file
+func LoadConfigurationFrom(configFilePath string) (*Config, error) {
 	vp := viper.New()
+
 	vp.SetConfigName(defaultConfigName)
 	if len(configFilePath) > 0 {
 		vp.SetConfigFile(configFilePath)
+
+		// use toml config structure
 		if strings.HasPrefix(path.Ext(configFilePath), ".conf") {
 			vp.SetConfigType("toml")
 		}
 	} else {
+		// look for configuration in default paths if user doesn't give configuration argument
 		possibleConfigPaths = append(possibleConfigPaths, "./conf")
 		possibleConfigPaths = append(possibleConfigPaths, "/etc/factom-livefeed")
 		getHomeDir()
@@ -63,20 +76,27 @@ func LoadEventRouterConfigFrom(configFilePath string) (*EventRouterConfig, error
 		}
 	}
 
-	config := &EventRouterConfig{}
+	// read/build configuration
+	config := &Config{}
 	for _, path := range possibleConfigPaths {
 		vp.AddConfigPath(path)
 	}
 	vp.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	vp.SetEnvPrefix("factomlf")
 	vp.AutomaticEnv()
+
+	// set default configuration values
 	setDefaults(vp)
+
+	// read configuration and override defaults if needed
 	if err := vp.ReadInConfig(); err != nil {
 		return nil, reformatConfigFileErrors(err, vp)
 	}
+
 	if err := vp.Unmarshal(&config); err != nil {
 		log.Error("could not read configuration file")
 	}
+
 	return config, nil
 }
 
@@ -91,11 +111,12 @@ func reformatConfigFileErrors(readErr error, vp *viper.Viper) error {
 }
 
 func setDefaults(vp *viper.Viper) {
-	vp.SetDefault("EventListenerConfig", buildEventListenerDefaults())
-	vp.SetDefault("SubscriptionApiConfig", buildSubscriptionApiDefaults())
+	vp.SetDefault("log", buildReceiverDefaults())
+	vp.SetDefault("receiver", buildReceiverDefaults())
+	vp.SetDefault("subscription", buildSubscriptionDefaults())
 }
 
-func buildEventListenerDefaults() map[string]interface{} {
+func buildReceiverDefaults() map[string]interface{} {
 	return map[string]interface{}{
 		"Protocol":    defaultListenerProtocol,
 		"BindAddress": defaultListenerBindAddress,
@@ -103,11 +124,17 @@ func buildEventListenerDefaults() map[string]interface{} {
 	}
 }
 
-func buildSubscriptionApiDefaults() map[string]interface{} {
+func buildSubscriptionDefaults() map[string]interface{} {
 	return map[string]interface{}{
 		"BindAddress": defaultSubscriptionApiAddress,
 		"Port":        defaultSubscriptionApiPort,
 		"Schemes":     defaultSubscriptionApiSchemes,
+	}
+}
+
+func buildLogDefaults() map[string]interface{} {
+	return map[string]interface{}{
+		"loglevel": defaultLogLevel,
 	}
 }
 

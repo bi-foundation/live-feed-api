@@ -20,8 +20,8 @@ type EventRouter struct {
 	eventsInQueue chan *eventmessages.FactomEvent
 }
 
-func NewEventRouter(queue chan *eventmessages.FactomEvent) *EventRouter {
-	return &EventRouter{eventsInQueue: queue}
+func NewEventRouter(queue chan *eventmessages.FactomEvent) EventRouter {
+	return EventRouter{eventsInQueue: queue}
 }
 
 func (evr *EventRouter) Start() {
