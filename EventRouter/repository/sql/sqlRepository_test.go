@@ -20,8 +20,7 @@ func initTest(t *testing.T) (*sqlRepository, sqlmock.Sqlmock) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection\n", err)
 	}
 
-	repository, _ := New()
-
+	repository, _ := New() // Ignore connection errors when using mocked connection
 	connection = db
 	return repository, mock
 }

@@ -21,7 +21,7 @@ func init() {
 	}
 }
 
-func TestCRUD(t *testing.T) {
+func testCRUD(t *testing.T) {
 
 	subscriptionContext := &models.SubscriptionContext{
 		Subscription: models.Subscription{
@@ -125,7 +125,7 @@ func assertSubscription(t *testing.T, expected *models.SubscriptionContext, actu
 	}
 }
 
-func TestConcurrency(t *testing.T) {
+func testConcurrencyAllRepos(t *testing.T) {
 	for name, repo := range repositories {
 		t.Run(name, func(t *testing.T) {
 			testConcurrency(t, repo)
