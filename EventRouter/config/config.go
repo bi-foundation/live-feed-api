@@ -1,39 +1,38 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/spf13/viper"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 )
 
 const (
-	defaultConfigName = "livefeed"
+	defaultConfigName = "live-feed.conf"
+	defaultConfigDir  = "live-feed"
 
-	defaultLogLevel = log.D
+	defaultLogLevel = "info"
 
-	defaultListenerBindAddress = ""
-	defaultListenerPort        = "8040"
-	defaultListenerProtocol    = "tcp"
+	defaultReceiverBindAddress = ""
+	defaultReceiverPort        = 8040
+	defaultReceiverProtocol    = "tcp"
 
 	defaultSubscriptionApiAddress = ""
-	defaultSubscriptionApiPort    = "8700"
+	defaultSubscriptionApiPort    = 8700
 )
 
 var defaultSubscriptionApiSchemes = []string{"HTTP", "HTTPS"}
-var possibleConfigPaths = []string{}
 
 type Config struct {
-	Log                *LogConfig
-	ReceiverConfig     *ReceiverConfig
-	SubscriptionConfig *SubscriptionConfig
+	Log          *LogConfig
+	Receiver     *ReceiverConfig
+	Subscription *SubscriptionConfig
 }
 
 type LogConfig struct {
-	LogLevel log.Level
+	LogLevel string
 }
 
 type ReceiverConfig struct {
@@ -48,79 +47,93 @@ type SubscriptionConfig struct {
 	Port        uint16
 }
 
-var homeDir string
-
+/* load configuration from default paths for live-feed.conf
+ * look for configuration in:
+ * - current path
+ * - /etc/factom-live-feed
+ * - $HOME/.factom
+ * - $HOME/.factom/live-feed
+ * - current path
+ */
 func LoadConfiguration() (*Config, error) {
-	return LoadConfigurationFrom("")
+	configPaths := []string{
+		"",
+		substituteHomeDir("$HOME/.factom/"),
+		substituteHomeDir(fmt.Sprintf("$HOME/.factom/%s", defaultConfigDir)),
+		fmt.Sprintf("/etc/%s", defaultConfigDir),
+	}
+
+	for _, path := range configPaths {
+		configFile := filepath.Join(path, defaultConfigName)
+		if _, err := os.Stat(configFile); os.IsNotExist(err) {
+			continue
+		}
+
+		return loadConfigurationFrom(configFile)
+	}
+
+	log.Warn(`failed to find configuration in: ["%s"]`, strings.Join(configPaths, `", "`))
+	return defaultConfig(), nil
 }
 
-// read configuration from file
-func LoadConfigurationFrom(configFilePath string) (*Config, error) {
+// load configuration from specific a file
+func LoadConfigurationFrom(filename string) (*Config, error) {
+	filename = substituteHomeDir(filename)
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return nil, fmt.Errorf("failed to find configuration: '%s'", filename)
+	}
+
+	return loadConfigurationFrom(filename)
+}
+
+func loadConfigurationFrom(configFile string) (*Config, error) {
 	vp := viper.New()
+	vp.SetConfigType("toml")
+	vp.SetConfigFile(configFile)
 
-	vp.SetConfigName(defaultConfigName)
-	if len(configFilePath) > 0 {
-		vp.SetConfigFile(configFilePath)
-
-		// use toml config structure
-		if strings.HasPrefix(path.Ext(configFilePath), ".conf") {
-			vp.SetConfigType("toml")
-		}
-	} else {
-		// look for configuration in default paths if user doesn't give configuration argument
-		possibleConfigPaths = append(possibleConfigPaths, "./conf")
-		possibleConfigPaths = append(possibleConfigPaths, "/etc/factom-livefeed")
-		getHomeDir()
-		if len(homeDir) > 0 {
-			possibleConfigPaths = append(possibleConfigPaths, "$HOME/.factom/livefeed")
-		}
-	}
-
-	// read/build configuration
-	config := &Config{}
-	for _, path := range possibleConfigPaths {
-		vp.AddConfigPath(path)
-	}
 	vp.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	vp.SetEnvPrefix("factomlf")
+	vp.SetEnvPrefix("factom_live_feed")
 	vp.AutomaticEnv()
 
 	// set default configuration values
-	setDefaults(vp)
+	vp.SetDefault("log", buildLogDefaults())
+	vp.SetDefault("receiver", buildReceiverDefaults())
+	vp.SetDefault("subscription", buildSubscriptionDefaults())
 
-	// read configuration and override defaults if needed
+	// read/build configuration
 	if err := vp.ReadInConfig(); err != nil {
-		return nil, reformatConfigFileErrors(err, vp)
+		return nil, fmt.Errorf("failed to read configuration: %v", err)
 	}
 
+	config := &Config{}
 	if err := vp.Unmarshal(&config); err != nil {
-		log.Error("could not read configuration file")
+		return nil, fmt.Errorf("could not read configuration file: %v", err)
 	}
 
 	return config, nil
 }
 
-func reformatConfigFileErrors(readErr error, vp *viper.Viper) error {
-	var builder strings.Builder
-	fmt.Fprintln(&builder, "no configuration file could be loaded from one of the following locations:")
-	for _, path := range possibleConfigPaths {
-		fmt.Fprintln(&builder, "\t", path)
+func defaultConfig() *Config {
+	return &Config{
+		Log: &LogConfig{LogLevel: defaultLogLevel},
+		Receiver: &ReceiverConfig{
+			Protocol:    defaultReceiverProtocol,
+			BindAddress: defaultReceiverBindAddress,
+			Port:        defaultReceiverPort,
+		},
+		Subscription: &SubscriptionConfig{
+			Schemes:     defaultSubscriptionApiSchemes,
+			BindAddress: defaultSubscriptionApiAddress,
+			Port:        defaultSubscriptionApiPort,
+		},
 	}
-	fmt.Fprintf(&builder, "error: %v", readErr)
-	return errors.New(builder.String())
-}
-
-func setDefaults(vp *viper.Viper) {
-	vp.SetDefault("log", buildReceiverDefaults())
-	vp.SetDefault("receiver", buildReceiverDefaults())
-	vp.SetDefault("subscription", buildSubscriptionDefaults())
 }
 
 func buildReceiverDefaults() map[string]interface{} {
 	return map[string]interface{}{
-		"Protocol":    defaultListenerProtocol,
-		"BindAddress": defaultListenerBindAddress,
-		"Port":        defaultListenerPort,
+		"Protocol":    defaultReceiverProtocol,
+		"BindAddress": defaultReceiverBindAddress,
+		"Port":        defaultReceiverPort,
 	}
 }
 
@@ -138,17 +151,9 @@ func buildLogDefaults() map[string]interface{} {
 	}
 }
 
-func getHomeDir() {
-	var err error
-	if homeDir, err = os.UserHomeDir(); err != nil {
-		log.Warn("the user home directory could not be retrieved, the '$HOME/.factom/livefeed' location will be skipped. error: %v.", err)
-	}
-}
-
 func substituteHomeDir(path string) string {
-	if len(homeDir) > 0 {
+	if homeDir, err := os.UserHomeDir(); err == nil {
 		return strings.ReplaceAll(path, "$HOME", homeDir)
-	} else {
-		return path
 	}
+	return path
 }

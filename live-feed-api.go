@@ -18,15 +18,15 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to load configuration: %v", err)
 	}
-	log.SetLevel(configuration.Log.Level)
+	log.SetLevel(log.Parse(configuration.Log.LogLevel))
 
-	eventServer := events.NewReceiver(configuration.ReceiverConfig)
+	eventServer := events.NewReceiver(configuration.Receiver)
 	eventRouter := events.NewEventRouter(eventServer.GetEventQueue())
 
 	eventServer.Start()
 	eventRouter.Start()
 
-	api.NewSubscriptionApi(configuration.SubscriptionConfig).Start()
+	api.NewSubscriptionApi(configuration.Subscription).Start()
 
 	for eventServer.GetState() < models.Stopping {
 		time.Sleep(time.Second)

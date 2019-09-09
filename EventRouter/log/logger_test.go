@@ -39,3 +39,19 @@ func TestLoggers(t *testing.T) {
 		})
 	}
 }
+
+func TestParsing(t *testing.T) {
+	// if level is incorrect, default is D
+	assert.Equal(t, D, Parse(""))
+	assert.Equal(t, D, Parse("debug"), "expected debug")
+	assert.Equal(t, I, Parse("info"), "expected info")
+	assert.Equal(t, W, Parse("warning"), "expected warning")
+	assert.Equal(t, E, Parse("ERROR"), "expected error")
+	assert.Equal(t, F, Parse("Fatal"), "expected fatal")
+
+	assert.Equal(t, D, Parse("d"), "expected debug")
+	assert.Equal(t, I, Parse("i"), "expected info")
+	assert.Equal(t, W, Parse("w"), "expected warning")
+	assert.Equal(t, E, Parse("e"), "expected error")
+	assert.Equal(t, F, Parse("f"), "expected fatal")
+}

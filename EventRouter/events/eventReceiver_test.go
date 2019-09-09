@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
-	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/gogo/protobuf/proto"
 	"github.com/opsee/protobuf/opseeproto/types"
 	"github.com/stretchr/testify/assert"
@@ -20,14 +19,14 @@ var eventsQueue chan *eventmessages.FactomEvent
 var address string
 
 func init() {
-	configuration, err := config.LoadConfiguration()
-	if err != nil {
-		log.Fatal("failed test to load configuration: %v", err)
+	configuration := &config.ReceiverConfig{
+		Protocol:    "tcp",
+		BindAddress: "",
+		Port:        0,
 	}
 
 	// Start the new server at random port
-	configuration.ReceiverConfig.Port = 0
-	server := NewReceiver(configuration.ReceiverConfig)
+	server := NewReceiver(configuration)
 	server.Start()
 	time.Sleep(10 * time.Millisecond) // sleep to allow the server to start before making a connection
 	address = server.GetAddress()

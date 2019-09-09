@@ -16,13 +16,18 @@ import (
 	"time"
 )
 
-var configuration, _ = config.LoadConfiguration()
+const port = 8700
 
 func init() {
 	log.SetLevel(log.D)
 
+	configuration := &config.SubscriptionConfig{
+		BindAddress: "",
+		Port:        port,
+	}
+
 	// Start the new server at random port
-	server := NewSubscriptionApi(configuration.SubscriptionConfig)
+	server := NewSubscriptionApi(configuration)
 	server.Start()
 	time.Sleep(1 * time.Second)
 }
@@ -232,7 +237,7 @@ func TestSubscriptionApi(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			url := fmt.Sprintf("http://localhost:%d%s", configuration.SubscriptionConfig.Port, testCase.URL)
+			url := fmt.Sprintf("http://localhost:%d%s", port, testCase.URL)
 			request, err := http.NewRequest(testCase.Method, url, bytes.NewBuffer(testCase.content))
 
 			assert.Nil(t, err, "failed to create request")
