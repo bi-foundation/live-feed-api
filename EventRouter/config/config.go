@@ -10,6 +10,8 @@ import (
 )
 
 const (
+	defaultVersion = "0.1"
+
 	defaultConfigName = "live-feed.conf"
 	defaultConfigDir  = "live-feed"
 
@@ -19,8 +21,9 @@ const (
 	defaultReceiverPort        = 8040
 	defaultReceiverProtocol    = "tcp"
 
-	defaultSubscriptionApiAddress = ""
-	defaultSubscriptionApiPort    = 8700
+	defaultSubscriptionApiAddress  = ""
+	defaultSubscriptionApiPort     = 8700
+	defaultSubscriptionApiBasePath = "/live/feed/v" + defaultVersion
 )
 
 var defaultSubscriptionApiSchemes = []string{"HTTP", "HTTPS"}
@@ -45,6 +48,7 @@ type SubscriptionConfig struct {
 	Schemes     []string
 	BindAddress string // (Duplicated because extended interfaces are not supported by Viper)
 	Port        uint16
+	BasePath    string
 }
 
 /* load configuration from default paths for live-feed.conf
@@ -125,6 +129,7 @@ func defaultConfig() *Config {
 			Schemes:     defaultSubscriptionApiSchemes,
 			BindAddress: defaultSubscriptionApiAddress,
 			Port:        defaultSubscriptionApiPort,
+			BasePath:    defaultSubscriptionApiBasePath,
 		},
 	}
 }
@@ -142,6 +147,7 @@ func buildSubscriptionDefaults() map[string]interface{} {
 		"BindAddress": defaultSubscriptionApiAddress,
 		"Port":        defaultSubscriptionApiPort,
 		"Schemes":     defaultSubscriptionApiSchemes,
+		"BasePath":    defaultSubscriptionApiBasePath,
 	}
 }
 
