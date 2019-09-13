@@ -5,11 +5,11 @@ package eventmessages
 
 import (
 	fmt "fmt"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	github_com_gogo_protobuf_proto "github.com/gogo/protobuf/proto"
 	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/opsee/protobuf/opseeproto"
-	_ "github.com/opsee/protobuf/opseeproto/types"
 	math "math"
 	math_rand "math/rand"
 	testing "testing"
@@ -735,6 +735,69 @@ func TestEntryProtoCompactText(t *testing.T) {
 	}
 }
 
+func TestHashGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedHash(popr, false)
+	objdesc := ""
+	pdesc := GraphQLHashType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestExternalIdGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedExternalId(popr, false)
+	objdesc := ""
+	pdesc := GraphQLExternalIdType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestContentGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedContent(popr, false)
+	objdesc := ""
+	pdesc := GraphQLContentType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestSignatureGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedSignature(popr, false)
+	objdesc := ""
+	pdesc := GraphQLSignatureType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestTransAddressGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedTransAddress(popr, false)
+	objdesc := ""
+	pdesc := GraphQLTransAddressType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestEntryBlockEntryGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEntryBlockEntry(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEntryBlockEntryType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestEntryGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEntry(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEntryType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
 func TestHashSize(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
@@ -886,70 +949,6 @@ func TestEntrySize(t *testing.T) {
 	size3 := github_com_gogo_protobuf_proto.Size(p)
 	if size3 != size {
 		t.Errorf("seed = %d, size %v != after marshal proto.Size %v", seed, size, size3)
-	}
-}
-
-func TestHashGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedHash(popr, false)
-	objdesc := ""
-	pdesc := GraphQLHashType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestExternalIdGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedExternalId(popr, false)
-	objdesc := ""
-	pdesc := GraphQLExternalIdType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestContentGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedContent(popr, false)
-	objdesc := ""
-	pdesc := GraphQLContentType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestSignatureGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedSignature(popr, false)
-	objdesc := ""
-	pdesc := GraphQLSignatureType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestTransAddressGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedTransAddress(popr, false)
-	objdesc := ""
-	pdesc := GraphQLTransAddressType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestEntryBlockEntryGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntryBlockEntry(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEntryBlockEntryType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestEntryGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntry(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEntryType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
 	}
 }
 

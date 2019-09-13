@@ -5,11 +5,11 @@ package eventmessages
 
 import (
 	fmt "fmt"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	github_com_gogo_protobuf_proto "github.com/gogo/protobuf/proto"
 	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/opsee/protobuf/opseeproto"
-	_ "github.com/opsee/protobuf/opseeproto/types"
 	math "math"
 	math_rand "math/rand"
 	testing "testing"
@@ -245,15 +245,15 @@ func TestEntryCreditChainRegistrationMarshalTo(t *testing.T) {
 	}
 }
 
-func TestEntryCreditEntryRegistrationProto(t *testing.T) {
+func TestEntryCreditEntryCommitProto(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditEntryRegistration(popr, false)
+	p := NewPopulatedEntryCreditEntryCommit(popr, false)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryCreditEntryRegistration{}
+	msg := &EntryCreditEntryCommit{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -276,10 +276,10 @@ func TestEntryCreditEntryRegistrationProto(t *testing.T) {
 	}
 }
 
-func TestEntryCreditEntryRegistrationMarshalTo(t *testing.T) {
+func TestEntryCreditEntryCommitMarshalTo(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditEntryRegistration(popr, false)
+	p := NewPopulatedEntryCreditEntryCommit(popr, false)
 	size := p.Size()
 	dAtA := make([]byte, size)
 	for i := range dAtA {
@@ -289,7 +289,7 @@ func TestEntryCreditEntryRegistrationMarshalTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryCreditEntryRegistration{}
+	msg := &EntryCreditEntryCommit{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -541,16 +541,16 @@ func TestEntryCreditChainRegistrationJSON(t *testing.T) {
 		t.Fatalf("seed = %d, %#v !Json Equal %#v", seed, msg, p)
 	}
 }
-func TestEntryCreditEntryRegistrationJSON(t *testing.T) {
+func TestEntryCreditEntryCommitJSON(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditEntryRegistration(popr, true)
+	p := NewPopulatedEntryCreditEntryCommit(popr, true)
 	marshaler := github_com_gogo_protobuf_jsonpb.Marshaler{}
 	jsondata, err := marshaler.MarshalToString(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryCreditEntryRegistration{}
+	msg := &EntryCreditEntryCommit{}
 	err = github_com_gogo_protobuf_jsonpb.UnmarshalString(jsondata, msg)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
@@ -725,12 +725,12 @@ func TestEntryCreditChainRegistrationProtoCompactText(t *testing.T) {
 	}
 }
 
-func TestEntryCreditEntryRegistrationProtoText(t *testing.T) {
+func TestEntryCreditEntryCommitProtoText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditEntryRegistration(popr, true)
+	p := NewPopulatedEntryCreditEntryCommit(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.MarshalTextString(p)
-	msg := &EntryCreditEntryRegistration{}
+	msg := &EntryCreditEntryCommit{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -739,12 +739,12 @@ func TestEntryCreditEntryRegistrationProtoText(t *testing.T) {
 	}
 }
 
-func TestEntryCreditEntryRegistrationProtoCompactText(t *testing.T) {
+func TestEntryCreditEntryCommitProtoCompactText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditEntryRegistration(popr, true)
+	p := NewPopulatedEntryCreditEntryCommit(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.CompactTextString(p)
-	msg := &EntryCreditEntryRegistration{}
+	msg := &EntryCreditEntryCommit{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -837,6 +837,78 @@ func TestServerIndexNumberProtoCompactText(t *testing.T) {
 	}
 }
 
+func TestEntryCreditBlockGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEntryCreditBlock(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEntryCreditBlockType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestEntryCreditBlockHeaderGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEntryCreditBlockHeader(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEntryCreditBlockHeaderType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestEntryCreditBlockEntryGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEntryCreditBlockEntry(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEntryCreditBlockEntryType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestEntryCreditChainRegistrationGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEntryCreditChainRegistration(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEntryCreditChainRegistrationType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestEntryCreditEntryCommitGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEntryCreditEntryCommit(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEntryCreditEntryCommitType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestIncreaseBalanceGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedIncreaseBalance(popr, false)
+	objdesc := ""
+	pdesc := GraphQLIncreaseBalanceType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestMinuteNumberGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedMinuteNumber(popr, false)
+	objdesc := ""
+	pdesc := GraphQLMinuteNumberType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestServerIndexNumberGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedServerIndexNumber(popr, false)
+	objdesc := ""
+	pdesc := GraphQLServerIndexNumberType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
 func TestEntryCreditBlockSize(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
@@ -925,10 +997,10 @@ func TestEntryCreditChainRegistrationSize(t *testing.T) {
 	}
 }
 
-func TestEntryCreditEntryRegistrationSize(t *testing.T) {
+func TestEntryCreditEntryCommitSize(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditEntryRegistration(popr, true)
+	p := NewPopulatedEntryCreditEntryCommit(popr, true)
 	size2 := github_com_gogo_protobuf_proto.Size(p)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
@@ -1010,79 +1082,6 @@ func TestServerIndexNumberSize(t *testing.T) {
 	size3 := github_com_gogo_protobuf_proto.Size(p)
 	if size3 != size {
 		t.Errorf("seed = %d, size %v != after marshal proto.Size %v", seed, size, size3)
-	}
-}
-
-func TestEntryCreditBlockGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntryCreditBlock(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEntryCreditBlockType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestEntryCreditBlockHeaderGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntryCreditBlockHeader(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEntryCreditBlockHeaderType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestEntryCreditBlockEntryGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntryCreditBlockEntry(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEntryCreditBlockEntryType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestEntryCreditChainRegistrationGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntryCreditChainRegistration(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEntryCreditChainRegistrationType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestEntryCreditEntryRegistrationGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntryCreditEntryRegistration(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEntryCreditEntryRegistrationType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestIncreaseBalanceGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedIncreaseBalance(popr, false)
-	objdesc := ""
-	pdesc := GraphQLIncreaseBalanceType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestMinuteNumberGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedMinuteNumber(popr, false)
-	objdesc := ""
-	pdesc := GraphQLMinuteNumberType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestServerIndexNumberGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedServerIndexNumber(popr, false)
-	objdesc := ""
-	pdesc := GraphQLServerIndexNumberType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
 	}
 }
 

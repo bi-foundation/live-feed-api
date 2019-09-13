@@ -4,8 +4,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
+	"github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
 	"github.com/gogo/protobuf/proto"
-	"github.com/opsee/protobuf/opseeproto/types"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"net"
@@ -133,8 +133,8 @@ func mockAnchorEvent() *eventmessages.FactomEvent {
 		IdentityChainID: &eventmessages.Hash{
 			HashValue: []byte("value"),
 		},
-		Value: &eventmessages.FactomEvent_BlockCommit{
-			BlockCommit: &eventmessages.BlockCommit{
+		Value: &eventmessages.FactomEvent_DirectoryBlockCommit{
+			DirectoryBlockCommit: &eventmessages.DirectoryBlockCommit{
 				DirectoryBlock: &eventmessages.DirectoryBlock{
 					Header: &eventmessages.DirectoryBlockHeader{
 						BodyMerkleRoot: &eventmessages.Hash{

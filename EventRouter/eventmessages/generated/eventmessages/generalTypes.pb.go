@@ -6,13 +6,14 @@ package eventmessages
 import (
 	bytes "bytes"
 	fmt "fmt"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
+	github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars "github.com/bi-foundation/protobuf-graphql-extension/plugin/graphql/scalars"
 	proto "github.com/gogo/protobuf/proto"
 	github_com_graphql_go_graphql "github.com/graphql-go/graphql"
-	_ "github.com/opsee/protobuf/opseeproto"
-	_ "github.com/opsee/protobuf/opseeproto/types"
-	github_com_opsee_protobuf_plugin_graphql_scalars "github.com/opsee/protobuf/plugin/graphql/scalars"
 	io "io"
 	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -24,13 +25,13 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type EntityState int32
 
 const (
 	EntityState_REQUESTED                    EntityState = 0
-	EntityState_PLACED_IN_HOLDING            EntityState = 1
+	EntityState_HOLDING_QUEUE                EntityState = 1
 	EntityState_ACCEPTED                     EntityState = 2
 	EntityState_REJECTED                     EntityState = 3
 	EntityState_COMMITTED_TO_DIRECTORY_BLOCK EntityState = 4
@@ -38,7 +39,7 @@ const (
 
 var EntityState_name = map[int32]string{
 	0: "REQUESTED",
-	1: "PLACED_IN_HOLDING",
+	1: "HOLDING_QUEUE",
 	2: "ACCEPTED",
 	3: "REJECTED",
 	4: "COMMITTED_TO_DIRECTORY_BLOCK",
@@ -46,7 +47,7 @@ var EntityState_name = map[int32]string{
 
 var EntityState_value = map[string]int32{
 	"REQUESTED":                    0,
-	"PLACED_IN_HOLDING":            1,
+	"HOLDING_QUEUE":                1,
 	"ACCEPTED":                     2,
 	"REJECTED":                     3,
 	"COMMITTED_TO_DIRECTORY_BLOCK": 4,
@@ -81,7 +82,7 @@ func (m *Hash) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_Hash.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -128,7 +129,7 @@ func (m *ExternalId) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_ExternalId.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -175,7 +176,7 @@ func (m *Content) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_Content.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -223,7 +224,7 @@ func (m *Signature) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_Signature.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -278,7 +279,7 @@ func (m *TransAddress) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return xxx_messageInfo_TransAddress.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -334,7 +335,7 @@ func (m *EntryBlockEntry) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return xxx_messageInfo_EntryBlockEntry.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -396,7 +397,7 @@ func (m *Entry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_Entry.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -443,40 +444,41 @@ func init() {
 func init() { proto.RegisterFile("eventmessages/generalTypes.proto", fileDescriptor_b8d2649d86180690) }
 
 var fileDescriptor_b8d2649d86180690 = []byte{
-	// 528 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x93, 0x4f, 0x6e, 0xd3, 0x40,
-	0x14, 0xc6, 0x99, 0x26, 0x34, 0xe4, 0x25, 0x11, 0x61, 0x10, 0x55, 0xa8, 0x2a, 0x13, 0x59, 0x48,
-	0x54, 0xa0, 0x3a, 0x55, 0x59, 0x01, 0xab, 0xc4, 0x1e, 0xb5, 0xa6, 0x49, 0x53, 0x1c, 0x17, 0x09,
-	0x36, 0xd1, 0xc4, 0x99, 0x26, 0x56, 0xec, 0x71, 0xea, 0x19, 0x23, 0x7c, 0x1d, 0x56, 0x70, 0x03,
-	0x96, 0x2c, 0x59, 0x72, 0x04, 0xc8, 0x29, 0x58, 0x22, 0xdb, 0x75, 0x9a, 0x54, 0xa2, 0xea, 0xca,
-	0xf3, 0xbd, 0xf9, 0xbd, 0x3f, 0xfe, 0x46, 0x0f, 0x9a, 0xec, 0x13, 0xe3, 0xd2, 0x67, 0x42, 0xd0,
-	0x09, 0x13, 0xad, 0x09, 0xe3, 0x2c, 0xa4, 0x9e, 0x1d, 0xcf, 0x99, 0xd0, 0xe6, 0x61, 0x20, 0x03,
-	0x5c, 0x5b, 0x23, 0xb6, 0xf7, 0x27, 0xae, 0x9c, 0x46, 0x23, 0xcd, 0x09, 0xfc, 0x56, 0x30, 0x17,
-	0x8c, 0xb5, 0x52, 0x6c, 0x14, 0x9d, 0x67, 0x32, 0x55, 0xd9, 0x31, 0x2b, 0xb0, 0xfd, 0xfa, 0x56,
-	0x19, 0x32, 0x69, 0xd9, 0x92, 0xae, 0xcf, 0x84, 0xa4, 0xfe, 0x3c, 0xcb, 0x55, 0x9f, 0x42, 0xf1,
-	0x88, 0x8a, 0x29, 0xde, 0x81, 0xf2, 0x94, 0x8a, 0xe9, 0x7b, 0xea, 0x45, 0xac, 0x81, 0x9a, 0x68,
-	0xb7, 0x6a, 0x5d, 0x05, 0x54, 0x0d, 0x80, 0x7c, 0x96, 0x2c, 0xe4, 0xd4, 0x33, 0xc7, 0xb8, 0x09,
-	0x95, 0x91, 0xcb, 0x69, 0x18, 0xaf, 0xd2, 0xab, 0x21, 0xf5, 0x05, 0x94, 0xf4, 0x80, 0x4b, 0xc6,
-	0xe5, 0x2d, 0xe0, 0x43, 0x28, 0x0f, 0xdc, 0x09, 0xa7, 0x32, 0x0a, 0x59, 0x32, 0xc7, 0x3c, 0x1a,
-	0x79, 0xae, 0x73, 0xcc, 0xe2, 0x7c, 0x8e, 0x65, 0x20, 0xb9, 0x15, 0x39, 0xda, 0xd8, 0xc8, 0x6e,
-	0x97, 0x01, 0xf5, 0x0c, 0xaa, 0x76, 0x48, 0xb9, 0x68, 0x8f, 0xc7, 0x21, 0x13, 0x02, 0x6f, 0xc1,
-	0x26, 0xf5, 0x83, 0x88, 0xcb, 0xb4, 0x50, 0xd1, 0xba, 0x54, 0x78, 0x0f, 0x4a, 0x34, 0x43, 0xd2,
-	0x1a, 0x95, 0x83, 0x87, 0xda, 0xda, 0x13, 0x68, 0x89, 0x23, 0x56, 0xce, 0xa8, 0xdf, 0x10, 0xdc,
-	0x27, 0x5c, 0x86, 0x71, 0xc7, 0x0b, 0x9c, 0x59, 0x7a, 0xc2, 0xcf, 0xa0, 0x98, 0xb8, 0x93, 0x16,
-	0xfe, 0x4f, 0x7e, 0x0a, 0xe0, 0x37, 0x50, 0x61, 0xb9, 0x73, 0x46, 0xd2, 0xaf, 0xb0, 0x5b, 0x39,
-	0x78, 0x7c, 0x8d, 0xbf, 0xf2, 0xd6, 0x5a, 0xa5, 0xf1, 0x3e, 0x94, 0x9c, 0xcc, 0xc6, 0x46, 0x21,
-	0x6d, 0xb4, 0x75, 0x2d, 0xf1, 0xd2, 0x64, 0x2b, 0xc7, 0xd4, 0x0b, 0xb8, 0x9b, 0x0d, 0xb8, 0x07,
-	0x25, 0x67, 0x4a, 0x5d, 0x6e, 0x1a, 0x37, 0xcd, 0x98, 0x33, 0xf8, 0x15, 0xd4, 0x66, 0x2c, 0xee,
-	0xb1, 0x70, 0xe6, 0x31, 0x2b, 0x08, 0xe4, 0x4d, 0xc6, 0xac, 0x93, 0xcf, 0x2f, 0xa0, 0x42, 0xb8,
-	0x74, 0x65, 0x3c, 0x90, 0x54, 0x32, 0x5c, 0x83, 0xb2, 0x45, 0xde, 0x9d, 0x91, 0x81, 0x4d, 0x8c,
-	0xfa, 0x1d, 0xfc, 0x08, 0x1e, 0x9c, 0x76, 0xdb, 0x3a, 0x31, 0x86, 0xe6, 0xc9, 0xf0, 0xa8, 0xdf,
-	0x35, 0xcc, 0x93, 0xc3, 0x3a, 0xc2, 0x55, 0xb8, 0xd7, 0xd6, 0x75, 0x72, 0x9a, 0x40, 0x1b, 0x89,
-	0xb2, 0xc8, 0x5b, 0xa2, 0x27, 0xaa, 0x80, 0x9b, 0xb0, 0xa3, 0xf7, 0x7b, 0x3d, 0xd3, 0xb6, 0x89,
-	0x31, 0xb4, 0xfb, 0x43, 0xc3, 0xb4, 0x88, 0x6e, 0xf7, 0xad, 0x0f, 0xc3, 0x4e, 0xb7, 0xaf, 0x1f,
-	0xd7, 0x8b, 0x9d, 0xde, 0xdf, 0x3f, 0x0a, 0xfa, 0xba, 0x50, 0xd0, 0xf7, 0x85, 0x82, 0x7e, 0x2e,
-	0x14, 0xf4, 0x6b, 0xa1, 0xa0, 0xdf, 0x0b, 0x05, 0xfd, 0xf8, 0xf2, 0x04, 0x41, 0xd3, 0x09, 0x7c,
-	0xed, 0x9c, 0x3a, 0x72, 0xf9, 0x19, 0xaf, 0xff, 0xc6, 0xc7, 0xf5, 0x8d, 0x1b, 0x6d, 0xa6, 0xab,
-	0xf0, 0xf2, 0x5f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xc0, 0x91, 0x2b, 0x1f, 0xab, 0x03, 0x00, 0x00,
+	// 544 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x93, 0xc1, 0x6e, 0xd3, 0x30,
+	0x1c, 0xc6, 0xc9, 0x5a, 0x56, 0xfa, 0x6f, 0x2b, 0x8a, 0x91, 0xa6, 0x32, 0x4d, 0xa1, 0x8a, 0x90,
+	0x98, 0x40, 0x4d, 0xd1, 0x38, 0x21, 0x4e, 0x6b, 0x62, 0x6d, 0x65, 0xeb, 0xca, 0xd2, 0x74, 0x12,
+	0x5c, 0x2a, 0x27, 0x75, 0x9b, 0xa8, 0x89, 0xd3, 0xc5, 0x0e, 0x5a, 0x5e, 0x87, 0x13, 0xbc, 0x01,
+	0x47, 0x8e, 0x1c, 0x79, 0x04, 0xe8, 0x53, 0x70, 0x44, 0x49, 0x9a, 0xae, 0x9d, 0xc4, 0x84, 0xb4,
+	0x53, 0xf2, 0xff, 0xfc, 0xf3, 0xe7, 0x2f, 0x5f, 0x64, 0x68, 0xd2, 0x4f, 0x94, 0x09, 0x9f, 0x72,
+	0x4e, 0xa6, 0x94, 0xb7, 0xa7, 0x94, 0xd1, 0x90, 0x78, 0x66, 0x3c, 0xa7, 0x5c, 0x9d, 0x87, 0x81,
+	0x08, 0x50, 0x6d, 0x83, 0xd8, 0x3d, 0x9b, 0xba, 0xc2, 0x89, 0x2c, 0xd5, 0x0e, 0xfc, 0xb6, 0xe5,
+	0xb6, 0x26, 0x41, 0xc4, 0xc6, 0x44, 0xb8, 0x01, 0x6b, 0xa7, 0xb8, 0x15, 0x4d, 0x5a, 0xd3, 0x90,
+	0xcc, 0x9d, 0x4b, 0xaf, 0x45, 0xaf, 0x04, 0x65, 0x3c, 0x59, 0x5a, 0x2a, 0x29, 0x91, 0x0f, 0x99,
+	0xfd, 0xee, 0xc5, 0x9d, 0xfd, 0x44, 0x12, 0xb6, 0x2d, 0x5c, 0x9f, 0x72, 0x41, 0xfc, 0x79, 0xe6,
+	0xab, 0x3c, 0x83, 0xe2, 0x31, 0xe1, 0x0e, 0xda, 0x83, 0xb2, 0x43, 0xb8, 0x73, 0x41, 0xbc, 0x88,
+	0x36, 0xa4, 0xa6, 0xb4, 0x5f, 0x35, 0xae, 0x05, 0x45, 0x05, 0xc0, 0x57, 0x82, 0x86, 0x8c, 0x78,
+	0xdd, 0x31, 0x6a, 0x42, 0xc5, 0x72, 0x19, 0x09, 0xe3, 0x75, 0x7a, 0x5d, 0x52, 0x5e, 0x42, 0x49,
+	0x0b, 0x98, 0xa0, 0x4c, 0xfc, 0x07, 0x7c, 0x04, 0xe5, 0x81, 0x3b, 0x65, 0x44, 0x44, 0x21, 0x4d,
+	0x72, 0xcc, 0x23, 0xcb, 0x73, 0xed, 0x13, 0x1a, 0xe7, 0x39, 0x56, 0x42, 0xb2, 0xca, 0x73, 0xb4,
+	0xb1, 0x95, 0xad, 0xae, 0x04, 0x65, 0x08, 0x55, 0x33, 0x24, 0x8c, 0x1f, 0x8e, 0xc7, 0x21, 0xe5,
+	0x1c, 0xed, 0xc0, 0x36, 0xf1, 0x83, 0x88, 0x89, 0xd4, 0xa8, 0x68, 0x2c, 0x27, 0xd4, 0x82, 0x12,
+	0xc9, 0x90, 0xd4, 0xa3, 0x72, 0xf0, 0x58, 0xdd, 0xf8, 0x79, 0x6a, 0xd2, 0x88, 0x91, 0x33, 0xca,
+	0x57, 0x09, 0x1e, 0x62, 0x26, 0xc2, 0xb8, 0xe3, 0x05, 0xf6, 0x2c, 0x7d, 0x43, 0xcf, 0xa1, 0x98,
+	0xb4, 0x93, 0x1a, 0xff, 0x63, 0x7f, 0x0a, 0xa0, 0xb7, 0x50, 0xa1, 0x79, 0x73, 0x7a, 0x72, 0x5e,
+	0x61, 0xbf, 0x72, 0xf0, 0xe4, 0x06, 0x7f, 0xdd, 0xad, 0xb1, 0x4e, 0xa3, 0x57, 0x50, 0xb2, 0xb3,
+	0x1a, 0x1b, 0x85, 0xf4, 0xa0, 0x9d, 0x1b, 0x1b, 0x97, 0x25, 0x1b, 0x39, 0xa6, 0x5c, 0xc2, 0xfd,
+	0x2c, 0x60, 0x0b, 0x4a, 0xb6, 0x43, 0x5c, 0xd6, 0xd5, 0x6f, 0xcb, 0x98, 0x33, 0xe8, 0x0d, 0xd4,
+	0x66, 0x34, 0xee, 0xd1, 0x70, 0xe6, 0x51, 0x23, 0x08, 0xc4, 0x6d, 0xc5, 0x6c, 0x92, 0x2f, 0x7c,
+	0xa8, 0x60, 0x26, 0x5c, 0x11, 0x0f, 0x04, 0x11, 0x14, 0xd5, 0xa0, 0x6c, 0xe0, 0xf3, 0x21, 0x1e,
+	0x98, 0x58, 0xaf, 0xdf, 0x43, 0x8f, 0xa0, 0x76, 0xdc, 0x3f, 0xd5, 0xbb, 0x67, 0x47, 0xa3, 0xf3,
+	0x21, 0x1e, 0xe2, 0xba, 0x84, 0xaa, 0xf0, 0xe0, 0x50, 0xd3, 0xf0, 0xfb, 0x04, 0xd8, 0x4a, 0x26,
+	0x03, 0xbf, 0xc3, 0x5a, 0x32, 0x15, 0x50, 0x13, 0xf6, 0xb4, 0x7e, 0xaf, 0xd7, 0x35, 0x4d, 0xac,
+	0x8f, 0xcc, 0xfe, 0x48, 0xef, 0x1a, 0x58, 0x33, 0xfb, 0xc6, 0x87, 0x51, 0xe7, 0xb4, 0xaf, 0x9d,
+	0xd4, 0x8b, 0x9d, 0xde, 0x9f, 0xdf, 0xb2, 0xf4, 0x65, 0x21, 0x4b, 0xdf, 0x16, 0xb2, 0xf4, 0x63,
+	0x21, 0x4b, 0x3f, 0x17, 0xb2, 0xf4, 0x6b, 0x21, 0x4b, 0xdf, 0x3f, 0x3f, 0x95, 0xa0, 0x69, 0x07,
+	0xbe, 0x3a, 0x21, 0xb6, 0x58, 0x3d, 0xc6, 0x9b, 0x9f, 0xf0, 0x71, 0xf3, 0x9e, 0x5a, 0xdb, 0xe9,
+	0x35, 0x78, 0xfd, 0x37, 0x00, 0x00, 0xff, 0xff, 0x20, 0x46, 0x0d, 0xff, 0xe1, 0x03, 0x00, 0x00,
 }
 
 func (this *Hash) Equal(that interface{}) bool {
@@ -740,7 +742,7 @@ func init() {
 			"REQUESTED": &github_com_graphql_go_graphql.EnumValueConfig{
 				Value: 0,
 			},
-			"PLACED_IN_HOLDING": &github_com_graphql_go_graphql.EnumValueConfig{
+			"HOLDING_QUEUE": &github_com_graphql_go_graphql.EnumValueConfig{
 				Value: 1,
 			},
 			"ACCEPTED": &github_com_graphql_go_graphql.EnumValueConfig{
@@ -760,7 +762,7 @@ func init() {
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"hashValue": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.ByteString,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Hash)
@@ -787,7 +789,7 @@ func init() {
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"binaryValue": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.ByteString,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*ExternalId)
@@ -814,7 +816,7 @@ func init() {
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"binaryValue": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.ByteString,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Content)
@@ -841,7 +843,7 @@ func init() {
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"publicKey": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.ByteString,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Signature)
@@ -860,7 +862,7 @@ func init() {
 					},
 				},
 				"signature": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.ByteString,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Signature)
@@ -1072,7 +1074,7 @@ func init() {
 func (m *Hash) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1080,26 +1082,33 @@ func (m *Hash) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Hash) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Hash) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.HashValue) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintGeneralTypes(dAtA, i, uint64(len(m.HashValue)))
-		i += copy(dAtA[i:], m.HashValue)
-	}
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	if len(m.HashValue) > 0 {
+		i -= len(m.HashValue)
+		copy(dAtA[i:], m.HashValue)
+		i = encodeVarintGeneralTypes(dAtA, i, uint64(len(m.HashValue)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *ExternalId) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1107,26 +1116,33 @@ func (m *ExternalId) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ExternalId) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ExternalId) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.BinaryValue) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintGeneralTypes(dAtA, i, uint64(len(m.BinaryValue)))
-		i += copy(dAtA[i:], m.BinaryValue)
-	}
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	if len(m.BinaryValue) > 0 {
+		i -= len(m.BinaryValue)
+		copy(dAtA[i:], m.BinaryValue)
+		i = encodeVarintGeneralTypes(dAtA, i, uint64(len(m.BinaryValue)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *Content) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1134,26 +1150,33 @@ func (m *Content) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Content) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Content) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.BinaryValue) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintGeneralTypes(dAtA, i, uint64(len(m.BinaryValue)))
-		i += copy(dAtA[i:], m.BinaryValue)
-	}
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	if len(m.BinaryValue) > 0 {
+		i -= len(m.BinaryValue)
+		copy(dAtA[i:], m.BinaryValue)
+		i = encodeVarintGeneralTypes(dAtA, i, uint64(len(m.BinaryValue)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *Signature) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1161,32 +1184,40 @@ func (m *Signature) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Signature) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Signature) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.PublicKey) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintGeneralTypes(dAtA, i, uint64(len(m.PublicKey)))
-		i += copy(dAtA[i:], m.PublicKey)
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.Signature) > 0 {
-		dAtA[i] = 0x12
-		i++
+		i -= len(m.Signature)
+		copy(dAtA[i:], m.Signature)
 		i = encodeVarintGeneralTypes(dAtA, i, uint64(len(m.Signature)))
-		i += copy(dAtA[i:], m.Signature)
+		i--
+		dAtA[i] = 0x12
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if len(m.PublicKey) > 0 {
+		i -= len(m.PublicKey)
+		copy(dAtA[i:], m.PublicKey)
+		i = encodeVarintGeneralTypes(dAtA, i, uint64(len(m.PublicKey)))
+		i--
+		dAtA[i] = 0xa
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *TransAddress) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1194,35 +1225,43 @@ func (m *TransAddress) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *TransAddress) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TransAddress) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.Amount != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintGeneralTypes(dAtA, i, uint64(m.Amount))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Address != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintGeneralTypes(dAtA, i, uint64(m.Address.Size()))
-		n1, err := m.Address.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+		{
+			size, err := m.Address.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintGeneralTypes(dAtA, i, uint64(size))
 		}
-		i += n1
+		i--
+		dAtA[i] = 0x12
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.Amount != 0 {
+		i = encodeVarintGeneralTypes(dAtA, i, uint64(m.Amount))
+		i--
+		dAtA[i] = 0x8
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *EntryBlockEntry) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1230,52 +1269,64 @@ func (m *EntryBlockEntry) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *EntryBlockEntry) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EntryBlockEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.Hash != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintGeneralTypes(dAtA, i, uint64(m.Hash.Size()))
-		n2, err := m.Hash.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n2
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if len(m.ExternalIDs) > 0 {
-		for _, msg := range m.ExternalIDs {
-			dAtA[i] = 0x12
-			i++
-			i = encodeVarintGeneralTypes(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
+	if m.Content != nil {
+		{
+			size, err := m.Content.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
-			i += n
+			i -= size
+			i = encodeVarintGeneralTypes(dAtA, i, uint64(size))
 		}
-	}
-	if m.Content != nil {
+		i--
 		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintGeneralTypes(dAtA, i, uint64(m.Content.Size()))
-		n3, err := m.Content.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+	}
+	if len(m.ExternalIDs) > 0 {
+		for iNdEx := len(m.ExternalIDs) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.ExternalIDs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGeneralTypes(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
 		}
-		i += n3
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.Hash != nil {
+		{
+			size, err := m.Hash.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintGeneralTypes(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *Entry) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1283,44 +1334,56 @@ func (m *Entry) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Entry) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Entry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.ChainID != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintGeneralTypes(dAtA, i, uint64(m.ChainID.Size()))
-		n4, err := m.ChainID.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n4
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.KeyMerkleRoot != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintGeneralTypes(dAtA, i, uint64(m.KeyMerkleRoot.Size()))
-		n5, err := m.KeyMerkleRoot.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+		{
+			size, err := m.KeyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintGeneralTypes(dAtA, i, uint64(size))
 		}
-		i += n5
+		i--
+		dAtA[i] = 0x12
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.ChainID != nil {
+		{
+			size, err := m.ChainID.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintGeneralTypes(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func encodeVarintGeneralTypes(dAtA []byte, offset int, v uint64) int {
+	offset -= sovGeneralTypes(v)
+	base := offset
 	for v >= 1<<7 {
 		dAtA[offset] = uint8(v&0x7f | 0x80)
 		v >>= 7
 		offset++
 	}
 	dAtA[offset] = uint8(v)
-	return offset + 1
+	return base
 }
 func NewPopulatedHash(r randyGeneralTypes, easy bool) *Hash {
 	this := &Hash{}
@@ -1382,7 +1445,7 @@ func NewPopulatedSignature(r randyGeneralTypes, easy bool) *Signature {
 func NewPopulatedTransAddress(r randyGeneralTypes, easy bool) *TransAddress {
 	this := &TransAddress{}
 	this.Amount = uint64(uint64(r.Uint32()))
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.Address = NewPopulatedHash(r, easy)
 	}
 	if !easy && r.Intn(10) != 0 {
@@ -1393,17 +1456,17 @@ func NewPopulatedTransAddress(r randyGeneralTypes, easy bool) *TransAddress {
 
 func NewPopulatedEntryBlockEntry(r randyGeneralTypes, easy bool) *EntryBlockEntry {
 	this := &EntryBlockEntry{}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.Hash = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		v6 := r.Intn(5)
 		this.ExternalIDs = make([]*ExternalId, v6)
 		for i := 0; i < v6; i++ {
 			this.ExternalIDs[i] = NewPopulatedExternalId(r, easy)
 		}
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.Content = NewPopulatedContent(r, easy)
 	}
 	if !easy && r.Intn(10) != 0 {
@@ -1414,10 +1477,10 @@ func NewPopulatedEntryBlockEntry(r randyGeneralTypes, easy bool) *EntryBlockEntr
 
 func NewPopulatedEntry(r randyGeneralTypes, easy bool) *Entry {
 	this := &Entry{}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.ChainID = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.KeyMerkleRoot = NewPopulatedHash(r, easy)
 	}
 	if !easy && r.Intn(10) != 0 {
@@ -1632,14 +1695,7 @@ func (m *Entry) Size() (n int) {
 }
 
 func sovGeneralTypes(x uint64) (n int) {
-	for {
-		n++
-		x >>= 7
-		if x == 0 {
-			break
-		}
-	}
-	return n
+	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozGeneralTypes(x uint64) (n int) {
 	return sovGeneralTypes(uint64((x << 1) ^ uint64((int64(x) >> 63))))

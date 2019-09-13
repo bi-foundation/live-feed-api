@@ -5,11 +5,11 @@ package eventmessages
 
 import (
 	fmt "fmt"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	github_com_gogo_protobuf_proto "github.com/gogo/protobuf/proto"
 	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/opsee/protobuf/opseeproto"
-	_ "github.com/opsee/protobuf/opseeproto/types"
 	math "math"
 	math_rand "math/rand"
 	testing "testing"
@@ -77,15 +77,15 @@ func TestFactomEventMarshalTo(t *testing.T) {
 	}
 }
 
-func TestBlockCommitProto(t *testing.T) {
+func TestDirectoryBlockCommitProto(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedBlockCommit(popr, false)
+	p := NewPopulatedDirectoryBlockCommit(popr, false)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &BlockCommit{}
+	msg := &DirectoryBlockCommit{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -108,10 +108,10 @@ func TestBlockCommitProto(t *testing.T) {
 	}
 }
 
-func TestBlockCommitMarshalTo(t *testing.T) {
+func TestDirectoryBlockCommitMarshalTo(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedBlockCommit(popr, false)
+	p := NewPopulatedDirectoryBlockCommit(popr, false)
 	size := p.Size()
 	dAtA := make([]byte, size)
 	for i := range dAtA {
@@ -121,7 +121,7 @@ func TestBlockCommitMarshalTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &BlockCommit{}
+	msg := &DirectoryBlockCommit{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -133,15 +133,15 @@ func TestBlockCommitMarshalTo(t *testing.T) {
 	}
 }
 
-func TestChainRegistrationProto(t *testing.T) {
+func TestChainCommitProto(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedChainRegistration(popr, false)
+	p := NewPopulatedChainCommit(popr, false)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &ChainRegistration{}
+	msg := &ChainCommit{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -164,10 +164,10 @@ func TestChainRegistrationProto(t *testing.T) {
 	}
 }
 
-func TestChainRegistrationMarshalTo(t *testing.T) {
+func TestChainCommitMarshalTo(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedChainRegistration(popr, false)
+	p := NewPopulatedChainCommit(popr, false)
 	size := p.Size()
 	dAtA := make([]byte, size)
 	for i := range dAtA {
@@ -177,7 +177,7 @@ func TestChainRegistrationMarshalTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &ChainRegistration{}
+	msg := &ChainCommit{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -189,15 +189,15 @@ func TestChainRegistrationMarshalTo(t *testing.T) {
 	}
 }
 
-func TestEntryRegistrationProto(t *testing.T) {
+func TestEntryCommitProto(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryRegistration(popr, false)
+	p := NewPopulatedEntryCommit(popr, false)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryRegistration{}
+	msg := &EntryCommit{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -220,10 +220,10 @@ func TestEntryRegistrationProto(t *testing.T) {
 	}
 }
 
-func TestEntryRegistrationMarshalTo(t *testing.T) {
+func TestEntryCommitMarshalTo(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryRegistration(popr, false)
+	p := NewPopulatedEntryCommit(popr, false)
 	size := p.Size()
 	dAtA := make([]byte, size)
 	for i := range dAtA {
@@ -233,7 +233,7 @@ func TestEntryRegistrationMarshalTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryRegistration{}
+	msg := &EntryCommit{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -245,15 +245,15 @@ func TestEntryRegistrationMarshalTo(t *testing.T) {
 	}
 }
 
-func TestEntryContentRegistrationProto(t *testing.T) {
+func TestEntryRevealProto(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryContentRegistration(popr, false)
+	p := NewPopulatedEntryReveal(popr, false)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryContentRegistration{}
+	msg := &EntryReveal{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -276,10 +276,10 @@ func TestEntryContentRegistrationProto(t *testing.T) {
 	}
 }
 
-func TestEntryContentRegistrationMarshalTo(t *testing.T) {
+func TestEntryRevealMarshalTo(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryContentRegistration(popr, false)
+	p := NewPopulatedEntryReveal(popr, false)
 	size := p.Size()
 	dAtA := make([]byte, size)
 	for i := range dAtA {
@@ -289,7 +289,7 @@ func TestEntryContentRegistrationMarshalTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryContentRegistration{}
+	msg := &EntryReveal{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -711,16 +711,16 @@ func TestFactomEventJSON(t *testing.T) {
 		t.Fatalf("seed = %d, %#v !Json Equal %#v", seed, msg, p)
 	}
 }
-func TestBlockCommitJSON(t *testing.T) {
+func TestDirectoryBlockCommitJSON(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedBlockCommit(popr, true)
+	p := NewPopulatedDirectoryBlockCommit(popr, true)
 	marshaler := github_com_gogo_protobuf_jsonpb.Marshaler{}
 	jsondata, err := marshaler.MarshalToString(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &BlockCommit{}
+	msg := &DirectoryBlockCommit{}
 	err = github_com_gogo_protobuf_jsonpb.UnmarshalString(jsondata, msg)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
@@ -729,16 +729,16 @@ func TestBlockCommitJSON(t *testing.T) {
 		t.Fatalf("seed = %d, %#v !Json Equal %#v", seed, msg, p)
 	}
 }
-func TestChainRegistrationJSON(t *testing.T) {
+func TestChainCommitJSON(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedChainRegistration(popr, true)
+	p := NewPopulatedChainCommit(popr, true)
 	marshaler := github_com_gogo_protobuf_jsonpb.Marshaler{}
 	jsondata, err := marshaler.MarshalToString(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &ChainRegistration{}
+	msg := &ChainCommit{}
 	err = github_com_gogo_protobuf_jsonpb.UnmarshalString(jsondata, msg)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
@@ -747,16 +747,16 @@ func TestChainRegistrationJSON(t *testing.T) {
 		t.Fatalf("seed = %d, %#v !Json Equal %#v", seed, msg, p)
 	}
 }
-func TestEntryRegistrationJSON(t *testing.T) {
+func TestEntryCommitJSON(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryRegistration(popr, true)
+	p := NewPopulatedEntryCommit(popr, true)
 	marshaler := github_com_gogo_protobuf_jsonpb.Marshaler{}
 	jsondata, err := marshaler.MarshalToString(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryRegistration{}
+	msg := &EntryCommit{}
 	err = github_com_gogo_protobuf_jsonpb.UnmarshalString(jsondata, msg)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
@@ -765,16 +765,16 @@ func TestEntryRegistrationJSON(t *testing.T) {
 		t.Fatalf("seed = %d, %#v !Json Equal %#v", seed, msg, p)
 	}
 }
-func TestEntryContentRegistrationJSON(t *testing.T) {
+func TestEntryRevealJSON(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryContentRegistration(popr, true)
+	p := NewPopulatedEntryReveal(popr, true)
 	marshaler := github_com_gogo_protobuf_jsonpb.Marshaler{}
 	jsondata, err := marshaler.MarshalToString(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryContentRegistration{}
+	msg := &EntryReveal{}
 	err = github_com_gogo_protobuf_jsonpb.UnmarshalString(jsondata, msg)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
@@ -937,12 +937,12 @@ func TestFactomEventProtoCompactText(t *testing.T) {
 	}
 }
 
-func TestBlockCommitProtoText(t *testing.T) {
+func TestDirectoryBlockCommitProtoText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedBlockCommit(popr, true)
+	p := NewPopulatedDirectoryBlockCommit(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.MarshalTextString(p)
-	msg := &BlockCommit{}
+	msg := &DirectoryBlockCommit{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -951,12 +951,12 @@ func TestBlockCommitProtoText(t *testing.T) {
 	}
 }
 
-func TestBlockCommitProtoCompactText(t *testing.T) {
+func TestDirectoryBlockCommitProtoCompactText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedBlockCommit(popr, true)
+	p := NewPopulatedDirectoryBlockCommit(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.CompactTextString(p)
-	msg := &BlockCommit{}
+	msg := &DirectoryBlockCommit{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -965,12 +965,12 @@ func TestBlockCommitProtoCompactText(t *testing.T) {
 	}
 }
 
-func TestChainRegistrationProtoText(t *testing.T) {
+func TestChainCommitProtoText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedChainRegistration(popr, true)
+	p := NewPopulatedChainCommit(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.MarshalTextString(p)
-	msg := &ChainRegistration{}
+	msg := &ChainCommit{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -979,12 +979,12 @@ func TestChainRegistrationProtoText(t *testing.T) {
 	}
 }
 
-func TestChainRegistrationProtoCompactText(t *testing.T) {
+func TestChainCommitProtoCompactText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedChainRegistration(popr, true)
+	p := NewPopulatedChainCommit(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.CompactTextString(p)
-	msg := &ChainRegistration{}
+	msg := &ChainCommit{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -993,12 +993,12 @@ func TestChainRegistrationProtoCompactText(t *testing.T) {
 	}
 }
 
-func TestEntryRegistrationProtoText(t *testing.T) {
+func TestEntryCommitProtoText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryRegistration(popr, true)
+	p := NewPopulatedEntryCommit(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.MarshalTextString(p)
-	msg := &EntryRegistration{}
+	msg := &EntryCommit{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -1007,12 +1007,12 @@ func TestEntryRegistrationProtoText(t *testing.T) {
 	}
 }
 
-func TestEntryRegistrationProtoCompactText(t *testing.T) {
+func TestEntryCommitProtoCompactText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryRegistration(popr, true)
+	p := NewPopulatedEntryCommit(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.CompactTextString(p)
-	msg := &EntryRegistration{}
+	msg := &EntryCommit{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -1021,12 +1021,12 @@ func TestEntryRegistrationProtoCompactText(t *testing.T) {
 	}
 }
 
-func TestEntryContentRegistrationProtoText(t *testing.T) {
+func TestEntryRevealProtoText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryContentRegistration(popr, true)
+	p := NewPopulatedEntryReveal(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.MarshalTextString(p)
-	msg := &EntryContentRegistration{}
+	msg := &EntryReveal{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -1035,12 +1035,12 @@ func TestEntryContentRegistrationProtoText(t *testing.T) {
 	}
 }
 
-func TestEntryContentRegistrationProtoCompactText(t *testing.T) {
+func TestEntryRevealProtoCompactText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryContentRegistration(popr, true)
+	p := NewPopulatedEntryReveal(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.CompactTextString(p)
-	msg := &EntryContentRegistration{}
+	msg := &EntryReveal{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -1245,6 +1245,114 @@ func TestNodeMessageProtoCompactText(t *testing.T) {
 	}
 }
 
+func TestFactomEventGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedFactomEvent(popr, false)
+	objdesc := ""
+	pdesc := GraphQLFactomEventType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestDirectoryBlockCommitGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedDirectoryBlockCommit(popr, false)
+	objdesc := ""
+	pdesc := GraphQLDirectoryBlockCommitType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestChainCommitGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedChainCommit(popr, false)
+	objdesc := ""
+	pdesc := GraphQLChainCommitType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestEntryCommitGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEntryCommit(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEntryCommitType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestEntryRevealGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEntryReveal(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEntryRevealType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestStateChangeGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedStateChange(popr, false)
+	objdesc := ""
+	pdesc := GraphQLStateChangeType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestDirectoryBlockGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedDirectoryBlock(popr, false)
+	objdesc := ""
+	pdesc := GraphQLDirectoryBlockType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestDirectoryBlockHeaderGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedDirectoryBlockHeader(popr, false)
+	objdesc := ""
+	pdesc := GraphQLDirectoryBlockHeaderType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestEntryBlockGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEntryBlock(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEntryBlockType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestEntryBlockHeaderGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEntryBlockHeader(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEntryBlockHeaderType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestProcessMessageGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedProcessMessage(popr, false)
+	objdesc := ""
+	pdesc := GraphQLProcessMessageType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestNodeMessageGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedNodeMessage(popr, false)
+	objdesc := ""
+	pdesc := GraphQLNodeMessageType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
 func TestFactomEventSize(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
@@ -1267,10 +1375,10 @@ func TestFactomEventSize(t *testing.T) {
 	}
 }
 
-func TestBlockCommitSize(t *testing.T) {
+func TestDirectoryBlockCommitSize(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedBlockCommit(popr, true)
+	p := NewPopulatedDirectoryBlockCommit(popr, true)
 	size2 := github_com_gogo_protobuf_proto.Size(p)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
@@ -1289,10 +1397,10 @@ func TestBlockCommitSize(t *testing.T) {
 	}
 }
 
-func TestChainRegistrationSize(t *testing.T) {
+func TestChainCommitSize(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedChainRegistration(popr, true)
+	p := NewPopulatedChainCommit(popr, true)
 	size2 := github_com_gogo_protobuf_proto.Size(p)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
@@ -1311,10 +1419,10 @@ func TestChainRegistrationSize(t *testing.T) {
 	}
 }
 
-func TestEntryRegistrationSize(t *testing.T) {
+func TestEntryCommitSize(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryRegistration(popr, true)
+	p := NewPopulatedEntryCommit(popr, true)
 	size2 := github_com_gogo_protobuf_proto.Size(p)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
@@ -1333,10 +1441,10 @@ func TestEntryRegistrationSize(t *testing.T) {
 	}
 }
 
-func TestEntryContentRegistrationSize(t *testing.T) {
+func TestEntryRevealSize(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryContentRegistration(popr, true)
+	p := NewPopulatedEntryReveal(popr, true)
 	size2 := github_com_gogo_protobuf_proto.Size(p)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
@@ -1506,115 +1614,6 @@ func TestNodeMessageSize(t *testing.T) {
 	size3 := github_com_gogo_protobuf_proto.Size(p)
 	if size3 != size {
 		t.Errorf("seed = %d, size %v != after marshal proto.Size %v", seed, size, size3)
-	}
-}
-
-func TestFactomEventGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedFactomEvent(popr, false)
-	objdesc := ""
-	pdesc := GraphQLFactomEventType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestBlockCommitGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedBlockCommit(popr, false)
-	objdesc := ""
-	pdesc := GraphQLBlockCommitType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestChainRegistrationGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedChainRegistration(popr, false)
-	objdesc := ""
-	pdesc := GraphQLChainRegistrationType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestEntryRegistrationGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntryRegistration(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEntryRegistrationType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestEntryContentRegistrationGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntryContentRegistration(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEntryContentRegistrationType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestStateChangeGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedStateChange(popr, false)
-	objdesc := ""
-	pdesc := GraphQLStateChangeType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestDirectoryBlockGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedDirectoryBlock(popr, false)
-	objdesc := ""
-	pdesc := GraphQLDirectoryBlockType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestDirectoryBlockHeaderGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedDirectoryBlockHeader(popr, false)
-	objdesc := ""
-	pdesc := GraphQLDirectoryBlockHeaderType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestEntryBlockGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntryBlock(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEntryBlockType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestEntryBlockHeaderGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntryBlockHeader(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEntryBlockHeaderType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestProcessMessageGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedProcessMessage(popr, false)
-	objdesc := ""
-	pdesc := GraphQLProcessMessageType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestNodeMessageGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedNodeMessage(popr, false)
-	objdesc := ""
-	pdesc := GraphQLNodeMessageType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
 	}
 }
 

@@ -6,13 +6,14 @@ package eventmessages
 import (
 	bytes "bytes"
 	fmt "fmt"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto"
+	types "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
+	github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars "github.com/bi-foundation/protobuf-graphql-extension/plugin/graphql/scalars"
 	proto "github.com/gogo/protobuf/proto"
 	github_com_graphql_go_graphql "github.com/graphql-go/graphql"
-	_ "github.com/opsee/protobuf/opseeproto"
-	types "github.com/opsee/protobuf/opseeproto/types"
-	github_com_opsee_protobuf_plugin_graphql_scalars "github.com/opsee/protobuf/plugin/graphql/scalars"
 	io "io"
 	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -24,23 +25,26 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type StreamSource int32
 
 const (
-	StreamSource_LIVE   StreamSource = 0
-	StreamSource_REPLAY StreamSource = 1
+	StreamSource_LIVE        StreamSource = 0
+	StreamSource_REPLAY_BOOT StreamSource = 1
+	StreamSource_REPLAY_JOB  StreamSource = 2
 )
 
 var StreamSource_name = map[int32]string{
 	0: "LIVE",
-	1: "REPLAY",
+	1: "REPLAY_BOOT",
+	2: "REPLAY_JOB",
 }
 
 var StreamSource_value = map[string]int32{
-	"LIVE":   0,
-	"REPLAY": 1,
+	"LIVE":        0,
+	"REPLAY_BOOT": 1,
+	"REPLAY_JOB":  2,
 }
 
 func (x StreamSource) String() string {
@@ -82,21 +86,18 @@ func (Level) EnumDescriptor() ([]byte, []int) {
 type ProcessMessageCode int32
 
 const (
-	ProcessMessageCode_OTHER_P    ProcessMessageCode = 0
-	ProcessMessageCode_NEW_BLOCK  ProcessMessageCode = 1
-	ProcessMessageCode_NEW_MINUTE ProcessMessageCode = 2
+	ProcessMessageCode_NEW_BLOCK  ProcessMessageCode = 0
+	ProcessMessageCode_NEW_MINUTE ProcessMessageCode = 1
 )
 
 var ProcessMessageCode_name = map[int32]string{
-	0: "OTHER_P",
-	1: "NEW_BLOCK",
-	2: "NEW_MINUTE",
+	0: "NEW_BLOCK",
+	1: "NEW_MINUTE",
 }
 
 var ProcessMessageCode_value = map[string]int32{
-	"OTHER_P":    0,
-	"NEW_BLOCK":  1,
-	"NEW_MINUTE": 2,
+	"NEW_BLOCK":  0,
+	"NEW_MINUTE": 1,
 }
 
 func (x ProcessMessageCode) String() string {
@@ -110,24 +111,24 @@ func (ProcessMessageCode) EnumDescriptor() ([]byte, []int) {
 type NodeMessageCode int32
 
 const (
-	NodeMessageCode_OTHER_N       NodeMessageCode = 0
-	NodeMessageCode_STARTED       NodeMessageCode = 1
-	NodeMessageCode_SYNC_COMPLETE NodeMessageCode = 2
-	NodeMessageCode_SHUTDOWN      NodeMessageCode = 3
+	NodeMessageCode_GENERAL  NodeMessageCode = 0
+	NodeMessageCode_STARTED  NodeMessageCode = 1
+	NodeMessageCode_SYNCED   NodeMessageCode = 2
+	NodeMessageCode_SHUTDOWN NodeMessageCode = 3
 )
 
 var NodeMessageCode_name = map[int32]string{
-	0: "OTHER_N",
+	0: "GENERAL",
 	1: "STARTED",
-	2: "SYNC_COMPLETE",
+	2: "SYNCED",
 	3: "SHUTDOWN",
 }
 
 var NodeMessageCode_value = map[string]int32{
-	"OTHER_N":       0,
-	"STARTED":       1,
-	"SYNC_COMPLETE": 2,
-	"SHUTDOWN":      3,
+	"GENERAL":  0,
+	"STARTED":  1,
+	"SYNCED":   2,
+	"SHUTDOWN": 3,
 }
 
 func (x NodeMessageCode) String() string {
@@ -140,16 +141,18 @@ func (NodeMessageCode) EnumDescriptor() ([]byte, []int) {
 
 type FactomEvent struct {
 	StreamSource    StreamSource `protobuf:"varint,1,opt,name=streamSource,proto3,enum=eventmessages.StreamSource" json:"streamSource,omitempty"`
-	IdentityChainID *Hash        `protobuf:"bytes,2,opt,name=identityChainID,proto3" json:"identityChainID,omitempty"`
+	FactomNodeName  string       `protobuf:"bytes,2,opt,name=factomNodeName,proto3" json:"factomNodeName,omitempty"`
+	IdentityChainID *Hash        `protobuf:"bytes,3,opt,name=identityChainID,proto3" json:"identityChainID,omitempty"`
 	// Types that are valid to be assigned to Value:
-	//	*FactomEvent_ChainRegistration
-	//	*FactomEvent_EntryRegistration
-	//	*FactomEvent_EntryContentRegistration
+	//	*FactomEvent_ChainCommit
+	//	*FactomEvent_EntryCommit
+	//	*FactomEvent_EntryReveal
 	//	*FactomEvent_StateChange
-	//	*FactomEvent_BlockCommit
+	//	*FactomEvent_DirectoryBlockCommit
 	//	*FactomEvent_ProcessMessage
 	//	*FactomEvent_NodeMessage
 	Value                isFactomEvent_Value `protobuf_oneof:"value"`
+	ReplayJobId          uint64              `protobuf:"varint,11,opt,name=replayJobId,proto3" json:"replayJobId,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
 	XXX_unrecognized     []byte              `json:"-"`
 	XXX_sizecache        int32               `json:"-"`
@@ -169,7 +172,7 @@ func (m *FactomEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return xxx_messageInfo_FactomEvent.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -195,35 +198,35 @@ type isFactomEvent_Value interface {
 	Size() int
 }
 
-type FactomEvent_ChainRegistration struct {
-	ChainRegistration *ChainRegistration `protobuf:"bytes,3,opt,name=chainRegistration,proto3,oneof"`
+type FactomEvent_ChainCommit struct {
+	ChainCommit *ChainCommit `protobuf:"bytes,4,opt,name=chainCommit,proto3,oneof"`
 }
-type FactomEvent_EntryRegistration struct {
-	EntryRegistration *EntryRegistration `protobuf:"bytes,4,opt,name=entryRegistration,proto3,oneof"`
+type FactomEvent_EntryCommit struct {
+	EntryCommit *EntryCommit `protobuf:"bytes,5,opt,name=entryCommit,proto3,oneof"`
 }
-type FactomEvent_EntryContentRegistration struct {
-	EntryContentRegistration *EntryContentRegistration `protobuf:"bytes,5,opt,name=entryContentRegistration,proto3,oneof"`
+type FactomEvent_EntryReveal struct {
+	EntryReveal *EntryReveal `protobuf:"bytes,6,opt,name=entryReveal,proto3,oneof"`
 }
 type FactomEvent_StateChange struct {
-	StateChange *StateChange `protobuf:"bytes,6,opt,name=stateChange,proto3,oneof"`
+	StateChange *StateChange `protobuf:"bytes,7,opt,name=stateChange,proto3,oneof"`
 }
-type FactomEvent_BlockCommit struct {
-	BlockCommit *BlockCommit `protobuf:"bytes,7,opt,name=blockCommit,proto3,oneof"`
+type FactomEvent_DirectoryBlockCommit struct {
+	DirectoryBlockCommit *DirectoryBlockCommit `protobuf:"bytes,8,opt,name=directoryBlockCommit,proto3,oneof"`
 }
 type FactomEvent_ProcessMessage struct {
-	ProcessMessage *ProcessMessage `protobuf:"bytes,8,opt,name=processMessage,proto3,oneof"`
+	ProcessMessage *ProcessMessage `protobuf:"bytes,9,opt,name=processMessage,proto3,oneof"`
 }
 type FactomEvent_NodeMessage struct {
-	NodeMessage *NodeMessage `protobuf:"bytes,9,opt,name=nodeMessage,proto3,oneof"`
+	NodeMessage *NodeMessage `protobuf:"bytes,10,opt,name=nodeMessage,proto3,oneof"`
 }
 
-func (*FactomEvent_ChainRegistration) isFactomEvent_Value()        {}
-func (*FactomEvent_EntryRegistration) isFactomEvent_Value()        {}
-func (*FactomEvent_EntryContentRegistration) isFactomEvent_Value() {}
-func (*FactomEvent_StateChange) isFactomEvent_Value()              {}
-func (*FactomEvent_BlockCommit) isFactomEvent_Value()              {}
-func (*FactomEvent_ProcessMessage) isFactomEvent_Value()           {}
-func (*FactomEvent_NodeMessage) isFactomEvent_Value()              {}
+func (*FactomEvent_ChainCommit) isFactomEvent_Value()          {}
+func (*FactomEvent_EntryCommit) isFactomEvent_Value()          {}
+func (*FactomEvent_EntryReveal) isFactomEvent_Value()          {}
+func (*FactomEvent_StateChange) isFactomEvent_Value()          {}
+func (*FactomEvent_DirectoryBlockCommit) isFactomEvent_Value() {}
+func (*FactomEvent_ProcessMessage) isFactomEvent_Value()       {}
+func (*FactomEvent_NodeMessage) isFactomEvent_Value()          {}
 
 func (m *FactomEvent) GetValue() isFactomEvent_Value {
 	if m != nil {
@@ -239,6 +242,13 @@ func (m *FactomEvent) GetStreamSource() StreamSource {
 	return StreamSource_LIVE
 }
 
+func (m *FactomEvent) GetFactomNodeName() string {
+	if m != nil {
+		return m.FactomNodeName
+	}
+	return ""
+}
+
 func (m *FactomEvent) GetIdentityChainID() *Hash {
 	if m != nil {
 		return m.IdentityChainID
@@ -246,23 +256,23 @@ func (m *FactomEvent) GetIdentityChainID() *Hash {
 	return nil
 }
 
-func (m *FactomEvent) GetChainRegistration() *ChainRegistration {
-	if x, ok := m.GetValue().(*FactomEvent_ChainRegistration); ok {
-		return x.ChainRegistration
+func (m *FactomEvent) GetChainCommit() *ChainCommit {
+	if x, ok := m.GetValue().(*FactomEvent_ChainCommit); ok {
+		return x.ChainCommit
 	}
 	return nil
 }
 
-func (m *FactomEvent) GetEntryRegistration() *EntryRegistration {
-	if x, ok := m.GetValue().(*FactomEvent_EntryRegistration); ok {
-		return x.EntryRegistration
+func (m *FactomEvent) GetEntryCommit() *EntryCommit {
+	if x, ok := m.GetValue().(*FactomEvent_EntryCommit); ok {
+		return x.EntryCommit
 	}
 	return nil
 }
 
-func (m *FactomEvent) GetEntryContentRegistration() *EntryContentRegistration {
-	if x, ok := m.GetValue().(*FactomEvent_EntryContentRegistration); ok {
-		return x.EntryContentRegistration
+func (m *FactomEvent) GetEntryReveal() *EntryReveal {
+	if x, ok := m.GetValue().(*FactomEvent_EntryReveal); ok {
+		return x.EntryReveal
 	}
 	return nil
 }
@@ -274,9 +284,9 @@ func (m *FactomEvent) GetStateChange() *StateChange {
 	return nil
 }
 
-func (m *FactomEvent) GetBlockCommit() *BlockCommit {
-	if x, ok := m.GetValue().(*FactomEvent_BlockCommit); ok {
-		return x.BlockCommit
+func (m *FactomEvent) GetDirectoryBlockCommit() *DirectoryBlockCommit {
+	if x, ok := m.GetValue().(*FactomEvent_DirectoryBlockCommit); ok {
+		return x.DirectoryBlockCommit
 	}
 	return nil
 }
@@ -295,176 +305,27 @@ func (m *FactomEvent) GetNodeMessage() *NodeMessage {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*FactomEvent) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _FactomEvent_OneofMarshaler, _FactomEvent_OneofUnmarshaler, _FactomEvent_OneofSizer, []interface{}{
-		(*FactomEvent_ChainRegistration)(nil),
-		(*FactomEvent_EntryRegistration)(nil),
-		(*FactomEvent_EntryContentRegistration)(nil),
+func (m *FactomEvent) GetReplayJobId() uint64 {
+	if m != nil {
+		return m.ReplayJobId
+	}
+	return 0
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*FactomEvent) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*FactomEvent_ChainCommit)(nil),
+		(*FactomEvent_EntryCommit)(nil),
+		(*FactomEvent_EntryReveal)(nil),
 		(*FactomEvent_StateChange)(nil),
-		(*FactomEvent_BlockCommit)(nil),
+		(*FactomEvent_DirectoryBlockCommit)(nil),
 		(*FactomEvent_ProcessMessage)(nil),
 		(*FactomEvent_NodeMessage)(nil),
 	}
 }
 
-func _FactomEvent_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*FactomEvent)
-	// value
-	switch x := m.Value.(type) {
-	case *FactomEvent_ChainRegistration:
-		_ = b.EncodeVarint(3<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.ChainRegistration); err != nil {
-			return err
-		}
-	case *FactomEvent_EntryRegistration:
-		_ = b.EncodeVarint(4<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.EntryRegistration); err != nil {
-			return err
-		}
-	case *FactomEvent_EntryContentRegistration:
-		_ = b.EncodeVarint(5<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.EntryContentRegistration); err != nil {
-			return err
-		}
-	case *FactomEvent_StateChange:
-		_ = b.EncodeVarint(6<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.StateChange); err != nil {
-			return err
-		}
-	case *FactomEvent_BlockCommit:
-		_ = b.EncodeVarint(7<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.BlockCommit); err != nil {
-			return err
-		}
-	case *FactomEvent_ProcessMessage:
-		_ = b.EncodeVarint(8<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.ProcessMessage); err != nil {
-			return err
-		}
-	case *FactomEvent_NodeMessage:
-		_ = b.EncodeVarint(9<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.NodeMessage); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("FactomEvent.Value has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _FactomEvent_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*FactomEvent)
-	switch tag {
-	case 3: // value.chainRegistration
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(ChainRegistration)
-		err := b.DecodeMessage(msg)
-		m.Value = &FactomEvent_ChainRegistration{msg}
-		return true, err
-	case 4: // value.entryRegistration
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(EntryRegistration)
-		err := b.DecodeMessage(msg)
-		m.Value = &FactomEvent_EntryRegistration{msg}
-		return true, err
-	case 5: // value.entryContentRegistration
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(EntryContentRegistration)
-		err := b.DecodeMessage(msg)
-		m.Value = &FactomEvent_EntryContentRegistration{msg}
-		return true, err
-	case 6: // value.stateChange
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(StateChange)
-		err := b.DecodeMessage(msg)
-		m.Value = &FactomEvent_StateChange{msg}
-		return true, err
-	case 7: // value.blockCommit
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(BlockCommit)
-		err := b.DecodeMessage(msg)
-		m.Value = &FactomEvent_BlockCommit{msg}
-		return true, err
-	case 8: // value.processMessage
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(ProcessMessage)
-		err := b.DecodeMessage(msg)
-		m.Value = &FactomEvent_ProcessMessage{msg}
-		return true, err
-	case 9: // value.nodeMessage
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(NodeMessage)
-		err := b.DecodeMessage(msg)
-		m.Value = &FactomEvent_NodeMessage{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _FactomEvent_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*FactomEvent)
-	// value
-	switch x := m.Value.(type) {
-	case *FactomEvent_ChainRegistration:
-		s := proto.Size(x.ChainRegistration)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *FactomEvent_EntryRegistration:
-		s := proto.Size(x.EntryRegistration)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *FactomEvent_EntryContentRegistration:
-		s := proto.Size(x.EntryContentRegistration)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *FactomEvent_StateChange:
-		s := proto.Size(x.StateChange)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *FactomEvent_BlockCommit:
-		s := proto.Size(x.BlockCommit)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *FactomEvent_ProcessMessage:
-		s := proto.Size(x.ProcessMessage)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *FactomEvent_NodeMessage:
-		s := proto.Size(x.NodeMessage)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
-}
-
-type BlockCommit struct {
+type DirectoryBlockCommit struct {
 	DirectoryBlock       *DirectoryBlock    `protobuf:"bytes,1,opt,name=directoryBlock,proto3" json:"directoryBlock,omitempty"`
 	AdminBlock           *AdminBlock        `protobuf:"bytes,2,opt,name=adminBlock,proto3" json:"adminBlock,omitempty"`
 	FactoidBlock         *FactoidBlock      `protobuf:"bytes,3,opt,name=factoidBlock,proto3" json:"factoidBlock,omitempty"`
@@ -476,272 +337,272 @@ type BlockCommit struct {
 	XXX_sizecache        int32              `json:"-"`
 }
 
-func (m *BlockCommit) Reset()         { *m = BlockCommit{} }
-func (m *BlockCommit) String() string { return proto.CompactTextString(m) }
-func (*BlockCommit) ProtoMessage()    {}
-func (*BlockCommit) Descriptor() ([]byte, []int) {
+func (m *DirectoryBlockCommit) Reset()         { *m = DirectoryBlockCommit{} }
+func (m *DirectoryBlockCommit) String() string { return proto.CompactTextString(m) }
+func (*DirectoryBlockCommit) ProtoMessage()    {}
+func (*DirectoryBlockCommit) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d6566f2e3579336b, []int{1}
 }
-func (m *BlockCommit) XXX_Unmarshal(b []byte) error {
+func (m *DirectoryBlockCommit) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BlockCommit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *DirectoryBlockCommit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BlockCommit.Marshal(b, m, deterministic)
+		return xxx_messageInfo_DirectoryBlockCommit.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
 		return b[:n], nil
 	}
 }
-func (m *BlockCommit) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BlockCommit.Merge(m, src)
+func (m *DirectoryBlockCommit) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DirectoryBlockCommit.Merge(m, src)
 }
-func (m *BlockCommit) XXX_Size() int {
+func (m *DirectoryBlockCommit) XXX_Size() int {
 	return m.Size()
 }
-func (m *BlockCommit) XXX_DiscardUnknown() {
-	xxx_messageInfo_BlockCommit.DiscardUnknown(m)
+func (m *DirectoryBlockCommit) XXX_DiscardUnknown() {
+	xxx_messageInfo_DirectoryBlockCommit.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BlockCommit proto.InternalMessageInfo
+var xxx_messageInfo_DirectoryBlockCommit proto.InternalMessageInfo
 
-func (m *BlockCommit) GetDirectoryBlock() *DirectoryBlock {
+func (m *DirectoryBlockCommit) GetDirectoryBlock() *DirectoryBlock {
 	if m != nil {
 		return m.DirectoryBlock
 	}
 	return nil
 }
 
-func (m *BlockCommit) GetAdminBlock() *AdminBlock {
+func (m *DirectoryBlockCommit) GetAdminBlock() *AdminBlock {
 	if m != nil {
 		return m.AdminBlock
 	}
 	return nil
 }
 
-func (m *BlockCommit) GetFactoidBlock() *FactoidBlock {
+func (m *DirectoryBlockCommit) GetFactoidBlock() *FactoidBlock {
 	if m != nil {
 		return m.FactoidBlock
 	}
 	return nil
 }
 
-func (m *BlockCommit) GetEntryCreditBlock() *EntryCreditBlock {
+func (m *DirectoryBlockCommit) GetEntryCreditBlock() *EntryCreditBlock {
 	if m != nil {
 		return m.EntryCreditBlock
 	}
 	return nil
 }
 
-func (m *BlockCommit) GetEntryBlocks() []*EntryBlock {
+func (m *DirectoryBlockCommit) GetEntryBlocks() []*EntryBlock {
 	if m != nil {
 		return m.EntryBlocks
 	}
 	return nil
 }
 
-func (m *BlockCommit) GetEntryBlockEntries() []*EntryBlockEntry {
+func (m *DirectoryBlockCommit) GetEntryBlockEntries() []*EntryBlockEntry {
 	if m != nil {
 		return m.EntryBlockEntries
 	}
 	return nil
 }
 
-type ChainRegistration struct {
+type ChainCommit struct {
 	EntityState          EntityState      `protobuf:"varint,1,opt,name=entityState,proto3,enum=eventmessages.EntityState" json:"entityState,omitempty"`
 	ChainIDHash          *Hash            `protobuf:"bytes,2,opt,name=chainIDHash,proto3" json:"chainIDHash,omitempty"`
 	EntryHash            *Hash            `protobuf:"bytes,3,opt,name=entryHash,proto3" json:"entryHash,omitempty"`
 	Weld                 *Hash            `protobuf:"bytes,4,opt,name=weld,proto3" json:"weld,omitempty"`
 	Timestamp            *types.Timestamp `protobuf:"bytes,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	Credits              uint32           `protobuf:"varint,6,opt,name=credits,proto3" json:"credits,omitempty"`
-	EcPubKey             []byte           `protobuf:"bytes,7,opt,name=ecPubKey,proto3" json:"ecPubKey,omitempty"`
-	Sig                  []byte           `protobuf:"bytes,8,opt,name=sig,proto3" json:"sig,omitempty"`
+	EntryCreditPublicKey []byte           `protobuf:"bytes,7,opt,name=entryCreditPublicKey,proto3" json:"entryCreditPublicKey,omitempty"`
+	Signature            []byte           `protobuf:"bytes,8,opt,name=signature,proto3" json:"signature,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
 	XXX_sizecache        int32            `json:"-"`
 }
 
-func (m *ChainRegistration) Reset()         { *m = ChainRegistration{} }
-func (m *ChainRegistration) String() string { return proto.CompactTextString(m) }
-func (*ChainRegistration) ProtoMessage()    {}
-func (*ChainRegistration) Descriptor() ([]byte, []int) {
+func (m *ChainCommit) Reset()         { *m = ChainCommit{} }
+func (m *ChainCommit) String() string { return proto.CompactTextString(m) }
+func (*ChainCommit) ProtoMessage()    {}
+func (*ChainCommit) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d6566f2e3579336b, []int{2}
 }
-func (m *ChainRegistration) XXX_Unmarshal(b []byte) error {
+func (m *ChainCommit) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *ChainRegistration) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *ChainCommit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_ChainRegistration.Marshal(b, m, deterministic)
+		return xxx_messageInfo_ChainCommit.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
 		return b[:n], nil
 	}
 }
-func (m *ChainRegistration) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ChainRegistration.Merge(m, src)
+func (m *ChainCommit) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ChainCommit.Merge(m, src)
 }
-func (m *ChainRegistration) XXX_Size() int {
+func (m *ChainCommit) XXX_Size() int {
 	return m.Size()
 }
-func (m *ChainRegistration) XXX_DiscardUnknown() {
-	xxx_messageInfo_ChainRegistration.DiscardUnknown(m)
+func (m *ChainCommit) XXX_DiscardUnknown() {
+	xxx_messageInfo_ChainCommit.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_ChainRegistration proto.InternalMessageInfo
+var xxx_messageInfo_ChainCommit proto.InternalMessageInfo
 
-func (m *ChainRegistration) GetEntityState() EntityState {
+func (m *ChainCommit) GetEntityState() EntityState {
 	if m != nil {
 		return m.EntityState
 	}
 	return EntityState_REQUESTED
 }
 
-func (m *ChainRegistration) GetChainIDHash() *Hash {
+func (m *ChainCommit) GetChainIDHash() *Hash {
 	if m != nil {
 		return m.ChainIDHash
 	}
 	return nil
 }
 
-func (m *ChainRegistration) GetEntryHash() *Hash {
+func (m *ChainCommit) GetEntryHash() *Hash {
 	if m != nil {
 		return m.EntryHash
 	}
 	return nil
 }
 
-func (m *ChainRegistration) GetWeld() *Hash {
+func (m *ChainCommit) GetWeld() *Hash {
 	if m != nil {
 		return m.Weld
 	}
 	return nil
 }
 
-func (m *ChainRegistration) GetTimestamp() *types.Timestamp {
+func (m *ChainCommit) GetTimestamp() *types.Timestamp {
 	if m != nil {
 		return m.Timestamp
 	}
 	return nil
 }
 
-func (m *ChainRegistration) GetCredits() uint32 {
+func (m *ChainCommit) GetCredits() uint32 {
 	if m != nil {
 		return m.Credits
 	}
 	return 0
 }
 
-func (m *ChainRegistration) GetEcPubKey() []byte {
+func (m *ChainCommit) GetEntryCreditPublicKey() []byte {
 	if m != nil {
-		return m.EcPubKey
+		return m.EntryCreditPublicKey
 	}
 	return nil
 }
 
-func (m *ChainRegistration) GetSig() []byte {
+func (m *ChainCommit) GetSignature() []byte {
 	if m != nil {
-		return m.Sig
+		return m.Signature
 	}
 	return nil
 }
 
-type EntryRegistration struct {
+type EntryCommit struct {
 	EntityState          EntityState      `protobuf:"varint,1,opt,name=entityState,proto3,enum=eventmessages.EntityState" json:"entityState,omitempty"`
 	EntryHash            *Hash            `protobuf:"bytes,2,opt,name=entryHash,proto3" json:"entryHash,omitempty"`
 	Timestamp            *types.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	Credits              uint32           `protobuf:"varint,4,opt,name=credits,proto3" json:"credits,omitempty"`
-	EcPubKey             []byte           `protobuf:"bytes,5,opt,name=ecPubKey,proto3" json:"ecPubKey,omitempty"`
-	Sig                  []byte           `protobuf:"bytes,6,opt,name=sig,proto3" json:"sig,omitempty"`
+	EntryCreditPublicKey []byte           `protobuf:"bytes,5,opt,name=entryCreditPublicKey,proto3" json:"entryCreditPublicKey,omitempty"`
+	Signature            []byte           `protobuf:"bytes,6,opt,name=signature,proto3" json:"signature,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
 	XXX_sizecache        int32            `json:"-"`
 }
 
-func (m *EntryRegistration) Reset()         { *m = EntryRegistration{} }
-func (m *EntryRegistration) String() string { return proto.CompactTextString(m) }
-func (*EntryRegistration) ProtoMessage()    {}
-func (*EntryRegistration) Descriptor() ([]byte, []int) {
+func (m *EntryCommit) Reset()         { *m = EntryCommit{} }
+func (m *EntryCommit) String() string { return proto.CompactTextString(m) }
+func (*EntryCommit) ProtoMessage()    {}
+func (*EntryCommit) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d6566f2e3579336b, []int{3}
 }
-func (m *EntryRegistration) XXX_Unmarshal(b []byte) error {
+func (m *EntryCommit) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EntryRegistration) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EntryCommit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EntryRegistration.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EntryCommit.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
 		return b[:n], nil
 	}
 }
-func (m *EntryRegistration) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EntryRegistration.Merge(m, src)
+func (m *EntryCommit) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EntryCommit.Merge(m, src)
 }
-func (m *EntryRegistration) XXX_Size() int {
+func (m *EntryCommit) XXX_Size() int {
 	return m.Size()
 }
-func (m *EntryRegistration) XXX_DiscardUnknown() {
-	xxx_messageInfo_EntryRegistration.DiscardUnknown(m)
+func (m *EntryCommit) XXX_DiscardUnknown() {
+	xxx_messageInfo_EntryCommit.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EntryRegistration proto.InternalMessageInfo
+var xxx_messageInfo_EntryCommit proto.InternalMessageInfo
 
-func (m *EntryRegistration) GetEntityState() EntityState {
+func (m *EntryCommit) GetEntityState() EntityState {
 	if m != nil {
 		return m.EntityState
 	}
 	return EntityState_REQUESTED
 }
 
-func (m *EntryRegistration) GetEntryHash() *Hash {
+func (m *EntryCommit) GetEntryHash() *Hash {
 	if m != nil {
 		return m.EntryHash
 	}
 	return nil
 }
 
-func (m *EntryRegistration) GetTimestamp() *types.Timestamp {
+func (m *EntryCommit) GetTimestamp() *types.Timestamp {
 	if m != nil {
 		return m.Timestamp
 	}
 	return nil
 }
 
-func (m *EntryRegistration) GetCredits() uint32 {
+func (m *EntryCommit) GetCredits() uint32 {
 	if m != nil {
 		return m.Credits
 	}
 	return 0
 }
 
-func (m *EntryRegistration) GetEcPubKey() []byte {
+func (m *EntryCommit) GetEntryCreditPublicKey() []byte {
 	if m != nil {
-		return m.EcPubKey
+		return m.EntryCreditPublicKey
 	}
 	return nil
 }
 
-func (m *EntryRegistration) GetSig() []byte {
+func (m *EntryCommit) GetSignature() []byte {
 	if m != nil {
-		return m.Sig
+		return m.Signature
 	}
 	return nil
 }
 
-type EntryContentRegistration struct {
+type EntryReveal struct {
 	EntityState          EntityState      `protobuf:"varint,1,opt,name=entityState,proto3,enum=eventmessages.EntityState" json:"entityState,omitempty"`
 	Entry                *EntryBlockEntry `protobuf:"bytes,2,opt,name=entry,proto3" json:"entry,omitempty"`
 	Timestamp            *types.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
@@ -750,54 +611,54 @@ type EntryContentRegistration struct {
 	XXX_sizecache        int32            `json:"-"`
 }
 
-func (m *EntryContentRegistration) Reset()         { *m = EntryContentRegistration{} }
-func (m *EntryContentRegistration) String() string { return proto.CompactTextString(m) }
-func (*EntryContentRegistration) ProtoMessage()    {}
-func (*EntryContentRegistration) Descriptor() ([]byte, []int) {
+func (m *EntryReveal) Reset()         { *m = EntryReveal{} }
+func (m *EntryReveal) String() string { return proto.CompactTextString(m) }
+func (*EntryReveal) ProtoMessage()    {}
+func (*EntryReveal) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d6566f2e3579336b, []int{4}
 }
-func (m *EntryContentRegistration) XXX_Unmarshal(b []byte) error {
+func (m *EntryReveal) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EntryContentRegistration) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EntryReveal) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EntryContentRegistration.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EntryReveal.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
 		return b[:n], nil
 	}
 }
-func (m *EntryContentRegistration) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EntryContentRegistration.Merge(m, src)
+func (m *EntryReveal) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EntryReveal.Merge(m, src)
 }
-func (m *EntryContentRegistration) XXX_Size() int {
+func (m *EntryReveal) XXX_Size() int {
 	return m.Size()
 }
-func (m *EntryContentRegistration) XXX_DiscardUnknown() {
-	xxx_messageInfo_EntryContentRegistration.DiscardUnknown(m)
+func (m *EntryReveal) XXX_DiscardUnknown() {
+	xxx_messageInfo_EntryReveal.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EntryContentRegistration proto.InternalMessageInfo
+var xxx_messageInfo_EntryReveal proto.InternalMessageInfo
 
-func (m *EntryContentRegistration) GetEntityState() EntityState {
+func (m *EntryReveal) GetEntityState() EntityState {
 	if m != nil {
 		return m.EntityState
 	}
 	return EntityState_REQUESTED
 }
 
-func (m *EntryContentRegistration) GetEntry() *EntryBlockEntry {
+func (m *EntryReveal) GetEntry() *EntryBlockEntry {
 	if m != nil {
 		return m.Entry
 	}
 	return nil
 }
 
-func (m *EntryContentRegistration) GetTimestamp() *types.Timestamp {
+func (m *EntryReveal) GetTimestamp() *types.Timestamp {
 	if m != nil {
 		return m.Timestamp
 	}
@@ -807,6 +668,7 @@ func (m *EntryContentRegistration) GetTimestamp() *types.Timestamp {
 type StateChange struct {
 	EntityHash           *Hash       `protobuf:"bytes,1,opt,name=entityHash,proto3" json:"entityHash,omitempty"`
 	EntityState          EntityState `protobuf:"varint,2,opt,name=entityState,proto3,enum=eventmessages.EntityState" json:"entityState,omitempty"`
+	BlockHeight          uint32      `protobuf:"varint,3,opt,name=blockHeight,proto3" json:"blockHeight,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
 	XXX_unrecognized     []byte      `json:"-"`
 	XXX_sizecache        int32       `json:"-"`
@@ -826,7 +688,7 @@ func (m *StateChange) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return xxx_messageInfo_StateChange.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -859,6 +721,13 @@ func (m *StateChange) GetEntityState() EntityState {
 	return EntityState_REQUESTED
 }
 
+func (m *StateChange) GetBlockHeight() uint32 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
 type DirectoryBlock struct {
 	Header               *DirectoryBlockHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
 	Entries              []*Entry              `protobuf:"bytes,2,rep,name=entries,proto3" json:"entries,omitempty"`
@@ -881,7 +750,7 @@ func (m *DirectoryBlock) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 		return xxx_messageInfo_DirectoryBlock.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -940,7 +809,7 @@ func (m *DirectoryBlockHeader) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return xxx_messageInfo_DirectoryBlockHeader.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -1002,7 +871,7 @@ func (m *DirectoryBlockHeader) GetBlockCount() uint32 {
 }
 
 type EntryBlock struct {
-	EntryBlockHeader     *EntryBlockHeader `protobuf:"bytes,1,opt,name=entryBlockHeader,proto3" json:"entryBlockHeader,omitempty"`
+	Header               *EntryBlockHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
 	EntryHashes          []*Hash           `protobuf:"bytes,2,rep,name=entryHashes,proto3" json:"entryHashes,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
 	XXX_unrecognized     []byte            `json:"-"`
@@ -1023,7 +892,7 @@ func (m *EntryBlock) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_EntryBlock.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -1042,9 +911,9 @@ func (m *EntryBlock) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_EntryBlock proto.InternalMessageInfo
 
-func (m *EntryBlock) GetEntryBlockHeader() *EntryBlockHeader {
+func (m *EntryBlock) GetHeader() *EntryBlockHeader {
 	if m != nil {
-		return m.EntryBlockHeader
+		return m.Header
 	}
 	return nil
 }
@@ -1083,7 +952,7 @@ func (m *EntryBlockHeader) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return xxx_messageInfo_EntryBlockHeader.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -1174,7 +1043,7 @@ func (m *ProcessMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 		return xxx_messageInfo_ProcessMessage.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -1197,7 +1066,7 @@ func (m *ProcessMessage) GetMessageCode() ProcessMessageCode {
 	if m != nil {
 		return m.MessageCode
 	}
-	return ProcessMessageCode_OTHER_P
+	return ProcessMessageCode_NEW_BLOCK
 }
 
 func (m *ProcessMessage) GetLevel() Level {
@@ -1237,7 +1106,7 @@ func (m *NodeMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return xxx_messageInfo_NodeMessage.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -1260,7 +1129,7 @@ func (m *NodeMessage) GetMessageCode() NodeMessageCode {
 	if m != nil {
 		return m.MessageCode
 	}
-	return NodeMessageCode_OTHER_N
+	return NodeMessageCode_GENERAL
 }
 
 func (m *NodeMessage) GetLevel() Level {
@@ -1283,10 +1152,10 @@ func init() {
 	proto.RegisterEnum("eventmessages.ProcessMessageCode", ProcessMessageCode_name, ProcessMessageCode_value)
 	proto.RegisterEnum("eventmessages.NodeMessageCode", NodeMessageCode_name, NodeMessageCode_value)
 	proto.RegisterType((*FactomEvent)(nil), "eventmessages.FactomEvent")
-	proto.RegisterType((*BlockCommit)(nil), "eventmessages.BlockCommit")
-	proto.RegisterType((*ChainRegistration)(nil), "eventmessages.ChainRegistration")
-	proto.RegisterType((*EntryRegistration)(nil), "eventmessages.EntryRegistration")
-	proto.RegisterType((*EntryContentRegistration)(nil), "eventmessages.EntryContentRegistration")
+	proto.RegisterType((*DirectoryBlockCommit)(nil), "eventmessages.DirectoryBlockCommit")
+	proto.RegisterType((*ChainCommit)(nil), "eventmessages.ChainCommit")
+	proto.RegisterType((*EntryCommit)(nil), "eventmessages.EntryCommit")
+	proto.RegisterType((*EntryReveal)(nil), "eventmessages.EntryReveal")
 	proto.RegisterType((*StateChange)(nil), "eventmessages.StateChange")
 	proto.RegisterType((*DirectoryBlock)(nil), "eventmessages.DirectoryBlock")
 	proto.RegisterType((*DirectoryBlockHeader)(nil), "eventmessages.DirectoryBlockHeader")
@@ -1299,85 +1168,89 @@ func init() {
 func init() { proto.RegisterFile("eventmessages/factomEvents.proto", fileDescriptor_d6566f2e3579336b) }
 
 var fileDescriptor_d6566f2e3579336b = []byte{
-	// 1236 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x97, 0x4f, 0x93, 0x1a, 0xc5,
-	0x1b, 0xc7, 0x19, 0x58, 0x60, 0x79, 0x58, 0xc8, 0x6c, 0xff, 0xf2, 0xb3, 0x70, 0x2d, 0x59, 0xc4,
-	0x54, 0x25, 0x6e, 0x95, 0xac, 0x26, 0xf1, 0xa0, 0x51, 0x93, 0x5d, 0x76, 0x36, 0x50, 0xcb, 0x02,
-	0xd5, 0x10, 0x53, 0xf1, 0x92, 0x1a, 0x86, 0x0e, 0x4c, 0x05, 0x66, 0x70, 0xa6, 0x59, 0xe5, 0x60,
-	0x95, 0xe5, 0x2b, 0xf0, 0x0d, 0x78, 0xd1, 0x4b, 0xca, 0x57, 0xe0, 0xd1, 0x83, 0x07, 0x8f, 0xde,
-	0xbc, 0x2a, 0x2f, 0xc1, 0x93, 0x47, 0xab, 0x7b, 0x1a, 0xe8, 0xf9, 0xc3, 0xee, 0x26, 0x5b, 0x9e,
-	0x96, 0xee, 0xf9, 0x7c, 0xbf, 0xfb, 0xcc, 0xd3, 0xcf, 0xf3, 0xcc, 0x0c, 0x94, 0xc8, 0x19, 0xb1,
-	0xe8, 0x98, 0xb8, 0xae, 0x3e, 0x20, 0xee, 0xfe, 0x33, 0xdd, 0xa0, 0xf6, 0x58, 0x63, 0x7b, 0x6e,
-	0x65, 0xe2, 0xd8, 0xd4, 0x46, 0x39, 0x1f, 0xb1, 0xf3, 0xde, 0xc0, 0xa4, 0xc3, 0x69, 0xaf, 0x62,
-	0xd8, 0xe3, 0x7d, 0x7b, 0xe2, 0x12, 0xb2, 0xcf, 0xb1, 0xde, 0xf4, 0x99, 0xb7, 0xe4, 0x2b, 0xef,
-	0xa7, 0x67, 0xb0, 0xf3, 0xd1, 0xa5, 0x14, 0x74, 0x36, 0x21, 0xee, 0x3e, 0x35, 0xc7, 0xc4, 0xa5,
-	0xfa, 0x78, 0x22, 0xb4, 0x81, 0xf0, 0x06, 0xc4, 0x22, 0x8e, 0x3e, 0xea, 0x32, 0x56, 0x10, 0x45,
-	0x3f, 0xa1, 0xf7, 0xc7, 0xa6, 0x75, 0x38, 0xb2, 0x8d, 0xe7, 0xd1, 0x0e, 0xfc, 0x06, 0xcd, 0xbe,
-	0x4c, 0xec, 0xfa, 0x09, 0x62, 0x51, 0x67, 0x56, 0x75, 0x48, 0xdf, 0xa4, 0x1e, 0x50, 0xfe, 0x29,
-	0x09, 0xd9, 0xe3, 0x55, 0x62, 0xd0, 0x7d, 0xd8, 0x72, 0xa9, 0x43, 0xf4, 0x71, 0xc7, 0x9e, 0x3a,
-	0x06, 0x29, 0x28, 0x25, 0xe5, 0x56, 0xfe, 0xf6, 0x1b, 0x15, 0x9f, 0x4f, 0xa5, 0x23, 0x21, 0xd8,
-	0x27, 0x40, 0x9f, 0xc0, 0x35, 0xb3, 0x4f, 0x2c, 0x6a, 0xd2, 0x59, 0x75, 0xa8, 0x9b, 0x56, 0xfd,
-	0xa8, 0x10, 0x2f, 0x29, 0xb7, 0xb2, 0xb7, 0xff, 0x17, 0xf0, 0xa8, 0xe9, 0xee, 0x10, 0x07, 0x59,
-	0xd4, 0x86, 0x6d, 0x83, 0xfd, 0xc4, 0x64, 0x60, 0xba, 0xd4, 0xd1, 0xa9, 0x69, 0x5b, 0x85, 0x04,
-	0x37, 0x28, 0x05, 0x0c, 0xaa, 0x41, 0xae, 0x16, 0xc3, 0x61, 0x31, 0x73, 0xe4, 0xb7, 0xed, 0x73,
-	0xdc, 0x88, 0x74, 0xd4, 0x82, 0x1c, 0x73, 0x0c, 0x89, 0x11, 0x81, 0x82, 0x97, 0x48, 0xdb, 0xa2,
-	0xc4, 0xa2, 0x3e, 0xe3, 0x24, 0x37, 0xbe, 0x19, 0x65, 0x1c, 0x81, 0xd7, 0x62, 0x78, 0xad, 0x15,
-	0xfa, 0x14, 0xb2, 0x2e, 0xd5, 0x29, 0xa9, 0x0e, 0x75, 0x6b, 0x40, 0x0a, 0x29, 0xee, 0xbc, 0x13,
-	0x3a, 0x89, 0x25, 0x51, 0x8b, 0x61, 0x59, 0xc0, 0xf4, 0x3d, 0x56, 0x0a, 0x55, 0x7b, 0x3c, 0x36,
-	0x69, 0x21, 0x1d, 0xa9, 0x3f, 0x5c, 0x11, 0x4c, 0x2f, 0x09, 0xd0, 0x43, 0xc8, 0x4f, 0x1c, 0xdb,
-	0x20, 0xae, 0x7b, 0xea, 0xd1, 0x85, 0x4d, 0x6e, 0xf1, 0x66, 0xc0, 0xa2, 0xed, 0x83, 0x6a, 0x31,
-	0x1c, 0x90, 0xb1, 0x40, 0x2c, 0xbb, 0x4f, 0x16, 0x2e, 0x99, 0xc8, 0x40, 0x9a, 0x2b, 0x82, 0x05,
-	0x22, 0x09, 0x0e, 0xd3, 0x90, 0x3c, 0xd3, 0x47, 0x53, 0x52, 0x7e, 0x91, 0x80, 0xac, 0x14, 0x30,
-	0xd2, 0x20, 0xdf, 0x37, 0x1d, 0x62, 0x50, 0xdb, 0x99, 0xf1, 0x7d, 0x5e, 0xae, 0xe1, 0x08, 0x8f,
-	0x7c, 0x10, 0x0e, 0x88, 0xd0, 0x87, 0x00, 0xab, 0xd6, 0x12, 0xd5, 0xfa, 0x7a, 0xc0, 0xe2, 0x60,
-	0x09, 0x60, 0x09, 0x66, 0xed, 0x22, 0x77, 0x9d, 0xa8, 0xd4, 0x60, 0xbb, 0x1c, 0x4b, 0x08, 0xf6,
-	0x09, 0xd0, 0x09, 0xa8, 0x52, 0x53, 0x7a, 0x26, 0x5e, 0x71, 0xee, 0x46, 0xd6, 0xd0, 0x0a, 0xc3,
-	0x21, 0x21, 0xba, 0x07, 0x59, 0xbe, 0xc7, 0x57, 0x6e, 0x21, 0x59, 0x4a, 0x44, 0xdc, 0x89, 0xb6,
-	0x24, 0xb0, 0x4c, 0xa3, 0x86, 0xe8, 0x13, 0xbe, 0x64, 0x90, 0x49, 0xdc, 0x42, 0x8a, 0x5b, 0x14,
-	0xd7, 0x5a, 0x78, 0x1d, 0x13, 0x16, 0x96, 0xe7, 0x71, 0xd8, 0x0e, 0x35, 0x28, 0xfa, 0x98, 0x07,
-	0x68, 0xd2, 0x19, 0x2f, 0x5b, 0x31, 0x5c, 0x76, 0xc2, 0xee, 0x0b, 0x02, 0xcb, 0x38, 0xfa, 0x00,
-	0xb2, 0x86, 0x37, 0x26, 0xd8, 0xec, 0x38, 0x6f, 0xac, 0xc8, 0x1c, 0x7a, 0x1f, 0x32, 0x3c, 0x3e,
-	0x2e, 0x4a, 0xac, 0x17, 0xad, 0x28, 0x74, 0x13, 0x36, 0xbe, 0x24, 0xa3, 0xbe, 0x38, 0x89, 0x48,
-	0x9a, 0x03, 0xe8, 0x2e, 0x64, 0x96, 0x63, 0x5d, 0xf4, 0xfe, 0x6b, 0x15, 0xef, 0x01, 0xc1, 0x87,
-	0x7e, 0xa5, 0xbb, 0xb8, 0x8a, 0x57, 0x20, 0x2a, 0x40, 0xda, 0xe0, 0xc7, 0xe6, 0xf2, 0xae, 0xce,
-	0xe1, 0xc5, 0x12, 0xed, 0xc0, 0x26, 0x31, 0xda, 0xd3, 0xde, 0x09, 0x99, 0xf1, 0x86, 0xdd, 0xc2,
-	0xcb, 0x35, 0x52, 0x21, 0xe1, 0x9a, 0x03, 0xde, 0x84, 0x5b, 0x98, 0xfd, 0x2c, 0x7f, 0x1b, 0x87,
-	0xed, 0xd0, 0xcc, 0xba, 0x62, 0x92, 0x7d, 0xd9, 0x8a, 0x5f, 0x2a, 0x5b, 0xbe, 0x24, 0x24, 0x5e,
-	0x21, 0x09, 0x1b, 0xeb, 0x93, 0x90, 0x8c, 0x4e, 0x42, 0x6a, 0x95, 0x84, 0x5f, 0x15, 0x28, 0xac,
-	0x9b, 0xaf, 0x57, 0xcc, 0xc5, 0x5d, 0x48, 0xf2, 0xbb, 0x14, 0x79, 0xb8, 0xa8, 0x0d, 0x3c, 0xf8,
-	0xd5, 0xd2, 0x51, 0xfe, 0x46, 0x81, 0xac, 0x34, 0xcc, 0xd1, 0x1d, 0x00, 0x2f, 0x14, 0x7e, 0x10,
-	0xca, 0xfa, 0x83, 0x90, 0xb0, 0xe0, 0xed, 0xc6, 0x5f, 0xea, 0x76, 0xcb, 0x5f, 0x43, 0xde, 0x3f,
-	0x29, 0xd1, 0x3d, 0x48, 0x0d, 0x89, 0xde, 0x27, 0x8e, 0x08, 0xe0, 0xed, 0x73, 0x07, 0x6b, 0x8d,
-	0xa3, 0x58, 0x48, 0x50, 0x05, 0xd2, 0x44, 0x8c, 0x91, 0x38, 0x1f, 0x23, 0xd7, 0x23, 0x1f, 0xb7,
-	0x0b, 0xa8, 0xfc, 0x47, 0x1c, 0xae, 0x47, 0x19, 0xa2, 0x7b, 0x90, 0xef, 0xd9, 0xfd, 0xd9, 0x29,
-	0x71, 0x9e, 0x8f, 0x08, 0xb6, 0x6d, 0x7a, 0x5e, 0x3a, 0x02, 0x28, 0xaa, 0xc3, 0xff, 0x27, 0x0e,
-	0x39, 0x33, 0xed, 0xa9, 0x7b, 0x42, 0x64, 0x8f, 0x73, 0x6a, 0x3b, 0x5a, 0x81, 0xee, 0x83, 0xba,
-	0xb8, 0x70, 0x3c, 0x1d, 0x8d, 0x2e, 0x9a, 0x27, 0x21, 0xd8, 0x5f, 0x19, 0x1b, 0x97, 0x6d, 0x94,
-	0x92, 0x78, 0x8e, 0xd7, 0x88, 0x39, 0x18, 0x52, 0xde, 0x11, 0x39, 0x2c, 0x6f, 0xa1, 0x22, 0x80,
-	0x78, 0x70, 0x4f, 0x2d, 0x2a, 0x46, 0x8a, 0xb4, 0x53, 0xfe, 0x4e, 0x01, 0x58, 0x15, 0xeb, 0xf2,
-	0x99, 0x23, 0xe5, 0x58, 0x64, 0x74, 0x77, 0x6d, 0x85, 0x8b, 0xb3, 0x0d, 0x09, 0xd9, 0x50, 0x5e,
-	0x4e, 0x82, 0xe5, 0x49, 0x47, 0x0f, 0x65, 0x89, 0x2b, 0xff, 0x1d, 0x07, 0x35, 0xe8, 0x7e, 0xb5,
-	0x83, 0x7e, 0x17, 0xd2, 0xc6, 0xc5, 0x2f, 0x9c, 0x0b, 0xe6, 0xea, 0x87, 0xb9, 0xb6, 0xb0, 0x36,
-	0x5e, 0xba, 0xb0, 0x2e, 0x3e, 0xe1, 0x1b, 0x90, 0xe3, 0xcb, 0x0e, 0xf9, 0x62, 0x4a, 0x2c, 0x83,
-	0x88, 0x43, 0xf6, 0x6f, 0xb2, 0x3a, 0x10, 0x6f, 0x93, 0xac, 0x0e, 0xd2, 0x5e, 0x1d, 0xac, 0x76,
-	0xca, 0x3f, 0x2a, 0x90, 0xf7, 0xbf, 0xad, 0xa1, 0x2a, 0x64, 0x45, 0x88, 0x55, 0xbb, 0xbf, 0x18,
-	0x90, 0x6f, 0x9d, 0xfb, 0x86, 0xc7, 0x40, 0x2c, 0xab, 0xd0, 0x1e, 0x24, 0x47, 0xe4, 0x8c, 0x8c,
-	0xc4, 0xc0, 0x09, 0xf6, 0x79, 0x83, 0x5d, 0xc3, 0x1e, 0xc2, 0xee, 0x55, 0x5c, 0xe8, 0x92, 0xaf,
-	0x28, 0x4f, 0x79, 0x06, 0xcb, 0x5b, 0xe5, 0xef, 0x15, 0xc8, 0x4a, 0x6f, 0x83, 0xe8, 0x41, 0x54,
-	0x88, 0xc5, 0xf5, 0xaf, 0x8f, 0xff, 0x71, 0x7c, 0x7b, 0x37, 0x60, 0x4b, 0xfe, 0xfe, 0x41, 0x9b,
-	0xb0, 0xd1, 0xa8, 0x7f, 0xa6, 0xa9, 0x31, 0x04, 0x90, 0xc2, 0x5a, 0xbb, 0x71, 0xf0, 0x44, 0x55,
-	0xf6, 0xde, 0x81, 0x24, 0xf7, 0x65, 0x97, 0xeb, 0xcd, 0xe3, 0x96, 0x1a, 0x43, 0x59, 0x48, 0x3f,
-	0x3e, 0xc0, 0xcd, 0x7a, 0xf3, 0xa1, 0xaa, 0xa0, 0x0c, 0x24, 0x35, 0x8c, 0x5b, 0x58, 0x8d, 0xef,
-	0x3d, 0x00, 0x14, 0xce, 0x30, 0xa3, 0x5b, 0xdd, 0x9a, 0x86, 0x9f, 0xb6, 0xd5, 0x18, 0xca, 0x41,
-	0xa6, 0xa9, 0x3d, 0x7e, 0x7a, 0xd8, 0x68, 0x55, 0x4f, 0x54, 0x05, 0xe5, 0x01, 0xd8, 0xf2, 0xb4,
-	0xde, 0x7c, 0xd4, 0xd5, 0xd4, 0xf8, 0x5e, 0x03, 0xae, 0x05, 0x12, 0xb0, 0x92, 0x37, 0xbd, 0xff,
-	0xdc, 0xe9, 0x1e, 0xe0, 0xae, 0x76, 0xa4, 0x2a, 0x68, 0x1b, 0x72, 0x9d, 0x27, 0xcd, 0xea, 0xd3,
-	0x6a, 0xeb, 0xb4, 0xdd, 0xd0, 0x98, 0x1e, 0x6d, 0xc1, 0x66, 0xa7, 0xf6, 0xa8, 0x7b, 0xd4, 0x7a,
-	0xdc, 0x54, 0x13, 0x87, 0xa7, 0xff, 0xfc, 0x55, 0x54, 0x5e, 0xcc, 0x8b, 0xca, 0xcf, 0xf3, 0xa2,
-	0xf2, 0xdb, 0xbc, 0xa8, 0xfc, 0x3e, 0x2f, 0x2a, 0x7f, 0xce, 0x8b, 0xca, 0x2f, 0x3f, 0xec, 0x2a,
-	0x50, 0x32, 0xec, 0x71, 0xc5, 0xfb, 0x96, 0x16, 0x7f, 0xfa, 0xfe, 0x7c, 0x7e, 0xee, 0xff, 0xaa,
-	0xee, 0xa5, 0xf8, 0x97, 0xe6, 0x9d, 0x7f, 0x03, 0x00, 0x00, 0xff, 0xff, 0xc0, 0x1b, 0x5a, 0x39,
-	0x8f, 0x0f, 0x00, 0x00,
+	// 1298 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x58, 0xc1, 0x73, 0xdb, 0xc4,
+	0x17, 0x8e, 0x1c, 0x3b, 0xae, 0x9f, 0x12, 0x57, 0xbf, 0xfd, 0x85, 0x19, 0x53, 0xa8, 0x63, 0x0c,
+	0x03, 0x21, 0x33, 0x71, 0x86, 0x94, 0x0e, 0xd3, 0x09, 0x50, 0x12, 0x47, 0xa9, 0xdd, 0x38, 0x72,
+	0x67, 0xed, 0xb6, 0x53, 0x2e, 0x1d, 0xd9, 0xda, 0xda, 0x9a, 0xca, 0x92, 0x2b, 0xc9, 0xa1, 0x9e,
+	0x81, 0x33, 0x7f, 0x05, 0x97, 0x72, 0x80, 0x2b, 0x37, 0x4e, 0x0c, 0x07, 0x0e, 0x1c, 0xf9, 0x0b,
+	0x18, 0xc8, 0x9f, 0xc0, 0x89, 0x23, 0xb3, 0xab, 0xb5, 0xb5, 0x92, 0x65, 0xb7, 0xc1, 0xc3, 0xa9,
+	0xdd, 0xd5, 0xf7, 0x3d, 0xed, 0x7b, 0xdf, 0x7b, 0xdf, 0xca, 0x81, 0x12, 0x39, 0x27, 0xb6, 0x3f,
+	0x20, 0x9e, 0xa7, 0xf7, 0x88, 0xb7, 0xf7, 0x44, 0xef, 0xfa, 0xce, 0x40, 0xa5, 0x7b, 0x5e, 0x65,
+	0xe8, 0x3a, 0xbe, 0x83, 0x36, 0x22, 0x88, 0x6b, 0x5a, 0xcf, 0xf4, 0xfb, 0xa3, 0x4e, 0xa5, 0xeb,
+	0x0c, 0xf6, 0x3a, 0xe6, 0xee, 0x13, 0x67, 0x64, 0x1b, 0xba, 0x6f, 0x3a, 0xf6, 0x1e, 0x83, 0x77,
+	0x46, 0x4f, 0x76, 0x7b, 0xae, 0x3e, 0xec, 0x3f, 0xb3, 0x76, 0xc9, 0x73, 0x9f, 0xd8, 0x1e, 0x7d,
+	0xc4, 0x77, 0x18, 0x62, 0xb2, 0x08, 0xc2, 0x5f, 0x7b, 0xb0, 0x74, 0x3c, 0x7f, 0x3c, 0x24, 0xde,
+	0x9e, 0x6f, 0x0e, 0x88, 0xe7, 0xeb, 0x83, 0x21, 0x8f, 0x1b, 0x4b, 0xac, 0x47, 0x6c, 0xe2, 0xea,
+	0x56, 0x9b, 0x62, 0x39, 0xa2, 0x18, 0x45, 0xe8, 0xc6, 0xc0, 0xb4, 0x8f, 0x2c, 0xa7, 0xfb, 0x34,
+	0x39, 0x02, 0x2b, 0x8d, 0x69, 0x88, 0x88, 0xad, 0x28, 0x82, 0xd8, 0xbe, 0x3b, 0xae, 0xba, 0xc4,
+	0x30, 0xfd, 0x00, 0x50, 0xfe, 0x25, 0x03, 0xf2, 0x49, 0x58, 0x52, 0x74, 0x1b, 0xd6, 0x3d, 0xdf,
+	0x25, 0xfa, 0xa0, 0xe5, 0x8c, 0xdc, 0x2e, 0x29, 0x48, 0x25, 0x69, 0x3b, 0xbf, 0xff, 0x46, 0x25,
+	0x12, 0xa7, 0xd2, 0x12, 0x20, 0x38, 0x42, 0x40, 0xef, 0x42, 0x3e, 0x90, 0x48, 0x73, 0x0c, 0xa2,
+	0xe9, 0x03, 0x52, 0x48, 0x95, 0xa4, 0xed, 0x1c, 0x8e, 0xed, 0xa2, 0x4f, 0xe0, 0xaa, 0x69, 0x10,
+	0xdb, 0x37, 0xfd, 0x71, 0xb5, 0xaf, 0x9b, 0x76, 0xfd, 0xb8, 0xb0, 0x5a, 0x92, 0xb6, 0xe5, 0xfd,
+	0xff, 0xc7, 0xde, 0x55, 0xd3, 0xbd, 0x3e, 0x8e, 0x63, 0xd1, 0xa7, 0x20, 0x77, 0xe9, 0x7f, 0xab,
+	0xce, 0x60, 0x60, 0xfa, 0x85, 0x34, 0xa3, 0x5e, 0x8b, 0x51, 0xab, 0x21, 0xa2, 0xb6, 0x82, 0x45,
+	0x02, 0xe5, 0x07, 0xc5, 0x08, 0xf8, 0x99, 0x44, 0xbe, 0x1a, 0x22, 0x28, 0x5f, 0x20, 0x4c, 0xf9,
+	0x98, 0x9c, 0x13, 0xdd, 0x2a, 0xac, 0xcd, 0xe7, 0x07, 0x88, 0x29, 0x3f, 0x58, 0x52, 0xbe, 0xe7,
+	0xeb, 0x3e, 0xa9, 0xf6, 0x75, 0xbb, 0x47, 0x0a, 0xd9, 0x44, 0x7e, 0x2b, 0x44, 0x50, 0xbe, 0x40,
+	0x40, 0x8f, 0x60, 0xd3, 0x30, 0x5d, 0xd2, 0xf5, 0x1d, 0x77, 0xcc, 0x04, 0xe7, 0x89, 0x5c, 0x61,
+	0x81, 0xde, 0x8e, 0x05, 0x3a, 0x4e, 0x80, 0xd6, 0x56, 0x70, 0x62, 0x08, 0x74, 0x07, 0xf2, 0x43,
+	0xd7, 0xe9, 0x12, 0xcf, 0x3b, 0x0b, 0xf8, 0x85, 0x1c, 0x0b, 0x7a, 0x3d, 0x16, 0xf4, 0x5e, 0x04,
+	0x54, 0x5b, 0xc1, 0x31, 0x1a, 0xcd, 0xd1, 0x76, 0x0c, 0x32, 0x89, 0x02, 0x89, 0x39, 0x6a, 0x21,
+	0x82, 0xe6, 0x28, 0x10, 0x50, 0x09, 0x64, 0x97, 0x0c, 0x2d, 0x7d, 0x7c, 0xd7, 0xe9, 0xd4, 0x8d,
+	0x82, 0x5c, 0x92, 0xb6, 0xd3, 0x58, 0xdc, 0x3a, 0xca, 0x42, 0xe6, 0x5c, 0xb7, 0x46, 0xa4, 0xfc,
+	0xc3, 0x2a, 0x6c, 0x26, 0x25, 0x89, 0x54, 0xc8, 0x47, 0x93, 0x64, 0x1d, 0x3d, 0x9b, 0x4c, 0x94,
+	0x8c, 0x63, 0x24, 0x74, 0x0b, 0x20, 0x9c, 0x3e, 0xd6, 0xd1, 0xf2, 0xfe, 0xeb, 0xb1, 0x10, 0x87,
+	0x53, 0x00, 0x16, 0xc0, 0x74, 0xa2, 0xc4, 0xc1, 0xe4, 0x5d, 0x1e, 0x9f, 0xa8, 0x13, 0x01, 0x82,
+	0x23, 0x04, 0x74, 0x0a, 0x8a, 0x30, 0xb7, 0x41, 0x90, 0xa0, 0xdf, 0xb7, 0x12, 0xfb, 0x35, 0x84,
+	0xe1, 0x19, 0x22, 0x3a, 0xe0, 0x7d, 0xcb, 0x56, 0x5e, 0x21, 0x53, 0x5a, 0x4d, 0xc8, 0x44, 0x9d,
+	0x22, 0xb0, 0x88, 0x46, 0x0d, 0xf8, 0x5f, 0xb8, 0xa4, 0x20, 0x93, 0x78, 0x85, 0x35, 0x16, 0xa2,
+	0x38, 0x37, 0x44, 0x30, 0x04, 0xb3, 0xc4, 0xf2, 0xd7, 0xab, 0x20, 0x0b, 0x13, 0x8a, 0x3e, 0x66,
+	0x47, 0x33, 0xfd, 0x31, 0x6b, 0x7b, 0xee, 0x3c, 0x09, 0x23, 0x35, 0x41, 0x60, 0x11, 0x8e, 0x6e,
+	0x72, 0x43, 0xa8, 0x1f, 0x53, 0xc3, 0xe0, 0x12, 0x25, 0x7a, 0x89, 0x88, 0x43, 0x1f, 0x40, 0x8e,
+	0x9d, 0x8c, 0x91, 0x16, 0x18, 0x50, 0x88, 0x42, 0xef, 0x41, 0xfa, 0x0b, 0x62, 0x19, 0x5c, 0x83,
+	0x44, 0x34, 0x03, 0xa0, 0x03, 0xc8, 0x4d, 0x3d, 0x9f, 0x3b, 0xcc, 0xf5, 0x8a, 0x78, 0x31, 0x54,
+	0xd8, 0xc5, 0x50, 0x69, 0x4f, 0x40, 0x38, 0xc4, 0xa3, 0x02, 0x64, 0xbb, 0x4c, 0x37, 0x8f, 0x99,
+	0xcb, 0x06, 0x9e, 0x2c, 0xd1, 0x3e, 0x6c, 0x0a, 0xb2, 0xde, 0x1b, 0x75, 0x2c, 0xb3, 0x7b, 0x4a,
+	0xc6, 0xcc, 0x43, 0xd6, 0x71, 0xe2, 0x33, 0xf4, 0x26, 0xe4, 0x3c, 0xb3, 0x67, 0xeb, 0xfe, 0xc8,
+	0x25, 0xcc, 0x23, 0xd6, 0x71, 0xb8, 0x51, 0xfe, 0x2e, 0x05, 0xb2, 0xe0, 0x75, 0x4b, 0x2a, 0x11,
+	0x29, 0x69, 0xea, 0x95, 0x4a, 0x1a, 0xa9, 0xd4, 0xea, 0xbf, 0xaf, 0x54, 0xfa, 0xd5, 0x2a, 0x95,
+	0x79, 0xd5, 0x4a, 0xad, 0xc5, 0x2b, 0xf5, 0x93, 0xc4, 0x2b, 0xc5, 0x6d, 0x7c, 0xb9, 0x4a, 0x7d,
+	0x08, 0x19, 0x76, 0x06, 0x5e, 0xa5, 0x97, 0xcd, 0x50, 0x00, 0x5e, 0xaa, 0x58, 0xe5, 0x17, 0x12,
+	0xc8, 0xc2, 0xb5, 0x82, 0x6e, 0x00, 0x04, 0x27, 0x62, 0x6a, 0x49, 0xf3, 0xd5, 0x12, 0x60, 0xf1,
+	0xac, 0x53, 0x97, 0xcb, 0xba, 0x04, 0x72, 0x87, 0x26, 0x55, 0x23, 0x66, 0xaf, 0xef, 0xb3, 0x0c,
+	0x36, 0xb0, 0xb8, 0x55, 0xfe, 0x0a, 0xf2, 0x51, 0x3f, 0x46, 0x07, 0xb0, 0xd6, 0x27, 0xba, 0x41,
+	0x5c, 0x7e, 0xc4, 0xc5, 0x17, 0x5c, 0x8d, 0x41, 0x31, 0xa7, 0xa0, 0x0a, 0x64, 0x09, 0x37, 0xab,
+	0x14, 0x33, 0xab, 0xcd, 0xc4, 0x7b, 0x7a, 0x02, 0x2a, 0xff, 0x9e, 0x8a, 0x5f, 0x26, 0x41, 0x40,
+	0x74, 0x00, 0xf9, 0x8e, 0x63, 0x8c, 0xcf, 0x88, 0xfb, 0xd4, 0x22, 0xd8, 0x71, 0xfc, 0x45, 0x05,
+	0x8b, 0x41, 0x51, 0x1d, 0x5e, 0x1b, 0xba, 0xe4, 0xdc, 0x74, 0x46, 0xde, 0x29, 0x11, 0x63, 0x2c,
+	0x18, 0x91, 0x64, 0x06, 0xba, 0x0d, 0xca, 0xe4, 0xc1, 0xc9, 0xc8, 0xb2, 0x5e, 0xe6, 0x5d, 0x33,
+	0xe0, 0x68, 0x0b, 0xa5, 0x2f, 0x39, 0x6f, 0x31, 0xfd, 0x32, 0x33, 0xfa, 0xa1, 0x22, 0x40, 0x27,
+	0xb8, 0x83, 0x47, 0xb6, 0xcf, 0xed, 0x4b, 0xd8, 0x29, 0x7f, 0x09, 0x10, 0xf6, 0x36, 0xfa, 0x28,
+	0xa6, 0xed, 0xd6, 0xdc, 0x31, 0x88, 0xe9, 0x7a, 0x93, 0xdf, 0x65, 0x34, 0xa5, 0xa9, 0xb6, 0xc9,
+	0x96, 0x2f, 0xe0, 0xca, 0x7f, 0xa5, 0x40, 0x89, 0xc7, 0x5c, 0x4e, 0xda, 0x5d, 0xc8, 0xf2, 0x3b,
+	0x65, 0x91, 0x98, 0x13, 0xcc, 0xf2, 0xf2, 0xcd, 0x6d, 0xa5, 0xf4, 0xa5, 0x5b, 0xe9, 0xe5, 0x62,
+	0xbe, 0x03, 0x1b, 0x6c, 0xd9, 0x22, 0xcf, 0x46, 0xc4, 0xee, 0x12, 0xae, 0x67, 0x74, 0x93, 0x4a,
+	0xce, 0x3f, 0x8f, 0xa9, 0xe4, 0xd9, 0x40, 0xf2, 0x70, 0xa7, 0xfc, 0xad, 0x04, 0xf9, 0xe8, 0x07,
+	0x23, 0xaa, 0x82, 0xcc, 0x8f, 0x58, 0x75, 0x8c, 0x89, 0x77, 0xbe, 0xb5, 0xf0, 0x23, 0x93, 0x02,
+	0xb1, 0xc8, 0x42, 0x3b, 0x90, 0xb1, 0xc8, 0x39, 0xb1, 0xb8, 0x09, 0xc5, 0x27, 0xbb, 0x41, 0x9f,
+	0xe1, 0x00, 0x42, 0x73, 0xe5, 0x0f, 0xda, 0xe4, 0x79, 0x60, 0x3c, 0x39, 0x2c, 0x6e, 0x95, 0xbf,
+	0x91, 0x40, 0x16, 0x3e, 0x48, 0xd1, 0x67, 0x49, 0x47, 0x2c, 0xce, 0xff, 0x82, 0xfd, 0x8f, 0xcf,
+	0xb7, 0x73, 0x0b, 0xd6, 0xc5, 0x9f, 0x5e, 0xe8, 0x0a, 0xa4, 0x1b, 0xf5, 0x07, 0xaa, 0xb2, 0x82,
+	0xae, 0x82, 0x8c, 0xd5, 0x7b, 0x8d, 0xc3, 0x47, 0x8f, 0x8f, 0x9a, 0xcd, 0xb6, 0x22, 0xa1, 0x3c,
+	0x00, 0xdf, 0xb8, 0xdb, 0x3c, 0x52, 0x52, 0x3b, 0xef, 0x43, 0x86, 0xbd, 0x8c, 0x72, 0xea, 0xda,
+	0x49, 0x53, 0x59, 0x41, 0x32, 0x64, 0x1f, 0x1e, 0x62, 0xad, 0xae, 0xdd, 0x51, 0x24, 0x94, 0x83,
+	0x8c, 0x8a, 0x71, 0x13, 0x2b, 0xa9, 0x9d, 0x1b, 0x80, 0x66, 0xcb, 0x8e, 0x36, 0x20, 0xa7, 0xa9,
+	0x0f, 0x1f, 0x1f, 0x35, 0x9a, 0xd5, 0x53, 0x65, 0x85, 0xc6, 0xa7, 0xcb, 0xb3, 0xba, 0x76, 0xbf,
+	0xad, 0x2a, 0xd2, 0x8e, 0x0a, 0x57, 0x63, 0x85, 0xa0, 0xf1, 0xef, 0xa8, 0x9a, 0x8a, 0x0f, 0x1b,
+	0xc1, 0xcb, 0x5a, 0xed, 0x43, 0xdc, 0x56, 0x8f, 0x15, 0x09, 0x01, 0xac, 0xb5, 0x1e, 0x69, 0x55,
+	0xf5, 0x58, 0x49, 0xa1, 0x75, 0xb8, 0xd2, 0xaa, 0xdd, 0x6f, 0x1f, 0x37, 0x1f, 0x6a, 0xca, 0xea,
+	0xd1, 0xd9, 0xdf, 0x7f, 0x16, 0xa5, 0xef, 0x2f, 0x8a, 0xd2, 0x8f, 0x17, 0x45, 0xe9, 0xd7, 0x8b,
+	0xa2, 0xf4, 0xdb, 0x45, 0x51, 0xfa, 0xe3, 0xa2, 0x28, 0xfd, 0xfc, 0x62, 0x4b, 0x82, 0x52, 0xd7,
+	0x19, 0x54, 0x82, 0x1f, 0x92, 0xfc, 0x1f, 0x23, 0x5a, 0xd0, 0xcf, 0xa3, 0x7f, 0x0b, 0xe8, 0xac,
+	0x31, 0x37, 0xbb, 0xf1, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xeb, 0x3a, 0xc4, 0x07, 0x45, 0x10,
+	0x00, 0x00,
 }
 
 func (this *FactomEvent) Equal(that interface{}) bool {
@@ -1402,6 +1275,9 @@ func (this *FactomEvent) Equal(that interface{}) bool {
 	if this.StreamSource != that1.StreamSource {
 		return false
 	}
+	if this.FactomNodeName != that1.FactomNodeName {
+		return false
+	}
 	if !this.IdentityChainID.Equal(that1.IdentityChainID) {
 		return false
 	}
@@ -1414,19 +1290,22 @@ func (this *FactomEvent) Equal(that interface{}) bool {
 	} else if !this.Value.Equal(that1.Value) {
 		return false
 	}
+	if this.ReplayJobId != that1.ReplayJobId {
+		return false
+	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
 		return false
 	}
 	return true
 }
-func (this *FactomEvent_ChainRegistration) Equal(that interface{}) bool {
+func (this *FactomEvent_ChainCommit) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*FactomEvent_ChainRegistration)
+	that1, ok := that.(*FactomEvent_ChainCommit)
 	if !ok {
-		that2, ok := that.(FactomEvent_ChainRegistration)
+		that2, ok := that.(FactomEvent_ChainCommit)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1438,19 +1317,19 @@ func (this *FactomEvent_ChainRegistration) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.ChainRegistration.Equal(that1.ChainRegistration) {
+	if !this.ChainCommit.Equal(that1.ChainCommit) {
 		return false
 	}
 	return true
 }
-func (this *FactomEvent_EntryRegistration) Equal(that interface{}) bool {
+func (this *FactomEvent_EntryCommit) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*FactomEvent_EntryRegistration)
+	that1, ok := that.(*FactomEvent_EntryCommit)
 	if !ok {
-		that2, ok := that.(FactomEvent_EntryRegistration)
+		that2, ok := that.(FactomEvent_EntryCommit)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1462,19 +1341,19 @@ func (this *FactomEvent_EntryRegistration) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.EntryRegistration.Equal(that1.EntryRegistration) {
+	if !this.EntryCommit.Equal(that1.EntryCommit) {
 		return false
 	}
 	return true
 }
-func (this *FactomEvent_EntryContentRegistration) Equal(that interface{}) bool {
+func (this *FactomEvent_EntryReveal) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*FactomEvent_EntryContentRegistration)
+	that1, ok := that.(*FactomEvent_EntryReveal)
 	if !ok {
-		that2, ok := that.(FactomEvent_EntryContentRegistration)
+		that2, ok := that.(FactomEvent_EntryReveal)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1486,7 +1365,7 @@ func (this *FactomEvent_EntryContentRegistration) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.EntryContentRegistration.Equal(that1.EntryContentRegistration) {
+	if !this.EntryReveal.Equal(that1.EntryReveal) {
 		return false
 	}
 	return true
@@ -1515,14 +1394,14 @@ func (this *FactomEvent_StateChange) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *FactomEvent_BlockCommit) Equal(that interface{}) bool {
+func (this *FactomEvent_DirectoryBlockCommit) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*FactomEvent_BlockCommit)
+	that1, ok := that.(*FactomEvent_DirectoryBlockCommit)
 	if !ok {
-		that2, ok := that.(FactomEvent_BlockCommit)
+		that2, ok := that.(FactomEvent_DirectoryBlockCommit)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1534,7 +1413,7 @@ func (this *FactomEvent_BlockCommit) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.BlockCommit.Equal(that1.BlockCommit) {
+	if !this.DirectoryBlockCommit.Equal(that1.DirectoryBlockCommit) {
 		return false
 	}
 	return true
@@ -1587,14 +1466,14 @@ func (this *FactomEvent_NodeMessage) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *BlockCommit) Equal(that interface{}) bool {
+func (this *DirectoryBlockCommit) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*BlockCommit)
+	that1, ok := that.(*DirectoryBlockCommit)
 	if !ok {
-		that2, ok := that.(BlockCommit)
+		that2, ok := that.(DirectoryBlockCommit)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1639,14 +1518,14 @@ func (this *BlockCommit) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *ChainRegistration) Equal(that interface{}) bool {
+func (this *ChainCommit) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*ChainRegistration)
+	that1, ok := that.(*ChainCommit)
 	if !ok {
-		that2, ok := that.(ChainRegistration)
+		that2, ok := that.(ChainCommit)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1676,10 +1555,10 @@ func (this *ChainRegistration) Equal(that interface{}) bool {
 	if this.Credits != that1.Credits {
 		return false
 	}
-	if !bytes.Equal(this.EcPubKey, that1.EcPubKey) {
+	if !bytes.Equal(this.EntryCreditPublicKey, that1.EntryCreditPublicKey) {
 		return false
 	}
-	if !bytes.Equal(this.Sig, that1.Sig) {
+	if !bytes.Equal(this.Signature, that1.Signature) {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -1687,14 +1566,14 @@ func (this *ChainRegistration) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *EntryRegistration) Equal(that interface{}) bool {
+func (this *EntryCommit) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*EntryRegistration)
+	that1, ok := that.(*EntryCommit)
 	if !ok {
-		that2, ok := that.(EntryRegistration)
+		that2, ok := that.(EntryCommit)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1718,10 +1597,10 @@ func (this *EntryRegistration) Equal(that interface{}) bool {
 	if this.Credits != that1.Credits {
 		return false
 	}
-	if !bytes.Equal(this.EcPubKey, that1.EcPubKey) {
+	if !bytes.Equal(this.EntryCreditPublicKey, that1.EntryCreditPublicKey) {
 		return false
 	}
-	if !bytes.Equal(this.Sig, that1.Sig) {
+	if !bytes.Equal(this.Signature, that1.Signature) {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -1729,14 +1608,14 @@ func (this *EntryRegistration) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *EntryContentRegistration) Equal(that interface{}) bool {
+func (this *EntryReveal) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*EntryContentRegistration)
+	that1, ok := that.(*EntryReveal)
 	if !ok {
-		that2, ok := that.(EntryContentRegistration)
+		that2, ok := that.(EntryReveal)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1785,6 +1664,9 @@ func (this *StateChange) Equal(that interface{}) bool {
 		return false
 	}
 	if this.EntityState != that1.EntityState {
+		return false
+	}
+	if this.BlockHeight != that1.BlockHeight {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -1888,7 +1770,7 @@ func (this *EntryBlock) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.EntryBlockHeader.Equal(that1.EntryBlockHeader) {
+	if !this.Header.Equal(that1.Header) {
 		return false
 	}
 	if len(this.EntryHashes) != len(that1.EntryHashes) {
@@ -2028,29 +1910,29 @@ type FactomEventGetter interface {
 var GraphQLFactomEventType *github_com_graphql_go_graphql.Object
 var GraphQLFactomEventValueUnion *github_com_graphql_go_graphql.Union
 
-type BlockCommitGetter interface {
-	GetBlockCommit() *BlockCommit
+type DirectoryBlockCommitGetter interface {
+	GetDirectoryBlockCommit() *DirectoryBlockCommit
 }
 
-var GraphQLBlockCommitType *github_com_graphql_go_graphql.Object
+var GraphQLDirectoryBlockCommitType *github_com_graphql_go_graphql.Object
 
-type ChainRegistrationGetter interface {
-	GetChainRegistration() *ChainRegistration
+type ChainCommitGetter interface {
+	GetChainCommit() *ChainCommit
 }
 
-var GraphQLChainRegistrationType *github_com_graphql_go_graphql.Object
+var GraphQLChainCommitType *github_com_graphql_go_graphql.Object
 
-type EntryRegistrationGetter interface {
-	GetEntryRegistration() *EntryRegistration
+type EntryCommitGetter interface {
+	GetEntryCommit() *EntryCommit
 }
 
-var GraphQLEntryRegistrationType *github_com_graphql_go_graphql.Object
+var GraphQLEntryCommitType *github_com_graphql_go_graphql.Object
 
-type EntryContentRegistrationGetter interface {
-	GetEntryContentRegistration() *EntryContentRegistration
+type EntryRevealGetter interface {
+	GetEntryReveal() *EntryReveal
 }
 
-var GraphQLEntryContentRegistrationType *github_com_graphql_go_graphql.Object
+var GraphQLEntryRevealType *github_com_graphql_go_graphql.Object
 
 type StateChangeGetter interface {
 	GetStateChange() *StateChange
@@ -2094,20 +1976,20 @@ type NodeMessageGetter interface {
 
 var GraphQLNodeMessageType *github_com_graphql_go_graphql.Object
 
-func (g *FactomEvent_ChainRegistration) GetChainRegistration() *ChainRegistration {
-	return g.ChainRegistration
+func (g *FactomEvent_ChainCommit) GetChainCommit() *ChainCommit {
+	return g.ChainCommit
 }
-func (g *FactomEvent_EntryRegistration) GetEntryRegistration() *EntryRegistration {
-	return g.EntryRegistration
+func (g *FactomEvent_EntryCommit) GetEntryCommit() *EntryCommit {
+	return g.EntryCommit
 }
-func (g *FactomEvent_EntryContentRegistration) GetEntryContentRegistration() *EntryContentRegistration {
-	return g.EntryContentRegistration
+func (g *FactomEvent_EntryReveal) GetEntryReveal() *EntryReveal {
+	return g.EntryReveal
 }
 func (g *FactomEvent_StateChange) GetStateChange() *StateChange {
 	return g.StateChange
 }
-func (g *FactomEvent_BlockCommit) GetBlockCommit() *BlockCommit {
-	return g.BlockCommit
+func (g *FactomEvent_DirectoryBlockCommit) GetDirectoryBlockCommit() *DirectoryBlockCommit {
+	return g.DirectoryBlockCommit
 }
 func (g *FactomEvent_ProcessMessage) GetProcessMessage() *ProcessMessage {
 	return g.ProcessMessage
@@ -2123,8 +2005,11 @@ func init() {
 			"LIVE": &github_com_graphql_go_graphql.EnumValueConfig{
 				Value: 0,
 			},
-			"REPLAY": &github_com_graphql_go_graphql.EnumValueConfig{
+			"REPLAY_BOOT": &github_com_graphql_go_graphql.EnumValueConfig{
 				Value: 1,
+			},
+			"REPLAY_JOB": &github_com_graphql_go_graphql.EnumValueConfig{
+				Value: 2,
 			},
 		},
 	})
@@ -2145,27 +2030,24 @@ func init() {
 	GraphQLProcessMessageCodeEnum = github_com_graphql_go_graphql.NewEnum(github_com_graphql_go_graphql.EnumConfig{
 		Name: "ProcessMessageCode",
 		Values: github_com_graphql_go_graphql.EnumValueConfigMap{
-			"OTHER_P": &github_com_graphql_go_graphql.EnumValueConfig{
+			"NEW_BLOCK": &github_com_graphql_go_graphql.EnumValueConfig{
 				Value: 0,
 			},
-			"NEW_BLOCK": &github_com_graphql_go_graphql.EnumValueConfig{
-				Value: 1,
-			},
 			"NEW_MINUTE": &github_com_graphql_go_graphql.EnumValueConfig{
-				Value: 2,
+				Value: 1,
 			},
 		},
 	})
 	GraphQLNodeMessageCodeEnum = github_com_graphql_go_graphql.NewEnum(github_com_graphql_go_graphql.EnumConfig{
 		Name: "NodeMessageCode",
 		Values: github_com_graphql_go_graphql.EnumValueConfigMap{
-			"OTHER_N": &github_com_graphql_go_graphql.EnumValueConfig{
+			"GENERAL": &github_com_graphql_go_graphql.EnumValueConfig{
 				Value: 0,
 			},
 			"STARTED": &github_com_graphql_go_graphql.EnumValueConfig{
 				Value: 1,
 			},
-			"SYNC_COMPLETE": &github_com_graphql_go_graphql.EnumValueConfig{
+			"SYNCED": &github_com_graphql_go_graphql.EnumValueConfig{
 				Value: 2,
 			},
 			"SHUTDOWN": &github_com_graphql_go_graphql.EnumValueConfig{
@@ -2197,6 +2079,25 @@ func init() {
 						return nil, fmt.Errorf("field streamSource not resolved")
 					},
 				},
+				"factomNodeName": &github_com_graphql_go_graphql.Field{
+					Type:        github_com_graphql_go_graphql.String,
+					Description: "",
+					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
+						obj, ok := p.Source.(*FactomEvent)
+						if ok {
+							return obj.FactomNodeName, nil
+						}
+						inter, ok := p.Source.(FactomEventGetter)
+						if ok {
+							face := inter.GetFactomEvent()
+							if face == nil {
+								return nil, nil
+							}
+							return face.FactomNodeName, nil
+						}
+						return nil, fmt.Errorf("field factomNodeName not resolved")
+					},
+				},
 				"identityChainID": &github_com_graphql_go_graphql.Field{
 					Type:        GraphQLHashType,
 					Description: "",
@@ -2222,6 +2123,25 @@ func init() {
 						return nil, fmt.Errorf("field identityChainID not resolved")
 					},
 				},
+				"replayJobId": &github_com_graphql_go_graphql.Field{
+					Type:        github_com_graphql_go_graphql.Int,
+					Description: "",
+					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
+						obj, ok := p.Source.(*FactomEvent)
+						if ok {
+							return obj.ReplayJobId, nil
+						}
+						inter, ok := p.Source.(FactomEventGetter)
+						if ok {
+							face := inter.GetFactomEvent()
+							if face == nil {
+								return nil, nil
+							}
+							return face.ReplayJobId, nil
+						}
+						return nil, fmt.Errorf("field replayJobId not resolved")
+					},
+				},
 				"value": &github_com_graphql_go_graphql.Field{
 					Type:        GraphQLFactomEventValueUnion,
 					Description: "",
@@ -2236,8 +2156,8 @@ func init() {
 			}
 		}),
 	})
-	GraphQLBlockCommitType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "BlockCommit",
+	GraphQLDirectoryBlockCommitType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
+		Name:        "DirectoryBlockCommit",
 		Description: "",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
@@ -2245,16 +2165,16 @@ func init() {
 					Type:        GraphQLDirectoryBlockType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*BlockCommit)
+						obj, ok := p.Source.(*DirectoryBlockCommit)
 						if ok {
 							if obj.DirectoryBlock == nil {
 								return nil, nil
 							}
 							return obj.GetDirectoryBlock(), nil
 						}
-						inter, ok := p.Source.(BlockCommitGetter)
+						inter, ok := p.Source.(DirectoryBlockCommitGetter)
 						if ok {
-							face := inter.GetBlockCommit()
+							face := inter.GetDirectoryBlockCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2270,16 +2190,16 @@ func init() {
 					Type:        GraphQLAdminBlockType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*BlockCommit)
+						obj, ok := p.Source.(*DirectoryBlockCommit)
 						if ok {
 							if obj.AdminBlock == nil {
 								return nil, nil
 							}
 							return obj.GetAdminBlock(), nil
 						}
-						inter, ok := p.Source.(BlockCommitGetter)
+						inter, ok := p.Source.(DirectoryBlockCommitGetter)
 						if ok {
-							face := inter.GetBlockCommit()
+							face := inter.GetDirectoryBlockCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2295,16 +2215,16 @@ func init() {
 					Type:        GraphQLFactoidBlockType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*BlockCommit)
+						obj, ok := p.Source.(*DirectoryBlockCommit)
 						if ok {
 							if obj.FactoidBlock == nil {
 								return nil, nil
 							}
 							return obj.GetFactoidBlock(), nil
 						}
-						inter, ok := p.Source.(BlockCommitGetter)
+						inter, ok := p.Source.(DirectoryBlockCommitGetter)
 						if ok {
-							face := inter.GetBlockCommit()
+							face := inter.GetDirectoryBlockCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2320,16 +2240,16 @@ func init() {
 					Type:        GraphQLEntryCreditBlockType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*BlockCommit)
+						obj, ok := p.Source.(*DirectoryBlockCommit)
 						if ok {
 							if obj.EntryCreditBlock == nil {
 								return nil, nil
 							}
 							return obj.GetEntryCreditBlock(), nil
 						}
-						inter, ok := p.Source.(BlockCommitGetter)
+						inter, ok := p.Source.(DirectoryBlockCommitGetter)
 						if ok {
-							face := inter.GetBlockCommit()
+							face := inter.GetDirectoryBlockCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2345,13 +2265,13 @@ func init() {
 					Type:        github_com_graphql_go_graphql.NewList(GraphQLEntryBlockType),
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*BlockCommit)
+						obj, ok := p.Source.(*DirectoryBlockCommit)
 						if ok {
 							return obj.EntryBlocks, nil
 						}
-						inter, ok := p.Source.(BlockCommitGetter)
+						inter, ok := p.Source.(DirectoryBlockCommitGetter)
 						if ok {
-							face := inter.GetBlockCommit()
+							face := inter.GetDirectoryBlockCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2364,13 +2284,13 @@ func init() {
 					Type:        github_com_graphql_go_graphql.NewList(GraphQLEntryBlockEntryType),
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*BlockCommit)
+						obj, ok := p.Source.(*DirectoryBlockCommit)
 						if ok {
 							return obj.EntryBlockEntries, nil
 						}
-						inter, ok := p.Source.(BlockCommitGetter)
+						inter, ok := p.Source.(DirectoryBlockCommitGetter)
 						if ok {
-							face := inter.GetBlockCommit()
+							face := inter.GetDirectoryBlockCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2382,8 +2302,8 @@ func init() {
 			}
 		}),
 	})
-	GraphQLChainRegistrationType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "ChainRegistration",
+	GraphQLChainCommitType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
+		Name:        "ChainCommit",
 		Description: "",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
@@ -2391,13 +2311,13 @@ func init() {
 					Type:        GraphQLEntityStateEnum,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*ChainRegistration)
+						obj, ok := p.Source.(*ChainCommit)
 						if ok {
 							return int(EntityState_value[obj.EntityState.String()]), nil
 						}
-						inter, ok := p.Source.(ChainRegistrationGetter)
+						inter, ok := p.Source.(ChainCommitGetter)
 						if ok {
-							face := inter.GetChainRegistration()
+							face := inter.GetChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2410,16 +2330,16 @@ func init() {
 					Type:        GraphQLHashType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*ChainRegistration)
+						obj, ok := p.Source.(*ChainCommit)
 						if ok {
 							if obj.ChainIDHash == nil {
 								return nil, nil
 							}
 							return obj.GetChainIDHash(), nil
 						}
-						inter, ok := p.Source.(ChainRegistrationGetter)
+						inter, ok := p.Source.(ChainCommitGetter)
 						if ok {
-							face := inter.GetChainRegistration()
+							face := inter.GetChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2435,16 +2355,16 @@ func init() {
 					Type:        GraphQLHashType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*ChainRegistration)
+						obj, ok := p.Source.(*ChainCommit)
 						if ok {
 							if obj.EntryHash == nil {
 								return nil, nil
 							}
 							return obj.GetEntryHash(), nil
 						}
-						inter, ok := p.Source.(ChainRegistrationGetter)
+						inter, ok := p.Source.(ChainCommitGetter)
 						if ok {
-							face := inter.GetChainRegistration()
+							face := inter.GetChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2460,16 +2380,16 @@ func init() {
 					Type:        GraphQLHashType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*ChainRegistration)
+						obj, ok := p.Source.(*ChainCommit)
 						if ok {
 							if obj.Weld == nil {
 								return nil, nil
 							}
 							return obj.GetWeld(), nil
 						}
-						inter, ok := p.Source.(ChainRegistrationGetter)
+						inter, ok := p.Source.(ChainCommitGetter)
 						if ok {
-							face := inter.GetChainRegistration()
+							face := inter.GetChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2482,19 +2402,19 @@ func init() {
 					},
 				},
 				"timestamp": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.Timestamp,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.Timestamp,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*ChainRegistration)
+						obj, ok := p.Source.(*ChainCommit)
 						if ok {
 							if obj.Timestamp == nil {
 								return nil, nil
 							}
 							return obj.GetTimestamp(), nil
 						}
-						inter, ok := p.Source.(ChainRegistrationGetter)
+						inter, ok := p.Source.(ChainCommitGetter)
 						if ok {
-							face := inter.GetChainRegistration()
+							face := inter.GetChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2510,13 +2430,13 @@ func init() {
 					Type:        github_com_graphql_go_graphql.Int,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*ChainRegistration)
+						obj, ok := p.Source.(*ChainCommit)
 						if ok {
 							return obj.Credits, nil
 						}
-						inter, ok := p.Source.(ChainRegistrationGetter)
+						inter, ok := p.Source.(ChainCommitGetter)
 						if ok {
-							face := inter.GetChainRegistration()
+							face := inter.GetChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2525,49 +2445,49 @@ func init() {
 						return nil, fmt.Errorf("field credits not resolved")
 					},
 				},
-				"ecPubKey": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.ByteString,
+				"entryCreditPublicKey": &github_com_graphql_go_graphql.Field{
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*ChainRegistration)
+						obj, ok := p.Source.(*ChainCommit)
 						if ok {
-							return obj.EcPubKey, nil
+							return obj.EntryCreditPublicKey, nil
 						}
-						inter, ok := p.Source.(ChainRegistrationGetter)
+						inter, ok := p.Source.(ChainCommitGetter)
 						if ok {
-							face := inter.GetChainRegistration()
+							face := inter.GetChainCommit()
 							if face == nil {
 								return nil, nil
 							}
-							return face.EcPubKey, nil
+							return face.EntryCreditPublicKey, nil
 						}
-						return nil, fmt.Errorf("field ecPubKey not resolved")
+						return nil, fmt.Errorf("field entryCreditPublicKey not resolved")
 					},
 				},
-				"sig": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.ByteString,
+				"signature": &github_com_graphql_go_graphql.Field{
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*ChainRegistration)
+						obj, ok := p.Source.(*ChainCommit)
 						if ok {
-							return obj.Sig, nil
+							return obj.Signature, nil
 						}
-						inter, ok := p.Source.(ChainRegistrationGetter)
+						inter, ok := p.Source.(ChainCommitGetter)
 						if ok {
-							face := inter.GetChainRegistration()
+							face := inter.GetChainCommit()
 							if face == nil {
 								return nil, nil
 							}
-							return face.Sig, nil
+							return face.Signature, nil
 						}
-						return nil, fmt.Errorf("field sig not resolved")
+						return nil, fmt.Errorf("field signature not resolved")
 					},
 				},
 			}
 		}),
 	})
-	GraphQLEntryRegistrationType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "EntryRegistration",
+	GraphQLEntryCommitType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
+		Name:        "EntryCommit",
 		Description: "",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
@@ -2575,13 +2495,13 @@ func init() {
 					Type:        GraphQLEntityStateEnum,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryRegistration)
+						obj, ok := p.Source.(*EntryCommit)
 						if ok {
 							return int(EntityState_value[obj.EntityState.String()]), nil
 						}
-						inter, ok := p.Source.(EntryRegistrationGetter)
+						inter, ok := p.Source.(EntryCommitGetter)
 						if ok {
-							face := inter.GetEntryRegistration()
+							face := inter.GetEntryCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2594,16 +2514,16 @@ func init() {
 					Type:        GraphQLHashType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryRegistration)
+						obj, ok := p.Source.(*EntryCommit)
 						if ok {
 							if obj.EntryHash == nil {
 								return nil, nil
 							}
 							return obj.GetEntryHash(), nil
 						}
-						inter, ok := p.Source.(EntryRegistrationGetter)
+						inter, ok := p.Source.(EntryCommitGetter)
 						if ok {
-							face := inter.GetEntryRegistration()
+							face := inter.GetEntryCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2616,19 +2536,19 @@ func init() {
 					},
 				},
 				"timestamp": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.Timestamp,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.Timestamp,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryRegistration)
+						obj, ok := p.Source.(*EntryCommit)
 						if ok {
 							if obj.Timestamp == nil {
 								return nil, nil
 							}
 							return obj.GetTimestamp(), nil
 						}
-						inter, ok := p.Source.(EntryRegistrationGetter)
+						inter, ok := p.Source.(EntryCommitGetter)
 						if ok {
-							face := inter.GetEntryRegistration()
+							face := inter.GetEntryCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2644,13 +2564,13 @@ func init() {
 					Type:        github_com_graphql_go_graphql.Int,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryRegistration)
+						obj, ok := p.Source.(*EntryCommit)
 						if ok {
 							return obj.Credits, nil
 						}
-						inter, ok := p.Source.(EntryRegistrationGetter)
+						inter, ok := p.Source.(EntryCommitGetter)
 						if ok {
-							face := inter.GetEntryRegistration()
+							face := inter.GetEntryCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -2659,49 +2579,49 @@ func init() {
 						return nil, fmt.Errorf("field credits not resolved")
 					},
 				},
-				"ecPubKey": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.ByteString,
+				"entryCreditPublicKey": &github_com_graphql_go_graphql.Field{
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryRegistration)
+						obj, ok := p.Source.(*EntryCommit)
 						if ok {
-							return obj.EcPubKey, nil
+							return obj.EntryCreditPublicKey, nil
 						}
-						inter, ok := p.Source.(EntryRegistrationGetter)
+						inter, ok := p.Source.(EntryCommitGetter)
 						if ok {
-							face := inter.GetEntryRegistration()
+							face := inter.GetEntryCommit()
 							if face == nil {
 								return nil, nil
 							}
-							return face.EcPubKey, nil
+							return face.EntryCreditPublicKey, nil
 						}
-						return nil, fmt.Errorf("field ecPubKey not resolved")
+						return nil, fmt.Errorf("field entryCreditPublicKey not resolved")
 					},
 				},
-				"sig": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.ByteString,
+				"signature": &github_com_graphql_go_graphql.Field{
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryRegistration)
+						obj, ok := p.Source.(*EntryCommit)
 						if ok {
-							return obj.Sig, nil
+							return obj.Signature, nil
 						}
-						inter, ok := p.Source.(EntryRegistrationGetter)
+						inter, ok := p.Source.(EntryCommitGetter)
 						if ok {
-							face := inter.GetEntryRegistration()
+							face := inter.GetEntryCommit()
 							if face == nil {
 								return nil, nil
 							}
-							return face.Sig, nil
+							return face.Signature, nil
 						}
-						return nil, fmt.Errorf("field sig not resolved")
+						return nil, fmt.Errorf("field signature not resolved")
 					},
 				},
 			}
 		}),
 	})
-	GraphQLEntryContentRegistrationType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "EntryContentRegistration",
+	GraphQLEntryRevealType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
+		Name:        "EntryReveal",
 		Description: "",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
@@ -2709,13 +2629,13 @@ func init() {
 					Type:        GraphQLEntityStateEnum,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryContentRegistration)
+						obj, ok := p.Source.(*EntryReveal)
 						if ok {
 							return int(EntityState_value[obj.EntityState.String()]), nil
 						}
-						inter, ok := p.Source.(EntryContentRegistrationGetter)
+						inter, ok := p.Source.(EntryRevealGetter)
 						if ok {
-							face := inter.GetEntryContentRegistration()
+							face := inter.GetEntryReveal()
 							if face == nil {
 								return nil, nil
 							}
@@ -2728,16 +2648,16 @@ func init() {
 					Type:        GraphQLEntryBlockEntryType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryContentRegistration)
+						obj, ok := p.Source.(*EntryReveal)
 						if ok {
 							if obj.Entry == nil {
 								return nil, nil
 							}
 							return obj.GetEntry(), nil
 						}
-						inter, ok := p.Source.(EntryContentRegistrationGetter)
+						inter, ok := p.Source.(EntryRevealGetter)
 						if ok {
-							face := inter.GetEntryContentRegistration()
+							face := inter.GetEntryReveal()
 							if face == nil {
 								return nil, nil
 							}
@@ -2750,19 +2670,19 @@ func init() {
 					},
 				},
 				"timestamp": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.Timestamp,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.Timestamp,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryContentRegistration)
+						obj, ok := p.Source.(*EntryReveal)
 						if ok {
 							if obj.Timestamp == nil {
 								return nil, nil
 							}
 							return obj.GetTimestamp(), nil
 						}
-						inter, ok := p.Source.(EntryContentRegistrationGetter)
+						inter, ok := p.Source.(EntryRevealGetter)
 						if ok {
-							face := inter.GetEntryContentRegistration()
+							face := inter.GetEntryReveal()
 							if face == nil {
 								return nil, nil
 							}
@@ -2824,6 +2744,25 @@ func init() {
 							return int(EntityState_value[face.EntityState.String()]), nil
 						}
 						return nil, fmt.Errorf("field entityState not resolved")
+					},
+				},
+				"blockHeight": &github_com_graphql_go_graphql.Field{
+					Type:        github_com_graphql_go_graphql.Int,
+					Description: "",
+					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
+						obj, ok := p.Source.(*StateChange)
+						if ok {
+							return obj.BlockHeight, nil
+						}
+						inter, ok := p.Source.(StateChangeGetter)
+						if ok {
+							face := inter.GetStateChange()
+							if face == nil {
+								return nil, nil
+							}
+							return face.BlockHeight, nil
+						}
+						return nil, fmt.Errorf("field blockHeight not resolved")
 					},
 				},
 			}
@@ -2962,7 +2901,7 @@ func init() {
 					},
 				},
 				"timestamp": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.Timestamp,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.Timestamp,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*DirectoryBlockHeader)
@@ -3032,16 +2971,16 @@ func init() {
 		Description: "",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
-				"entryBlockHeader": &github_com_graphql_go_graphql.Field{
+				"header": &github_com_graphql_go_graphql.Field{
 					Type:        GraphQLEntryBlockHeaderType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*EntryBlock)
 						if ok {
-							if obj.EntryBlockHeader == nil {
+							if obj.Header == nil {
 								return nil, nil
 							}
-							return obj.GetEntryBlockHeader(), nil
+							return obj.GetHeader(), nil
 						}
 						inter, ok := p.Source.(EntryBlockGetter)
 						if ok {
@@ -3049,12 +2988,12 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.EntryBlockHeader == nil {
+							if face.Header == nil {
 								return nil, nil
 							}
-							return face.GetEntryBlockHeader(), nil
+							return face.GetHeader(), nil
 						}
-						return nil, fmt.Errorf("field entryBlockHeader not resolved")
+						return nil, fmt.Errorf("field header not resolved")
 					},
 				},
 				"entryHashes": &github_com_graphql_go_graphql.Field{
@@ -3378,29 +3317,29 @@ func init() {
 		Name:        "FactomEventValue",
 		Description: "",
 		Types: []*github_com_graphql_go_graphql.Object{
-			GraphQLChainRegistrationType,
-			GraphQLEntryRegistrationType,
-			GraphQLEntryContentRegistrationType,
+			GraphQLChainCommitType,
+			GraphQLEntryCommitType,
+			GraphQLEntryRevealType,
 			GraphQLStateChangeType,
-			GraphQLBlockCommitType,
+			GraphQLDirectoryBlockCommitType,
 			GraphQLProcessMessageType,
 			GraphQLNodeMessageType,
 		},
 		ResolveType: func(p github_com_graphql_go_graphql.ResolveTypeParams) *github_com_graphql_go_graphql.Object {
-			if _, ok := p.Value.(*FactomEvent_ChainRegistration); ok {
-				return GraphQLChainRegistrationType
+			if _, ok := p.Value.(*FactomEvent_ChainCommit); ok {
+				return GraphQLChainCommitType
 			}
-			if _, ok := p.Value.(*FactomEvent_EntryRegistration); ok {
-				return GraphQLEntryRegistrationType
+			if _, ok := p.Value.(*FactomEvent_EntryCommit); ok {
+				return GraphQLEntryCommitType
 			}
-			if _, ok := p.Value.(*FactomEvent_EntryContentRegistration); ok {
-				return GraphQLEntryContentRegistrationType
+			if _, ok := p.Value.(*FactomEvent_EntryReveal); ok {
+				return GraphQLEntryRevealType
 			}
 			if _, ok := p.Value.(*FactomEvent_StateChange); ok {
 				return GraphQLStateChangeType
 			}
-			if _, ok := p.Value.(*FactomEvent_BlockCommit); ok {
-				return GraphQLBlockCommitType
+			if _, ok := p.Value.(*FactomEvent_DirectoryBlockCommit); ok {
+				return GraphQLDirectoryBlockCommitType
 			}
 			if _, ok := p.Value.(*FactomEvent_ProcessMessage); ok {
 				return GraphQLProcessMessageType
@@ -3415,7 +3354,7 @@ func init() {
 func (m *FactomEvent) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -3423,417 +3362,537 @@ func (m *FactomEvent) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *FactomEvent) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *FactomEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.StreamSource != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.StreamSource))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if m.IdentityChainID != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.IdentityChainID.Size()))
-		n1, err := m.IdentityChainID.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n1
+	if m.ReplayJobId != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.ReplayJobId))
+		i--
+		dAtA[i] = 0x58
 	}
 	if m.Value != nil {
-		nn2, err := m.Value.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+		{
+			size := m.Value.Size()
+			i -= size
+			if _, err := m.Value.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
 		}
-		i += nn2
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.IdentityChainID != nil {
+		{
+			size, err := m.IdentityChainID.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
 	}
-	return i, nil
+	if len(m.FactomNodeName) > 0 {
+		i -= len(m.FactomNodeName)
+		copy(dAtA[i:], m.FactomNodeName)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.FactomNodeName)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.StreamSource != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.StreamSource))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
 }
 
-func (m *FactomEvent_ChainRegistration) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.ChainRegistration != nil {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.ChainRegistration.Size()))
-		n3, err := m.ChainRegistration.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n3
-	}
-	return i, nil
+func (m *FactomEvent_ChainCommit) MarshalTo(dAtA []byte) (int, error) {
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
-func (m *FactomEvent_EntryRegistration) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.EntryRegistration != nil {
+
+func (m *FactomEvent_ChainCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.ChainCommit != nil {
+		{
+			size, err := m.ChainCommit.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
 		dAtA[i] = 0x22
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntryRegistration.Size()))
-		n4, err := m.EntryRegistration.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n4
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
-func (m *FactomEvent_EntryContentRegistration) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.EntryContentRegistration != nil {
-		dAtA[i] = 0x2a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntryContentRegistration.Size()))
-		n5, err := m.EntryContentRegistration.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+func (m *FactomEvent_EntryCommit) MarshalTo(dAtA []byte) (int, error) {
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+}
+
+func (m *FactomEvent_EntryCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.EntryCommit != nil {
+		{
+			size, err := m.EntryCommit.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
 		}
-		i += n5
+		i--
+		dAtA[i] = 0x2a
 	}
-	return i, nil
+	return len(dAtA) - i, nil
+}
+func (m *FactomEvent_EntryReveal) MarshalTo(dAtA []byte) (int, error) {
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+}
+
+func (m *FactomEvent_EntryReveal) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.EntryReveal != nil {
+		{
+			size, err := m.EntryReveal.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x32
+	}
+	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_StateChange) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.StateChange != nil {
-		dAtA[i] = 0x32
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.StateChange.Size()))
-		n6, err := m.StateChange.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n6
-	}
-	return i, nil
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
-func (m *FactomEvent_BlockCommit) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.BlockCommit != nil {
-		dAtA[i] = 0x3a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockCommit.Size()))
-		n7, err := m.BlockCommit.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+
+func (m *FactomEvent_StateChange) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.StateChange != nil {
+		{
+			size, err := m.StateChange.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
 		}
-		i += n7
+		i--
+		dAtA[i] = 0x3a
 	}
-	return i, nil
+	return len(dAtA) - i, nil
+}
+func (m *FactomEvent_DirectoryBlockCommit) MarshalTo(dAtA []byte) (int, error) {
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+}
+
+func (m *FactomEvent_DirectoryBlockCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.DirectoryBlockCommit != nil {
+		{
+			size, err := m.DirectoryBlockCommit.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x42
+	}
+	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_ProcessMessage) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+}
+
+func (m *FactomEvent_ProcessMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	if m.ProcessMessage != nil {
-		dAtA[i] = 0x42
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.ProcessMessage.Size()))
-		n8, err := m.ProcessMessage.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+		{
+			size, err := m.ProcessMessage.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
 		}
-		i += n8
+		i--
+		dAtA[i] = 0x4a
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_NodeMessage) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.NodeMessage != nil {
-		dAtA[i] = 0x4a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.NodeMessage.Size()))
-		n9, err := m.NodeMessage.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n9
-	}
-	return i, nil
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
-func (m *BlockCommit) Marshal() (dAtA []byte, err error) {
+
+func (m *FactomEvent_NodeMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.NodeMessage != nil {
+		{
+			size, err := m.NodeMessage.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x52
+	}
+	return len(dAtA) - i, nil
+}
+func (m *DirectoryBlockCommit) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
 	return dAtA[:n], nil
 }
 
-func (m *BlockCommit) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+func (m *DirectoryBlockCommit) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *DirectoryBlockCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.DirectoryBlock != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.DirectoryBlock.Size()))
-		n10, err := m.DirectoryBlock.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n10
-	}
-	if m.AdminBlock != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.AdminBlock.Size()))
-		n11, err := m.AdminBlock.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n11
-	}
-	if m.FactoidBlock != nil {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.FactoidBlock.Size()))
-		n12, err := m.FactoidBlock.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n12
-	}
-	if m.EntryCreditBlock != nil {
-		dAtA[i] = 0x22
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntryCreditBlock.Size()))
-		n13, err := m.EntryCreditBlock.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n13
-	}
-	if len(m.EntryBlocks) > 0 {
-		for _, msg := range m.EntryBlocks {
-			dAtA[i] = 0x2a
-			i++
-			i = encodeVarintFactomEvents(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.EntryBlockEntries) > 0 {
-		for _, msg := range m.EntryBlockEntries {
+		for iNdEx := len(m.EntryBlockEntries) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.EntryBlockEntries[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+			}
+			i--
 			dAtA[i] = 0x32
-			i++
-			i = encodeVarintFactomEvents(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
+		}
+	}
+	if len(m.EntryBlocks) > 0 {
+		for iNdEx := len(m.EntryBlocks) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.EntryBlocks[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if m.EntryCreditBlock != nil {
+		{
+			size, err := m.EntryCreditBlock.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
-			i += n
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
 		}
+		i--
+		dAtA[i] = 0x22
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.FactoidBlock != nil {
+		{
+			size, err := m.FactoidBlock.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
 	}
-	return i, nil
+	if m.AdminBlock != nil {
+		{
+			size, err := m.AdminBlock.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.DirectoryBlock != nil {
+		{
+			size, err := m.DirectoryBlock.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
-func (m *ChainRegistration) Marshal() (dAtA []byte, err error) {
+func (m *ChainCommit) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
 	return dAtA[:n], nil
 }
 
-func (m *ChainRegistration) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+func (m *ChainCommit) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ChainCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.EntityState != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntityState))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if m.ChainIDHash != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.ChainIDHash.Size()))
-		n14, err := m.ChainIDHash.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n14
+	if len(m.Signature) > 0 {
+		i -= len(m.Signature)
+		copy(dAtA[i:], m.Signature)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.Signature)))
+		i--
+		dAtA[i] = 0x42
 	}
-	if m.EntryHash != nil {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntryHash.Size()))
-		n15, err := m.EntryHash.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+	if len(m.EntryCreditPublicKey) > 0 {
+		i -= len(m.EntryCreditPublicKey)
+		copy(dAtA[i:], m.EntryCreditPublicKey)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.EntryCreditPublicKey)))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if m.Credits != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Credits))
+		i--
+		dAtA[i] = 0x30
+	}
+	if m.Timestamp != nil {
+		{
+			size, err := m.Timestamp.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
 		}
-		i += n15
+		i--
+		dAtA[i] = 0x2a
 	}
 	if m.Weld != nil {
+		{
+			size, err := m.Weld.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
 		dAtA[i] = 0x22
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Weld.Size()))
-		n16, err := m.Weld.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n16
-	}
-	if m.Timestamp != nil {
-		dAtA[i] = 0x2a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Timestamp.Size()))
-		n17, err := m.Timestamp.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n17
-	}
-	if m.Credits != 0 {
-		dAtA[i] = 0x30
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Credits))
-	}
-	if len(m.EcPubKey) > 0 {
-		dAtA[i] = 0x3a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.EcPubKey)))
-		i += copy(dAtA[i:], m.EcPubKey)
-	}
-	if len(m.Sig) > 0 {
-		dAtA[i] = 0x42
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.Sig)))
-		i += copy(dAtA[i:], m.Sig)
-	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
-}
-
-func (m *EntryRegistration) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *EntryRegistration) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	if m.EntityState != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntityState))
 	}
 	if m.EntryHash != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntryHash.Size()))
-		n18, err := m.EntryHash.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+		{
+			size, err := m.EntryHash.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
 		}
-		i += n18
-	}
-	if m.Timestamp != nil {
+		i--
 		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Timestamp.Size()))
-		n19, err := m.Timestamp.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+	}
+	if m.ChainIDHash != nil {
+		{
+			size, err := m.ChainIDHash.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
 		}
-		i += n19
+		i--
+		dAtA[i] = 0x12
 	}
-	if m.Credits != 0 {
-		dAtA[i] = 0x20
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Credits))
+	if m.EntityState != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntityState))
+		i--
+		dAtA[i] = 0x8
 	}
-	if len(m.EcPubKey) > 0 {
-		dAtA[i] = 0x2a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.EcPubKey)))
-		i += copy(dAtA[i:], m.EcPubKey)
-	}
-	if len(m.Sig) > 0 {
-		dAtA[i] = 0x32
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.Sig)))
-		i += copy(dAtA[i:], m.Sig)
-	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
-func (m *EntryContentRegistration) Marshal() (dAtA []byte, err error) {
+func (m *EntryCommit) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
 	return dAtA[:n], nil
 }
 
-func (m *EntryContentRegistration) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+func (m *EntryCommit) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EntryCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.EntityState != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntityState))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if m.Entry != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Entry.Size()))
-		n20, err := m.Entry.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n20
+	if len(m.Signature) > 0 {
+		i -= len(m.Signature)
+		copy(dAtA[i:], m.Signature)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.Signature)))
+		i--
+		dAtA[i] = 0x32
+	}
+	if len(m.EntryCreditPublicKey) > 0 {
+		i -= len(m.EntryCreditPublicKey)
+		copy(dAtA[i:], m.EntryCreditPublicKey)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.EntryCreditPublicKey)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.Credits != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Credits))
+		i--
+		dAtA[i] = 0x20
 	}
 	if m.Timestamp != nil {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Timestamp.Size()))
-		n21, err := m.Timestamp.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+		{
+			size, err := m.Timestamp.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
 		}
-		i += n21
+		i--
+		dAtA[i] = 0x1a
 	}
+	if m.EntryHash != nil {
+		{
+			size, err := m.EntryHash.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.EntityState != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntityState))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EntryReveal) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EntryReveal) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EntryReveal) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	if m.Timestamp != nil {
+		{
+			size, err := m.Timestamp.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.Entry != nil {
+		{
+			size, err := m.Entry.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.EntityState != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntityState))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *StateChange) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -3841,35 +3900,48 @@ func (m *StateChange) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *StateChange) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *StateChange) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.EntityHash != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntityHash.Size()))
-		n22, err := m.EntityHash.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n22
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.BlockHeight != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x18
 	}
 	if m.EntityState != 0 {
-		dAtA[i] = 0x10
-		i++
 		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntityState))
+		i--
+		dAtA[i] = 0x10
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.EntityHash != nil {
+		{
+			size, err := m.EntityHash.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *DirectoryBlock) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -3877,42 +3949,52 @@ func (m *DirectoryBlock) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *DirectoryBlock) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *DirectoryBlock) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.Header != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Header.Size()))
-		n23, err := m.Header.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n23
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.Entries) > 0 {
-		for _, msg := range m.Entries {
+		for iNdEx := len(m.Entries) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Entries[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+			}
+			i--
 			dAtA[i] = 0x12
-			i++
-			i = encodeVarintFactomEvents(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
+		}
+	}
+	if m.Header != nil {
+		{
+			size, err := m.Header.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
-			i += n
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
 		}
+		i--
+		dAtA[i] = 0xa
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *DirectoryBlockHeader) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -3920,70 +4002,84 @@ func (m *DirectoryBlockHeader) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *DirectoryBlockHeader) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *DirectoryBlockHeader) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.BodyMerkleRoot != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BodyMerkleRoot.Size()))
-		n24, err := m.BodyMerkleRoot.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n24
-	}
-	if m.PreviousKeyMerkleRoot != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.PreviousKeyMerkleRoot.Size()))
-		n25, err := m.PreviousKeyMerkleRoot.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n25
-	}
-	if m.PreviousFullHash != nil {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.PreviousFullHash.Size()))
-		n26, err := m.PreviousFullHash.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n26
-	}
-	if m.Timestamp != nil {
-		dAtA[i] = 0x22
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Timestamp.Size()))
-		n27, err := m.Timestamp.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n27
-	}
-	if m.BlockHeight != 0 {
-		dAtA[i] = 0x28
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockHeight))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.BlockCount != 0 {
-		dAtA[i] = 0x30
-		i++
 		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockCount))
+		i--
+		dAtA[i] = 0x30
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.BlockHeight != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x28
 	}
-	return i, nil
+	if m.Timestamp != nil {
+		{
+			size, err := m.Timestamp.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.PreviousFullHash != nil {
+		{
+			size, err := m.PreviousFullHash.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.PreviousKeyMerkleRoot != nil {
+		{
+			size, err := m.PreviousKeyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.BodyMerkleRoot != nil {
+		{
+			size, err := m.BodyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *EntryBlock) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -3991,42 +4087,52 @@ func (m *EntryBlock) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *EntryBlock) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EntryBlock) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.EntryBlockHeader != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntryBlockHeader.Size()))
-		n28, err := m.EntryBlockHeader.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n28
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.EntryHashes) > 0 {
-		for _, msg := range m.EntryHashes {
+		for iNdEx := len(m.EntryHashes) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.EntryHashes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+			}
+			i--
 			dAtA[i] = 0x12
-			i++
-			i = encodeVarintFactomEvents(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
+		}
+	}
+	if m.Header != nil {
+		{
+			size, err := m.Header.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
-			i += n
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
 		}
+		i--
+		dAtA[i] = 0xa
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *EntryBlockHeader) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -4034,75 +4140,89 @@ func (m *EntryBlockHeader) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *EntryBlockHeader) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EntryBlockHeader) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.BodyMerkleRoot != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BodyMerkleRoot.Size()))
-		n29, err := m.BodyMerkleRoot.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n29
-	}
-	if m.ChainID != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.ChainID.Size()))
-		n30, err := m.ChainID.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n30
-	}
-	if m.PreviousFullHash != nil {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.PreviousFullHash.Size()))
-		n31, err := m.PreviousFullHash.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n31
-	}
-	if m.PreviousKeyMerkleRoot != nil {
-		dAtA[i] = 0x22
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.PreviousKeyMerkleRoot.Size()))
-		n32, err := m.PreviousKeyMerkleRoot.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n32
-	}
-	if m.BlockHeight != 0 {
-		dAtA[i] = 0x28
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockHeight))
-	}
-	if m.BlockSequence != 0 {
-		dAtA[i] = 0x30
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockSequence))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.EntryCount != 0 {
-		dAtA[i] = 0x38
-		i++
 		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntryCount))
+		i--
+		dAtA[i] = 0x38
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.BlockSequence != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockSequence))
+		i--
+		dAtA[i] = 0x30
 	}
-	return i, nil
+	if m.BlockHeight != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x28
+	}
+	if m.PreviousKeyMerkleRoot != nil {
+		{
+			size, err := m.PreviousKeyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.PreviousFullHash != nil {
+		{
+			size, err := m.PreviousFullHash.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.ChainID != nil {
+		{
+			size, err := m.ChainID.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.BodyMerkleRoot != nil {
+		{
+			size, err := m.BodyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *ProcessMessage) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -4110,36 +4230,43 @@ func (m *ProcessMessage) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *ProcessMessage) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ProcessMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.MessageCode != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.MessageCode))
-	}
-	if m.Level != 0 {
-		dAtA[i] = 0x10
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Level))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.MessageText) > 0 {
-		dAtA[i] = 0x1a
-		i++
+		i -= len(m.MessageText)
+		copy(dAtA[i:], m.MessageText)
 		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.MessageText)))
-		i += copy(dAtA[i:], m.MessageText)
+		i--
+		dAtA[i] = 0x1a
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.Level != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Level))
+		i--
+		dAtA[i] = 0x10
 	}
-	return i, nil
+	if m.MessageCode != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.MessageCode))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *NodeMessage) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -4147,83 +4274,94 @@ func (m *NodeMessage) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *NodeMessage) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *NodeMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.MessageCode != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.MessageCode))
-	}
-	if m.Level != 0 {
-		dAtA[i] = 0x10
-		i++
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Level))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.MessageText) > 0 {
-		dAtA[i] = 0x1a
-		i++
+		i -= len(m.MessageText)
+		copy(dAtA[i:], m.MessageText)
 		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.MessageText)))
-		i += copy(dAtA[i:], m.MessageText)
+		i--
+		dAtA[i] = 0x1a
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.Level != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Level))
+		i--
+		dAtA[i] = 0x10
 	}
-	return i, nil
+	if m.MessageCode != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.MessageCode))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
 }
 
 func encodeVarintFactomEvents(dAtA []byte, offset int, v uint64) int {
+	offset -= sovFactomEvents(v)
+	base := offset
 	for v >= 1<<7 {
 		dAtA[offset] = uint8(v&0x7f | 0x80)
 		v >>= 7
 		offset++
 	}
 	dAtA[offset] = uint8(v)
-	return offset + 1
+	return base
 }
 func NewPopulatedFactomEvent(r randyFactomEvents, easy bool) *FactomEvent {
 	this := &FactomEvent{}
-	this.StreamSource = StreamSource([]int32{0, 1}[r.Intn(2)])
-	if r.Intn(10) != 0 {
+	this.StreamSource = StreamSource([]int32{0, 1, 2}[r.Intn(3)])
+	this.FactomNodeName = string(randStringFactomEvents(r))
+	if r.Intn(5) != 0 {
 		this.IdentityChainID = NewPopulatedHash(r, easy)
 	}
-	oneofNumber_Value := []int32{3, 4, 5, 6, 7, 8, 9}[r.Intn(7)]
+	oneofNumber_Value := []int32{4, 5, 6, 7, 8, 9, 10}[r.Intn(7)]
 	switch oneofNumber_Value {
-	case 3:
-		this.Value = NewPopulatedFactomEvent_ChainRegistration(r, easy)
 	case 4:
-		this.Value = NewPopulatedFactomEvent_EntryRegistration(r, easy)
+		this.Value = NewPopulatedFactomEvent_ChainCommit(r, easy)
 	case 5:
-		this.Value = NewPopulatedFactomEvent_EntryContentRegistration(r, easy)
+		this.Value = NewPopulatedFactomEvent_EntryCommit(r, easy)
 	case 6:
-		this.Value = NewPopulatedFactomEvent_StateChange(r, easy)
+		this.Value = NewPopulatedFactomEvent_EntryReveal(r, easy)
 	case 7:
-		this.Value = NewPopulatedFactomEvent_BlockCommit(r, easy)
+		this.Value = NewPopulatedFactomEvent_StateChange(r, easy)
 	case 8:
-		this.Value = NewPopulatedFactomEvent_ProcessMessage(r, easy)
+		this.Value = NewPopulatedFactomEvent_DirectoryBlockCommit(r, easy)
 	case 9:
+		this.Value = NewPopulatedFactomEvent_ProcessMessage(r, easy)
+	case 10:
 		this.Value = NewPopulatedFactomEvent_NodeMessage(r, easy)
 	}
+	this.ReplayJobId = uint64(uint64(r.Uint32()))
 	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 10)
+		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 12)
 	}
 	return this
 }
 
-func NewPopulatedFactomEvent_ChainRegistration(r randyFactomEvents, easy bool) *FactomEvent_ChainRegistration {
-	this := &FactomEvent_ChainRegistration{}
-	this.ChainRegistration = NewPopulatedChainRegistration(r, easy)
+func NewPopulatedFactomEvent_ChainCommit(r randyFactomEvents, easy bool) *FactomEvent_ChainCommit {
+	this := &FactomEvent_ChainCommit{}
+	this.ChainCommit = NewPopulatedChainCommit(r, easy)
 	return this
 }
-func NewPopulatedFactomEvent_EntryRegistration(r randyFactomEvents, easy bool) *FactomEvent_EntryRegistration {
-	this := &FactomEvent_EntryRegistration{}
-	this.EntryRegistration = NewPopulatedEntryRegistration(r, easy)
+func NewPopulatedFactomEvent_EntryCommit(r randyFactomEvents, easy bool) *FactomEvent_EntryCommit {
+	this := &FactomEvent_EntryCommit{}
+	this.EntryCommit = NewPopulatedEntryCommit(r, easy)
 	return this
 }
-func NewPopulatedFactomEvent_EntryContentRegistration(r randyFactomEvents, easy bool) *FactomEvent_EntryContentRegistration {
-	this := &FactomEvent_EntryContentRegistration{}
-	this.EntryContentRegistration = NewPopulatedEntryContentRegistration(r, easy)
+func NewPopulatedFactomEvent_EntryReveal(r randyFactomEvents, easy bool) *FactomEvent_EntryReveal {
+	this := &FactomEvent_EntryReveal{}
+	this.EntryReveal = NewPopulatedEntryReveal(r, easy)
 	return this
 }
 func NewPopulatedFactomEvent_StateChange(r randyFactomEvents, easy bool) *FactomEvent_StateChange {
@@ -4231,9 +4369,9 @@ func NewPopulatedFactomEvent_StateChange(r randyFactomEvents, easy bool) *Factom
 	this.StateChange = NewPopulatedStateChange(r, easy)
 	return this
 }
-func NewPopulatedFactomEvent_BlockCommit(r randyFactomEvents, easy bool) *FactomEvent_BlockCommit {
-	this := &FactomEvent_BlockCommit{}
-	this.BlockCommit = NewPopulatedBlockCommit(r, easy)
+func NewPopulatedFactomEvent_DirectoryBlockCommit(r randyFactomEvents, easy bool) *FactomEvent_DirectoryBlockCommit {
+	this := &FactomEvent_DirectoryBlockCommit{}
+	this.DirectoryBlockCommit = NewPopulatedDirectoryBlockCommit(r, easy)
 	return this
 }
 func NewPopulatedFactomEvent_ProcessMessage(r randyFactomEvents, easy bool) *FactomEvent_ProcessMessage {
@@ -4246,28 +4384,28 @@ func NewPopulatedFactomEvent_NodeMessage(r randyFactomEvents, easy bool) *Factom
 	this.NodeMessage = NewPopulatedNodeMessage(r, easy)
 	return this
 }
-func NewPopulatedBlockCommit(r randyFactomEvents, easy bool) *BlockCommit {
-	this := &BlockCommit{}
-	if r.Intn(10) != 0 {
+func NewPopulatedDirectoryBlockCommit(r randyFactomEvents, easy bool) *DirectoryBlockCommit {
+	this := &DirectoryBlockCommit{}
+	if r.Intn(5) != 0 {
 		this.DirectoryBlock = NewPopulatedDirectoryBlock(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.AdminBlock = NewPopulatedAdminBlock(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.FactoidBlock = NewPopulatedFactoidBlock(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.EntryCreditBlock = NewPopulatedEntryCreditBlock(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		v1 := r.Intn(5)
 		this.EntryBlocks = make([]*EntryBlock, v1)
 		for i := 0; i < v1; i++ {
 			this.EntryBlocks[i] = NewPopulatedEntryBlock(r, easy)
 		}
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		v2 := r.Intn(5)
 		this.EntryBlockEntries = make([]*EntryBlockEntry, v2)
 		for i := 0; i < v2; i++ {
@@ -4280,31 +4418,31 @@ func NewPopulatedBlockCommit(r randyFactomEvents, easy bool) *BlockCommit {
 	return this
 }
 
-func NewPopulatedChainRegistration(r randyFactomEvents, easy bool) *ChainRegistration {
-	this := &ChainRegistration{}
+func NewPopulatedChainCommit(r randyFactomEvents, easy bool) *ChainCommit {
+	this := &ChainCommit{}
 	this.EntityState = EntityState([]int32{0, 1, 2, 3, 4}[r.Intn(5)])
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.ChainIDHash = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.EntryHash = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.Weld = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.Timestamp = types.NewPopulatedTimestamp(r, easy)
 	}
 	this.Credits = uint32(r.Uint32())
 	v3 := r.Intn(100)
-	this.EcPubKey = make([]byte, v3)
+	this.EntryCreditPublicKey = make([]byte, v3)
 	for i := 0; i < v3; i++ {
-		this.EcPubKey[i] = byte(r.Intn(256))
+		this.EntryCreditPublicKey[i] = byte(r.Intn(256))
 	}
 	v4 := r.Intn(100)
-	this.Sig = make([]byte, v4)
+	this.Signature = make([]byte, v4)
 	for i := 0; i < v4; i++ {
-		this.Sig[i] = byte(r.Intn(256))
+		this.Signature[i] = byte(r.Intn(256))
 	}
 	if !easy && r.Intn(10) != 0 {
 		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 9)
@@ -4312,25 +4450,25 @@ func NewPopulatedChainRegistration(r randyFactomEvents, easy bool) *ChainRegistr
 	return this
 }
 
-func NewPopulatedEntryRegistration(r randyFactomEvents, easy bool) *EntryRegistration {
-	this := &EntryRegistration{}
+func NewPopulatedEntryCommit(r randyFactomEvents, easy bool) *EntryCommit {
+	this := &EntryCommit{}
 	this.EntityState = EntityState([]int32{0, 1, 2, 3, 4}[r.Intn(5)])
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.EntryHash = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.Timestamp = types.NewPopulatedTimestamp(r, easy)
 	}
 	this.Credits = uint32(r.Uint32())
 	v5 := r.Intn(100)
-	this.EcPubKey = make([]byte, v5)
+	this.EntryCreditPublicKey = make([]byte, v5)
 	for i := 0; i < v5; i++ {
-		this.EcPubKey[i] = byte(r.Intn(256))
+		this.EntryCreditPublicKey[i] = byte(r.Intn(256))
 	}
 	v6 := r.Intn(100)
-	this.Sig = make([]byte, v6)
+	this.Signature = make([]byte, v6)
 	for i := 0; i < v6; i++ {
-		this.Sig[i] = byte(r.Intn(256))
+		this.Signature[i] = byte(r.Intn(256))
 	}
 	if !easy && r.Intn(10) != 0 {
 		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 7)
@@ -4338,13 +4476,13 @@ func NewPopulatedEntryRegistration(r randyFactomEvents, easy bool) *EntryRegistr
 	return this
 }
 
-func NewPopulatedEntryContentRegistration(r randyFactomEvents, easy bool) *EntryContentRegistration {
-	this := &EntryContentRegistration{}
+func NewPopulatedEntryReveal(r randyFactomEvents, easy bool) *EntryReveal {
+	this := &EntryReveal{}
 	this.EntityState = EntityState([]int32{0, 1, 2, 3, 4}[r.Intn(5)])
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.Entry = NewPopulatedEntryBlockEntry(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.Timestamp = types.NewPopulatedTimestamp(r, easy)
 	}
 	if !easy && r.Intn(10) != 0 {
@@ -4355,22 +4493,23 @@ func NewPopulatedEntryContentRegistration(r randyFactomEvents, easy bool) *Entry
 
 func NewPopulatedStateChange(r randyFactomEvents, easy bool) *StateChange {
 	this := &StateChange{}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.EntityHash = NewPopulatedHash(r, easy)
 	}
 	this.EntityState = EntityState([]int32{0, 1, 2, 3, 4}[r.Intn(5)])
+	this.BlockHeight = uint32(r.Uint32())
 	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 3)
+		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 4)
 	}
 	return this
 }
 
 func NewPopulatedDirectoryBlock(r randyFactomEvents, easy bool) *DirectoryBlock {
 	this := &DirectoryBlock{}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.Header = NewPopulatedDirectoryBlockHeader(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		v7 := r.Intn(5)
 		this.Entries = make([]*Entry, v7)
 		for i := 0; i < v7; i++ {
@@ -4385,16 +4524,16 @@ func NewPopulatedDirectoryBlock(r randyFactomEvents, easy bool) *DirectoryBlock 
 
 func NewPopulatedDirectoryBlockHeader(r randyFactomEvents, easy bool) *DirectoryBlockHeader {
 	this := &DirectoryBlockHeader{}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.BodyMerkleRoot = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.PreviousKeyMerkleRoot = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.PreviousFullHash = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.Timestamp = types.NewPopulatedTimestamp(r, easy)
 	}
 	this.BlockHeight = uint32(r.Uint32())
@@ -4407,10 +4546,10 @@ func NewPopulatedDirectoryBlockHeader(r randyFactomEvents, easy bool) *Directory
 
 func NewPopulatedEntryBlock(r randyFactomEvents, easy bool) *EntryBlock {
 	this := &EntryBlock{}
-	if r.Intn(10) != 0 {
-		this.EntryBlockHeader = NewPopulatedEntryBlockHeader(r, easy)
+	if r.Intn(5) != 0 {
+		this.Header = NewPopulatedEntryBlockHeader(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		v8 := r.Intn(5)
 		this.EntryHashes = make([]*Hash, v8)
 		for i := 0; i < v8; i++ {
@@ -4425,16 +4564,16 @@ func NewPopulatedEntryBlock(r randyFactomEvents, easy bool) *EntryBlock {
 
 func NewPopulatedEntryBlockHeader(r randyFactomEvents, easy bool) *EntryBlockHeader {
 	this := &EntryBlockHeader{}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.BodyMerkleRoot = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.ChainID = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.PreviousFullHash = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.PreviousKeyMerkleRoot = NewPopulatedHash(r, easy)
 	}
 	this.BlockHeight = uint32(r.Uint32())
@@ -4448,7 +4587,7 @@ func NewPopulatedEntryBlockHeader(r randyFactomEvents, easy bool) *EntryBlockHea
 
 func NewPopulatedProcessMessage(r randyFactomEvents, easy bool) *ProcessMessage {
 	this := &ProcessMessage{}
-	this.MessageCode = ProcessMessageCode([]int32{0, 1, 2}[r.Intn(3)])
+	this.MessageCode = ProcessMessageCode([]int32{0, 1}[r.Intn(2)])
 	this.Level = Level([]int32{0, 1, 2}[r.Intn(3)])
 	this.MessageText = string(randStringFactomEvents(r))
 	if !easy && r.Intn(10) != 0 {
@@ -4549,6 +4688,10 @@ func (m *FactomEvent) Size() (n int) {
 	if m.StreamSource != 0 {
 		n += 1 + sovFactomEvents(uint64(m.StreamSource))
 	}
+	l = len(m.FactomNodeName)
+	if l > 0 {
+		n += 1 + l + sovFactomEvents(uint64(l))
+	}
 	if m.IdentityChainID != nil {
 		l = m.IdentityChainID.Size()
 		n += 1 + l + sovFactomEvents(uint64(l))
@@ -4556,44 +4699,47 @@ func (m *FactomEvent) Size() (n int) {
 	if m.Value != nil {
 		n += m.Value.Size()
 	}
+	if m.ReplayJobId != 0 {
+		n += 1 + sovFactomEvents(uint64(m.ReplayJobId))
+	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
 	}
 	return n
 }
 
-func (m *FactomEvent_ChainRegistration) Size() (n int) {
+func (m *FactomEvent_ChainCommit) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.ChainRegistration != nil {
-		l = m.ChainRegistration.Size()
+	if m.ChainCommit != nil {
+		l = m.ChainCommit.Size()
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
 	return n
 }
-func (m *FactomEvent_EntryRegistration) Size() (n int) {
+func (m *FactomEvent_EntryCommit) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.EntryRegistration != nil {
-		l = m.EntryRegistration.Size()
+	if m.EntryCommit != nil {
+		l = m.EntryCommit.Size()
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
 	return n
 }
-func (m *FactomEvent_EntryContentRegistration) Size() (n int) {
+func (m *FactomEvent_EntryReveal) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.EntryContentRegistration != nil {
-		l = m.EntryContentRegistration.Size()
+	if m.EntryReveal != nil {
+		l = m.EntryReveal.Size()
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
 	return n
@@ -4610,14 +4756,14 @@ func (m *FactomEvent_StateChange) Size() (n int) {
 	}
 	return n
 }
-func (m *FactomEvent_BlockCommit) Size() (n int) {
+func (m *FactomEvent_DirectoryBlockCommit) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.BlockCommit != nil {
-		l = m.BlockCommit.Size()
+	if m.DirectoryBlockCommit != nil {
+		l = m.DirectoryBlockCommit.Size()
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
 	return n
@@ -4646,7 +4792,7 @@ func (m *FactomEvent_NodeMessage) Size() (n int) {
 	}
 	return n
 }
-func (m *BlockCommit) Size() (n int) {
+func (m *DirectoryBlockCommit) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -4686,7 +4832,7 @@ func (m *BlockCommit) Size() (n int) {
 	return n
 }
 
-func (m *ChainRegistration) Size() (n int) {
+func (m *ChainCommit) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -4714,11 +4860,11 @@ func (m *ChainRegistration) Size() (n int) {
 	if m.Credits != 0 {
 		n += 1 + sovFactomEvents(uint64(m.Credits))
 	}
-	l = len(m.EcPubKey)
+	l = len(m.EntryCreditPublicKey)
 	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
-	l = len(m.Sig)
+	l = len(m.Signature)
 	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
@@ -4728,7 +4874,7 @@ func (m *ChainRegistration) Size() (n int) {
 	return n
 }
 
-func (m *EntryRegistration) Size() (n int) {
+func (m *EntryCommit) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -4748,11 +4894,11 @@ func (m *EntryRegistration) Size() (n int) {
 	if m.Credits != 0 {
 		n += 1 + sovFactomEvents(uint64(m.Credits))
 	}
-	l = len(m.EcPubKey)
+	l = len(m.EntryCreditPublicKey)
 	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
-	l = len(m.Sig)
+	l = len(m.Signature)
 	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
@@ -4762,7 +4908,7 @@ func (m *EntryRegistration) Size() (n int) {
 	return n
 }
 
-func (m *EntryContentRegistration) Size() (n int) {
+func (m *EntryReveal) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -4797,6 +4943,9 @@ func (m *StateChange) Size() (n int) {
 	}
 	if m.EntityState != 0 {
 		n += 1 + sovFactomEvents(uint64(m.EntityState))
+	}
+	if m.BlockHeight != 0 {
+		n += 1 + sovFactomEvents(uint64(m.BlockHeight))
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -4866,8 +5015,8 @@ func (m *EntryBlock) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.EntryBlockHeader != nil {
-		l = m.EntryBlockHeader.Size()
+	if m.Header != nil {
+		l = m.Header.Size()
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
 	if len(m.EntryHashes) > 0 {
@@ -4964,14 +5113,7 @@ func (m *NodeMessage) Size() (n int) {
 }
 
 func sovFactomEvents(x uint64) (n int) {
-	for {
-		n++
-		x >>= 7
-		if x == 0 {
-			break
-		}
-	}
-	return n
+	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozFactomEvents(x uint64) (n int) {
 	return sovFactomEvents(uint64((x << 1) ^ uint64((int64(x) >> 63))))
@@ -5026,6 +5168,38 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FactomNodeName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFactomEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.FactomNodeName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field IdentityChainID", wireType)
 			}
 			var msglen int
@@ -5060,44 +5234,9 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainRegistration", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			v := &ChainRegistration{}
-			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			m.Value = &FactomEvent_ChainRegistration{v}
-			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EntryRegistration", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainCommit", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -5124,15 +5263,15 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			v := &EntryRegistration{}
+			v := &ChainCommit{}
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &FactomEvent_EntryRegistration{v}
+			m.Value = &FactomEvent_ChainCommit{v}
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EntryContentRegistration", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field EntryCommit", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -5159,13 +5298,48 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			v := &EntryContentRegistration{}
+			v := &EntryCommit{}
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &FactomEvent_EntryContentRegistration{v}
+			m.Value = &FactomEvent_EntryCommit{v}
 			iNdEx = postIndex
 		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EntryReveal", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFactomEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &EntryReveal{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Value = &FactomEvent_EntryReveal{v}
+			iNdEx = postIndex
+		case 7:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field StateChange", wireType)
 			}
@@ -5200,9 +5374,9 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			}
 			m.Value = &FactomEvent_StateChange{v}
 			iNdEx = postIndex
-		case 7:
+		case 8:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockCommit", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field DirectoryBlockCommit", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -5229,13 +5403,13 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			v := &BlockCommit{}
+			v := &DirectoryBlockCommit{}
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &FactomEvent_BlockCommit{v}
+			m.Value = &FactomEvent_DirectoryBlockCommit{v}
 			iNdEx = postIndex
-		case 8:
+		case 9:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ProcessMessage", wireType)
 			}
@@ -5270,7 +5444,7 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			}
 			m.Value = &FactomEvent_ProcessMessage{v}
 			iNdEx = postIndex
-		case 9:
+		case 10:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field NodeMessage", wireType)
 			}
@@ -5305,6 +5479,25 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			}
 			m.Value = &FactomEvent_NodeMessage{v}
 			iNdEx = postIndex
+		case 11:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReplayJobId", wireType)
+			}
+			m.ReplayJobId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFactomEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ReplayJobId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipFactomEvents(dAtA[iNdEx:])
@@ -5330,7 +5523,7 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BlockCommit) Unmarshal(dAtA []byte) error {
+func (m *DirectoryBlockCommit) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5353,10 +5546,10 @@ func (m *BlockCommit) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BlockCommit: wiretype end group for non-group")
+			return fmt.Errorf("proto: DirectoryBlockCommit: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BlockCommit: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: DirectoryBlockCommit: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -5596,7 +5789,7 @@ func (m *BlockCommit) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *ChainRegistration) Unmarshal(dAtA []byte) error {
+func (m *ChainCommit) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5619,10 +5812,10 @@ func (m *ChainRegistration) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: ChainRegistration: wiretype end group for non-group")
+			return fmt.Errorf("proto: ChainCommit: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ChainRegistration: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ChainCommit: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -5809,7 +6002,7 @@ func (m *ChainRegistration) Unmarshal(dAtA []byte) error {
 			}
 		case 7:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EcPubKey", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field EntryCreditPublicKey", wireType)
 			}
 			var byteLen int
 			for shift := uint(0); ; shift += 7 {
@@ -5836,14 +6029,14 @@ func (m *ChainRegistration) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.EcPubKey = append(m.EcPubKey[:0], dAtA[iNdEx:postIndex]...)
-			if m.EcPubKey == nil {
-				m.EcPubKey = []byte{}
+			m.EntryCreditPublicKey = append(m.EntryCreditPublicKey[:0], dAtA[iNdEx:postIndex]...)
+			if m.EntryCreditPublicKey == nil {
+				m.EntryCreditPublicKey = []byte{}
 			}
 			iNdEx = postIndex
 		case 8:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Sig", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Signature", wireType)
 			}
 			var byteLen int
 			for shift := uint(0); ; shift += 7 {
@@ -5870,9 +6063,9 @@ func (m *ChainRegistration) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Sig = append(m.Sig[:0], dAtA[iNdEx:postIndex]...)
-			if m.Sig == nil {
-				m.Sig = []byte{}
+			m.Signature = append(m.Signature[:0], dAtA[iNdEx:postIndex]...)
+			if m.Signature == nil {
+				m.Signature = []byte{}
 			}
 			iNdEx = postIndex
 		default:
@@ -5900,7 +6093,7 @@ func (m *ChainRegistration) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EntryRegistration) Unmarshal(dAtA []byte) error {
+func (m *EntryCommit) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5923,10 +6116,10 @@ func (m *EntryRegistration) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EntryRegistration: wiretype end group for non-group")
+			return fmt.Errorf("proto: EntryCommit: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EntryRegistration: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EntryCommit: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -6041,7 +6234,7 @@ func (m *EntryRegistration) Unmarshal(dAtA []byte) error {
 			}
 		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EcPubKey", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field EntryCreditPublicKey", wireType)
 			}
 			var byteLen int
 			for shift := uint(0); ; shift += 7 {
@@ -6068,14 +6261,14 @@ func (m *EntryRegistration) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.EcPubKey = append(m.EcPubKey[:0], dAtA[iNdEx:postIndex]...)
-			if m.EcPubKey == nil {
-				m.EcPubKey = []byte{}
+			m.EntryCreditPublicKey = append(m.EntryCreditPublicKey[:0], dAtA[iNdEx:postIndex]...)
+			if m.EntryCreditPublicKey == nil {
+				m.EntryCreditPublicKey = []byte{}
 			}
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Sig", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Signature", wireType)
 			}
 			var byteLen int
 			for shift := uint(0); ; shift += 7 {
@@ -6102,9 +6295,9 @@ func (m *EntryRegistration) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Sig = append(m.Sig[:0], dAtA[iNdEx:postIndex]...)
-			if m.Sig == nil {
-				m.Sig = []byte{}
+			m.Signature = append(m.Signature[:0], dAtA[iNdEx:postIndex]...)
+			if m.Signature == nil {
+				m.Signature = []byte{}
 			}
 			iNdEx = postIndex
 		default:
@@ -6132,7 +6325,7 @@ func (m *EntryRegistration) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EntryContentRegistration) Unmarshal(dAtA []byte) error {
+func (m *EntryReveal) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -6155,10 +6348,10 @@ func (m *EntryContentRegistration) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EntryContentRegistration: wiretype end group for non-group")
+			return fmt.Errorf("proto: EntryReveal: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EntryContentRegistration: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EntryReveal: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -6357,6 +6550,25 @@ func (m *StateChange) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.EntityState |= EntityState(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFactomEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= uint32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -6777,7 +6989,7 @@ func (m *EntryBlock) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EntryBlockHeader", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Header", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -6804,10 +7016,10 @@ func (m *EntryBlock) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.EntryBlockHeader == nil {
-				m.EntryBlockHeader = &EntryBlockHeader{}
+			if m.Header == nil {
+				m.Header = &EntryBlockHeader{}
 			}
-			if err := m.EntryBlockHeader.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Header.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

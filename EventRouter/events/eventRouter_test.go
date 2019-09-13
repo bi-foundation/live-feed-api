@@ -10,7 +10,8 @@ import (
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/FactomProject/live-feed-api/EventRouter/repository"
-	"github.com/opsee/protobuf/opseeproto/types"
+	graphqlproto_types "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
+
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -339,8 +340,8 @@ func mockFactomAnchorEvent() *eventmessages.FactomEvent {
 	testHash := []byte("12345678901234567890123456789012")
 	return &eventmessages.FactomEvent{
 		StreamSource: 0,
-		Value: &eventmessages.FactomEvent_BlockCommit{
-			BlockCommit: &eventmessages.BlockCommit{
+		Value: &eventmessages.FactomEvent_DirectoryBlockCommit{
+			DirectoryBlockCommit: &eventmessages.DirectoryBlockCommit{
 				DirectoryBlock: &eventmessages.DirectoryBlock{
 					Header: &eventmessages.DirectoryBlockHeader{
 						BodyMerkleRoot: &eventmessages.Hash{
@@ -352,7 +353,7 @@ func mockFactomAnchorEvent() *eventmessages.FactomEvent {
 						PreviousFullHash: &eventmessages.Hash{
 							HashValue: testHash,
 						},
-						Timestamp:  &types.Timestamp{Seconds: int64(now.Second()), Nanos: int32(now.Nanosecond())},
+						Timestamp:  &graphqlproto_types.Timestamp{Seconds: int64(now.Second()), Nanos: int32(now.Nanosecond())},
 						BlockCount: 456,
 					},
 					Entries: []*eventmessages.Entry{

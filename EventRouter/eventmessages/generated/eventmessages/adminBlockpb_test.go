@@ -5,11 +5,11 @@ package eventmessages
 
 import (
 	fmt "fmt"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	github_com_gogo_protobuf_proto "github.com/gogo/protobuf/proto"
 	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/opsee/protobuf/opseeproto"
-	_ "github.com/opsee/protobuf/opseeproto/types"
 	math "math"
 	math_rand "math/rand"
 	testing "testing"
@@ -1959,6 +1959,177 @@ func TestServerFaultProtoCompactText(t *testing.T) {
 	}
 }
 
+func TestAdminBlockGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedAdminBlock(popr, false)
+	objdesc := ""
+	pdesc := GraphQLAdminBlockType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestAdminBlockHeaderGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedAdminBlockHeader(popr, false)
+	objdesc := ""
+	pdesc := GraphQLAdminBlockHeaderType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestAdminBlockEntryGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedAdminBlockEntry(popr, false)
+	objdesc := ""
+	pdesc := GraphQLAdminBlockEntryType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestAddAuditServerGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedAddAuditServer(popr, false)
+	objdesc := ""
+	pdesc := GraphQLAddAuditServerType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestAddEfficiencyGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedAddEfficiency(popr, false)
+	objdesc := ""
+	pdesc := GraphQLAddEfficiencyType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestAddFactoidAddressGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedAddFactoidAddress(popr, false)
+	objdesc := ""
+	pdesc := GraphQLAddFactoidAddressType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestAddFederatedServerGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedAddFederatedServer(popr, false)
+	objdesc := ""
+	pdesc := GraphQLAddFederatedServerType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestAddFederatedServerBitcoinAnchorKeyGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedAddFederatedServerBitcoinAnchorKey(popr, false)
+	objdesc := ""
+	pdesc := GraphQLAddFederatedServerBitcoinAnchorKeyType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestAddFederatedServerSigningKeyGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedAddFederatedServerSigningKey(popr, false)
+	objdesc := ""
+	pdesc := GraphQLAddFederatedServerSigningKeyType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestAddReplaceMatryoshkaHashGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedAddReplaceMatryoshkaHash(popr, false)
+	objdesc := ""
+	pdesc := GraphQLAddReplaceMatryoshkaHashType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestCancelCoinbaseDescriptorGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedCancelCoinbaseDescriptor(popr, false)
+	objdesc := ""
+	pdesc := GraphQLCancelCoinbaseDescriptorType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestCoinbaseDescriptorGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedCoinbaseDescriptor(popr, false)
+	objdesc := ""
+	pdesc := GraphQLCoinbaseDescriptorType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestDirectoryBlockSignatureEntryGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedDirectoryBlockSignatureEntry(popr, false)
+	objdesc := ""
+	pdesc := GraphQLDirectoryBlockSignatureEntryType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestEndOfMinuteEntryGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedEndOfMinuteEntry(popr, false)
+	objdesc := ""
+	pdesc := GraphQLEndOfMinuteEntryType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestForwardCompatibleEntryGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedForwardCompatibleEntry(popr, false)
+	objdesc := ""
+	pdesc := GraphQLForwardCompatibleEntryType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestIncreaseServerCountGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedIncreaseServerCount(popr, false)
+	objdesc := ""
+	pdesc := GraphQLIncreaseServerCountType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestRemoveFederatedServerGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedRemoveFederatedServer(popr, false)
+	objdesc := ""
+	pdesc := GraphQLRemoveFederatedServerType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestRevealMatryoshkaHashGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedRevealMatryoshkaHash(popr, false)
+	objdesc := ""
+	pdesc := GraphQLRevealMatryoshkaHashType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
+func TestServerFaultGraphQL(t *testing.T) {
+	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
+	_ = NewPopulatedServerFault(popr, false)
+	objdesc := ""
+	pdesc := GraphQLServerFaultType.PrivateDescription
+	if pdesc != objdesc {
+		t.Fatalf("String want %v got %v", objdesc, pdesc)
+	}
+}
 func TestAdminBlockSize(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
@@ -2374,178 +2545,6 @@ func TestServerFaultSize(t *testing.T) {
 	size3 := github_com_gogo_protobuf_proto.Size(p)
 	if size3 != size {
 		t.Errorf("seed = %d, size %v != after marshal proto.Size %v", seed, size, size3)
-	}
-}
-
-func TestAdminBlockGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedAdminBlock(popr, false)
-	objdesc := ""
-	pdesc := GraphQLAdminBlockType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestAdminBlockHeaderGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedAdminBlockHeader(popr, false)
-	objdesc := ""
-	pdesc := GraphQLAdminBlockHeaderType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestAdminBlockEntryGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedAdminBlockEntry(popr, false)
-	objdesc := ""
-	pdesc := GraphQLAdminBlockEntryType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestAddAuditServerGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedAddAuditServer(popr, false)
-	objdesc := ""
-	pdesc := GraphQLAddAuditServerType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestAddEfficiencyGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedAddEfficiency(popr, false)
-	objdesc := ""
-	pdesc := GraphQLAddEfficiencyType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestAddFactoidAddressGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedAddFactoidAddress(popr, false)
-	objdesc := ""
-	pdesc := GraphQLAddFactoidAddressType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestAddFederatedServerGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedAddFederatedServer(popr, false)
-	objdesc := ""
-	pdesc := GraphQLAddFederatedServerType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestAddFederatedServerBitcoinAnchorKeyGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedAddFederatedServerBitcoinAnchorKey(popr, false)
-	objdesc := ""
-	pdesc := GraphQLAddFederatedServerBitcoinAnchorKeyType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestAddFederatedServerSigningKeyGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedAddFederatedServerSigningKey(popr, false)
-	objdesc := ""
-	pdesc := GraphQLAddFederatedServerSigningKeyType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestAddReplaceMatryoshkaHashGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedAddReplaceMatryoshkaHash(popr, false)
-	objdesc := ""
-	pdesc := GraphQLAddReplaceMatryoshkaHashType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestCancelCoinbaseDescriptorGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedCancelCoinbaseDescriptor(popr, false)
-	objdesc := ""
-	pdesc := GraphQLCancelCoinbaseDescriptorType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestCoinbaseDescriptorGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedCoinbaseDescriptor(popr, false)
-	objdesc := ""
-	pdesc := GraphQLCoinbaseDescriptorType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestDirectoryBlockSignatureEntryGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedDirectoryBlockSignatureEntry(popr, false)
-	objdesc := ""
-	pdesc := GraphQLDirectoryBlockSignatureEntryType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestEndOfMinuteEntryGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEndOfMinuteEntry(popr, false)
-	objdesc := ""
-	pdesc := GraphQLEndOfMinuteEntryType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestForwardCompatibleEntryGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedForwardCompatibleEntry(popr, false)
-	objdesc := ""
-	pdesc := GraphQLForwardCompatibleEntryType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestIncreaseServerCountGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedIncreaseServerCount(popr, false)
-	objdesc := ""
-	pdesc := GraphQLIncreaseServerCountType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestRemoveFederatedServerGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedRemoveFederatedServer(popr, false)
-	objdesc := ""
-	pdesc := GraphQLRemoveFederatedServerType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestRevealMatryoshkaHashGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedRevealMatryoshkaHash(popr, false)
-	objdesc := ""
-	pdesc := GraphQLRevealMatryoshkaHashType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
-	}
-}
-func TestServerFaultGraphQL(t *testing.T) {
-	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedServerFault(popr, false)
-	objdesc := ""
-	pdesc := GraphQLServerFaultType.PrivateDescription
-	if pdesc != objdesc {
-		t.Fatalf("String want %v got %v", objdesc, pdesc)
 	}
 }
 

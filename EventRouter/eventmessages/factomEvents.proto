@@ -3,37 +3,40 @@ package eventmessages;
 option go_package = "eventmessages";
 option java_package = "com.factom.factomd.eventmessages";
 
-import "github.com/opsee/protobuf/opseeproto/opsee.proto";
-import "github.com/opsee/protobuf/opseeproto/types/timestamp.proto";
+import "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/graphql.proto";
+import "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types/timestamp.proto";
 import "eventmessages/generalTypes.proto";
 import "eventmessages/adminBlock.proto";
 import "eventmessages/factoidBlock.proto";
 import "eventmessages/entryCredit.proto";
 
-option (opseeproto.graphql) = true;
+option (graphqlproto.graphql) = true;
 
 enum StreamSource {
     LIVE = 0;
-    REPLAY = 1;
+    REPLAY_BOOT = 1;
+    REPLAY_JOB = 2;
 }
 
 
 message FactomEvent {
     StreamSource streamSource = 1;
-    Hash identityChainID = 2;
+    string factomNodeName = 2;
+    Hash identityChainID = 3;
     oneof value {
-        ChainRegistration chainRegistration = 3;
-        EntryRegistration entryRegistration = 4;
-        EntryContentRegistration entryContentRegistration = 5;
-        StateChange stateChange = 6;
-        BlockCommit blockCommit = 7;
-        ProcessMessage processMessage = 8;
-        NodeMessage nodeMessage = 9;
+        ChainCommit chainCommit = 4;
+        EntryCommit entryCommit = 5;
+        EntryReveal entryReveal = 6;
+        StateChange stateChange = 7;
+        DirectoryBlockCommit directoryBlockCommit = 8;
+        ProcessMessage processMessage = 9;
+        NodeMessage nodeMessage = 10;
     }
+    uint64 replayJobId = 11;
 }
 
 
-message BlockCommit {
+message DirectoryBlockCommit {
     DirectoryBlock directoryBlock = 1;
     AdminBlock adminBlock = 2;
     FactoidBlock factoidBlock = 3;
@@ -42,35 +45,36 @@ message BlockCommit {
     repeated EntryBlockEntry entryBlockEntries = 6;
 }
 
-message ChainRegistration {
+message ChainCommit {
     EntityState entityState = 1;
     Hash chainIDHash = 2;
     Hash entryHash = 3;
     Hash weld = 4;
-    opsee.types.Timestamp timestamp = 5;
+    graphqlproto.types.Timestamp timestamp = 5;
     uint32 credits = 6;
-    bytes ecPubKey = 7;
-    bytes sig = 8;
+    bytes entryCreditPublicKey = 7;
+    bytes signature = 8;
 }
 
-message EntryRegistration {
+message EntryCommit {
     EntityState entityState = 1;
     Hash entryHash = 2;
-    opsee.types.Timestamp timestamp = 3;
+    graphqlproto.types.Timestamp timestamp = 3;
     uint32 credits = 4;
-    bytes ecPubKey = 5;
-    bytes sig = 6;
+    bytes entryCreditPublicKey = 5;
+    bytes signature = 6;
 }
 
-message EntryContentRegistration {
+message EntryReveal {
     EntityState entityState = 1;
     EntryBlockEntry entry = 2;
-    opsee.types.Timestamp timestamp = 3;
+    graphqlproto.types.Timestamp timestamp = 3;
 }
 
 message StateChange {
     Hash entityHash = 1;
     EntityState entityState = 2;
+    uint32 blockHeight = 3;
 }
 
 message DirectoryBlock {
@@ -82,13 +86,13 @@ message DirectoryBlockHeader {
     Hash bodyMerkleRoot = 1;
     Hash previousKeyMerkleRoot = 2;
     Hash previousFullHash = 3;
-    opsee.types.Timestamp timestamp = 4;
+    graphqlproto.types.Timestamp timestamp = 4;
     uint32 blockHeight = 5;
     uint32 blockCount = 6;
 }
 
 message EntryBlock {
-    EntryBlockHeader entryBlockHeader = 1;
+    EntryBlockHeader header = 1;
     repeated Hash entryHashes = 2;
 }
 
@@ -111,9 +115,8 @@ enum Level {
 
 
 enum ProcessMessageCode {
-    OTHER_P = 0;
-    NEW_BLOCK = 1;
-    NEW_MINUTE = 2;
+    NEW_BLOCK = 0;
+    NEW_MINUTE = 1;
 }
 
 
@@ -125,9 +128,9 @@ message ProcessMessage {
 
 
 enum NodeMessageCode {
-    OTHER_N = 0;
+    GENERAL = 0;
     STARTED = 1;
-    SYNC_COMPLETE = 2;
+    SYNCED = 2;
     SHUTDOWN = 3;
 }
 
