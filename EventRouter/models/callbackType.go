@@ -1,8 +1,5 @@
 package models
 
-// CallbackType
-//
-// swagger:enum CallbackType
 type CallbackType string
 
 const (

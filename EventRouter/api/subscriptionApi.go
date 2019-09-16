@@ -1,16 +1,14 @@
-// Live Feed API
+// @title Live Feed API
+// @version 0.1
+// @description The live feed API is a service for receiving events from the factom blockchain. The API is connected to a factomd node. The received events will be emitted to the subscriptions in the API. Users can subscribe a callback url where able to receive different types of events.
+
+// @license.name MIT
+// @license.url http://opensource.org/licenses/MIT
 //
-// The live feed API is a service for receiving events from the factom blockchain. The API is connected to a factomd
-// node. The received events will be emitted to the subscriptions in the API. Users can subscribe a callback url where
-// able to receive different types of events.
+// @host localhost:8700
+// @BasePath /live/feed/v0.1
+// @schemes http https
 //
-//     Schemes: http, https
-//     Host: localhost:8700
-//     BasePath: /live/feed/v0.1/
-//     Version: 0.1.0
-//     License: MIT http://opensource.org/licenses/MIT
-//
-// swagger:meta
 package api
 
 import (
@@ -20,6 +18,7 @@ import (
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
 	"github.com/gorilla/mux"
+	"github.com/swaggo/swag"
 	"net/http"
 	"strings"
 	"time"
@@ -69,9 +68,23 @@ func (api *api) Start() {
 	}()
 }
 
-func swagger(writer http.ResponseWriter, request *http.Request) {
+func swagger(writer http.ResponseWriter, _ *http.Request) {
+	swagger, err := swag.ReadDoc()
+	if err != nil {
+		log.Error("failed to read swagger: %v", err)
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to read swagger"))
+		return
+	}
+
 	writer.Header().Set("Content-Type", "application/json")
-	http.ServeFile(writer, request, "swagger.json")
+	writer.WriteHeader(http.StatusOK)
+
+	_, err = fmt.Fprint(writer, swagger)
+	if err != nil {
+		log.Error("failed to write swagger: %v", err)
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to write swagger"))
+		return
+	}
 }
 
 func decode(writer http.ResponseWriter, request *http.Request, v interface{}) bool {
@@ -89,7 +102,8 @@ func responseError(writer http.ResponseWriter, statusCode int, error interface{}
 	err := json.NewEncoder(writer).Encode(error)
 	if err != nil {
 		log.Error("failed to write error '%v': %v", error, err)
-		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to write error"))
+		writer.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(writer, errors.NewInternalError("failed to write error"))
 	}
 }
 

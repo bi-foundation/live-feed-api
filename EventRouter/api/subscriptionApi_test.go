@@ -9,6 +9,7 @@ import (
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
 	"github.com/FactomProject/live-feed-api/EventRouter/repository"
+	docs "github.com/FactomProject/live-feed-api/EventRouter/swagger"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -30,6 +31,10 @@ func init() {
 		BasePath:    basePath,
 		Schemes:     []string{"HTTP"},
 	}
+
+	// use info from swagger to init will be called to register the swagger which is provided through an endpoint
+	info := docs.SwaggerInfo
+	log.Info("start %s %s", info.Title, info.Version)
 
 	// Start the new server at random port
 	server := NewSubscriptionApi(configuration)
@@ -228,6 +233,13 @@ func TestSubscriptionApi(t *testing.T) {
 			responseCode: http.StatusMethodNotAllowed,
 			assert:       assertEmptyResponse,
 		},
+		"swagger": {
+			URL:          "/swagger.json",
+			Method:       http.MethodGet,
+			content:      nil,
+			responseCode: http.StatusOK,
+			assert:       assertNotEmptyResponse,
+		},
 	}
 
 	// init mock repository,
@@ -304,6 +316,10 @@ func assertSubscribe(t *testing.T, expected *models.Subscription, body []byte) {
 
 func assertEmptyResponse(t *testing.T, body []byte) {
 	assert.Equal(t, "", string(body))
+}
+
+func assertNotEmptyResponse(t *testing.T, body []byte) {
+	assert.NotEqual(t, "", string(body))
 }
 
 func assertParseError(t *testing.T, body []byte) {
