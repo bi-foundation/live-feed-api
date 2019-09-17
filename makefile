@@ -1,9 +1,10 @@
-all: clean build test run
-build:
+all: deps clean build test run
+deps:
 	export GO111MODULE=on;\
 	go get -u ...;\
-	go install;\
 	export GO111MODULE=auto;\
+build:
+	go install;\
 	cp live-feed.conf ${GOPATH}/bin
 test:
 	go test -v ./EventRouter/...
