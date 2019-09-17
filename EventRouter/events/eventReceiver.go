@@ -58,7 +58,7 @@ func (receiver *Receiver) Stop() {
 
 func (receiver *Receiver) listenIncomingConnections() {
 	listener, err := net.Listen(receiver.protocol, receiver.address)
-	log.Info(" event receiver listening: '%s' at %s", receiver.protocol, receiver.address)
+	log.Info("start event receiver at: '%s' at %s", receiver.protocol, receiver.address)
 	if err != nil {
 		log.Error("failed to listen to %s on %s: %v", receiver.protocol, receiver.address, err)
 		return

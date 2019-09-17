@@ -1,9 +1,5 @@
 package models
 
-// EventType
-//
-// A filtering is linked to event type: [CHAIN_REGISTRATION, ENTRY_REGISTRATION, BLOCK_COMMIT, ENTRY_CONTENT_REGISTRATION, NODE_MESSAGE]
-// swagger:model EventType
 type EventType string
 
 const (
@@ -15,12 +11,8 @@ const (
 	NODE_MESSAGE               EventType = "NODE_MESSAGE"
 )
 
-// Filter
-//
-// Define a Filter on an EventType to filter the event. This allows to reduce the network traffic.
-// swagger:model Filter
 type Filter struct {
-	// Filtering with GraphQL
-	// required: false
-	Filtering string `json:"filtering"`
+	// Define a Filter on an EventType to filter the event. This allows to reduce the network traffic. The filtering is done with GraphQL
+	Filtering string `json:"filtering" example:"{ identityChainID { hashValue } value { ... on NodeMessage { messageCode messageText } } }"`
+
 }
