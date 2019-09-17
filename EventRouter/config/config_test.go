@@ -125,9 +125,9 @@ func testDefaultConfig(t *testing.T) {
 
 	subscriptionConfig := config.Subscription
 	assert.NotNil(t, subscriptionConfig, "SubscriptionConfig shouldn't be nil")
-	assert.EqualValues(t, defaultSubscriptionApiAddress, subscriptionConfig.BindAddress, "SubscriptionConfig.BindAddress mismatch %s != %s", defaultSubscriptionApiAddress, subscriptionConfig.BindAddress)
-	assert.EqualValues(t, defaultSubscriptionApiPort, subscriptionConfig.Port, "SubscriptionConfig.Port mismatch %s != %d", defaultSubscriptionApiPort, subscriptionConfig.Port)
-	assert.EqualValues(t, defaultSubscriptionApiSchemes, subscriptionConfig.Schemes, "SubscriptionConfig.Schemes mismatch %v != %v", defaultSubscriptionApiSchemes, subscriptionConfig.Schemes)
+	assert.EqualValues(t, defaultSubscriptionAPIAddress, subscriptionConfig.BindAddress, "SubscriptionConfig.BindAddress mismatch %s != %s", defaultSubscriptionAPIAddress, subscriptionConfig.BindAddress)
+	assert.EqualValues(t, defaultSubscriptionAPIPort, subscriptionConfig.Port, "SubscriptionConfig.Port mismatch %s != %d", defaultSubscriptionAPIPort, subscriptionConfig.Port)
+	assert.EqualValues(t, defaultSubscriptionAPISchemes, subscriptionConfig.Schemes, "SubscriptionConfig.Schemes mismatch %v != %v", defaultSubscriptionAPISchemes, subscriptionConfig.Schemes)
 }
 
 func testNoConfigFound(t *testing.T) {
@@ -283,8 +283,4 @@ func moveFile(sourcePath, destPath string) error {
 		return fmt.Errorf("failed removing original file: %s", err)
 	}
 	return nil
-}
-
-func NewTestConfiguration() *Config {
-	return defaultConfig()
 }

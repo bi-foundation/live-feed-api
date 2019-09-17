@@ -37,28 +37,28 @@ func init() {
 	log.Info("start %s %s", info.Title, info.Version)
 
 	// Start the new server at random port
-	server := NewSubscriptionApi(configuration)
+	server := NewSubscriptionAPI(configuration)
 	server.Start()
 	time.Sleep(1 * time.Second)
 }
 
 var testSubscription = &models.Subscription{
-	CallbackUrl:  "http://url/callback",
+	CallbackURL:  "http://url/callback",
 	CallbackType: models.HTTP,
 	Filters: map[models.EventType]models.Filter{
-		models.CHAIN_REGISTRATION: {
+		models.ChainRegistration: {
 			Filtering: "filtering 1",
 		},
-		models.ENTRY_REGISTRATION: {
+		models.EntryRegistration: {
 			Filtering: "filtering 2",
 		},
 	},
 }
 
 var suspendedSubscription = &models.Subscription{
-	CallbackUrl:        "http://url/callback",
+	CallbackURL:        "http://url/callback",
 	CallbackType:       models.HTTP,
-	SubscriptionStatus: models.SUSPENDED,
+	SubscriptionStatus: models.Suspended,
 	SubscriptionInfo:   "read only information",
 }
 
@@ -86,7 +86,7 @@ func TestSubscriptionApi(t *testing.T) {
 			URL:    "/subscriptions",
 			Method: http.MethodPost,
 			content: content(t, &models.Subscription{
-				CallbackUrl: "invalid url",
+				CallbackURL: "invalid url",
 			}),
 			responseCode: http.StatusBadRequest,
 			assert:       assertInvalidRequestError,
@@ -116,7 +116,7 @@ func TestSubscriptionApi(t *testing.T) {
 			URL:    "/subscriptions",
 			Method: http.MethodPost,
 			content: content(t, &models.Subscription{
-				CallbackUrl:        "http://url/callback/suspended",
+				CallbackURL:        "http://url/callback/suspended",
 				CallbackType:       models.HTTP,
 				SubscriptionStatus: "invalid status",
 			}),
@@ -127,7 +127,7 @@ func TestSubscriptionApi(t *testing.T) {
 			URL:    "/subscriptions",
 			Method: http.MethodPost,
 			content: content(t, &models.Subscription{
-				CallbackUrl:  "http://url/callback/internal/error",
+				CallbackURL:  "http://url/callback/internal/error",
 				CallbackType: models.HTTP,
 			}),
 			responseCode: http.StatusInternalServerError,
@@ -158,14 +158,14 @@ func TestSubscriptionApi(t *testing.T) {
 			URL:    "/subscriptions/id",
 			Method: http.MethodPut,
 			content: content(t, &models.Subscription{
-				Id:           "id",
-				CallbackUrl:  "http://url/callback",
+				ID:           "id",
+				CallbackURL:  "http://url/callback",
 				CallbackType: models.HTTP,
 				Filters: map[models.EventType]models.Filter{
-					models.CHAIN_REGISTRATION: {
+					models.ChainRegistration: {
 						Filtering: "filtering 1",
 					},
-					models.ENTRY_REGISTRATION: {
+					models.EntryRegistration: {
 						Filtering: "filtering 2",
 					},
 				},
@@ -184,8 +184,8 @@ func TestSubscriptionApi(t *testing.T) {
 			URL:    "/subscriptions/id",
 			Method: http.MethodPut,
 			content: content(t, &models.Subscription{
-				Id:           "id-mismatch",
-				CallbackUrl:  "invalid-url",
+				ID:           "id-mismatch",
+				CallbackURL:  "invalid-url",
 				CallbackType: models.HTTP,
 			}),
 			responseCode: http.StatusBadRequest,
@@ -195,8 +195,8 @@ func TestSubscriptionApi(t *testing.T) {
 			URL:    "/subscriptions/id",
 			Method: http.MethodPut,
 			content: content(t, &models.Subscription{
-				Id:           "id",
-				CallbackUrl:  "invalid-url",
+				ID:           "id",
+				CallbackURL:  "invalid-url",
 				CallbackType: models.HTTP,
 			}),
 			responseCode: http.StatusBadRequest,
@@ -206,7 +206,7 @@ func TestSubscriptionApi(t *testing.T) {
 			URL:    "/subscriptions/id",
 			Method: http.MethodPut,
 			content: content(t, &models.Subscription{
-				CallbackUrl:  "http://url/test",
+				CallbackURL:  "http://url/test",
 				CallbackType: "invalid",
 			}),
 			responseCode: http.StatusBadRequest,
@@ -301,17 +301,17 @@ func assertSubscribe(t *testing.T, expected *models.Subscription, body []byte) {
 		t.Fatalf("unmarshalling failed: %v", err)
 	}
 
-	assert.Equal(t, expected.CallbackUrl, actual.CallbackUrl)
+	assert.Equal(t, expected.CallbackURL, actual.CallbackURL)
 	assert.Equal(t, expected.CallbackType, actual.CallbackType)
 	assert.EqualValues(t, expected.Filters, actual.Filters)
 	assert.Equal(t, expected.Credentials, actual.Credentials)
 	if expected.SubscriptionStatus != "" {
 		assert.Equal(t, expected.SubscriptionStatus, actual.SubscriptionStatus)
 	} else {
-		assert.Equal(t, models.ACTIVE, actual.SubscriptionStatus)
+		assert.Equal(t, models.Active, actual.SubscriptionStatus)
 	}
 	assert.Equal(t, expected.SubscriptionInfo, actual.SubscriptionInfo)
-	assert.NotNil(t, actual.Id)
+	assert.NotNil(t, actual.ID)
 }
 
 func assertEmptyResponse(t *testing.T, body []byte) {
@@ -323,21 +323,21 @@ func assertNotEmptyResponse(t *testing.T, body []byte) {
 }
 
 func assertParseError(t *testing.T, body []byte) {
-	result := parseApiBody(t, body)
+	result := parseAPIBody(t, body)
 
 	assert.Equal(t, "parse error", result.Message)
 	assert.Equal(t, errors.NewParseError().Code, result.Code)
 }
 
 func assertInvalidRequestError(t *testing.T, body []byte) {
-	result := parseApiBody(t, body)
+	result := parseAPIBody(t, body)
 
 	assert.Equal(t, "invalid request", result.Message)
 	assert.Equal(t, errors.NewInvalidRequest().Code, result.Code)
 }
 
 func assertInternalError(t *testing.T, body []byte) {
-	result := parseApiBody(t, body)
+	result := parseAPIBody(t, body)
 
 	assert.Equal(t, "internal error", result.Message)
 	assert.Equal(t, errors.NewInternalError("").Code, result.Code)
@@ -347,8 +347,8 @@ func assertNotFound(t *testing.T, body []byte) {
 	assert.Equal(t, "404 page not found\n", string(body))
 }
 
-func parseApiBody(t *testing.T, body []byte) models.ApiError {
-	var result models.ApiError
+func parseAPIBody(t *testing.T, body []byte) models.APIError {
+	var result models.APIError
 	err := json.Unmarshal(body, &result)
 	if err != nil {
 		t.Fatalf("unmarshalling failed: %v", err)

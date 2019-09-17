@@ -11,14 +11,14 @@ GOLIST:=$(GOCMD) list
 GOVET:=$(GOCMD) vet
 u := $(if $(update),-u)
 
-PACKAGES:=$(shell $(GOLIST) ./...)
-GOFILES:=$(shell find . -name "*.go" -type f)
+PACKAGES:=$(shell $(GOLIST) ./EventRouter/...)
+GOFILES:=$(shell find . -path ./vendor -prune -o -name "*.go" -type f)
 
 GOBIN:=$(GOPATH)/bin
 export PATH := $(GOBIN):$(PATH)
-export GO111MODULEENV := on
+export GO11MODULEENV := on
 
-all: clean test build
+all: clean build test
 
 .PHONY: clean
 clean:
@@ -31,7 +31,6 @@ deps:
 
 .PHONY: build
 build: deps
-	$(GOCMD) generate \
 	$(GOBUILD) ./live-feed-api.go;
 
 .PHONY: install

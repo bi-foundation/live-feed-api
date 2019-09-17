@@ -1,10 +1,11 @@
 package models
 
-// SubscriptionStatus
+// SubscriptionStatus status of the subscription
 type SubscriptionStatus string
 
+// different subscriptions status
 const (
-	ACTIVE SubscriptionStatus = "ACTIVE"
+	Active SubscriptionStatus = "ACTIVE"
 
-	SUSPENDED SubscriptionStatus = "SUSPENDED"
+	Suspended SubscriptionStatus = "SUSPENDED"
 )

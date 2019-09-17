@@ -39,21 +39,21 @@ func TestSendEvent(t *testing.T) {
 			CallbackType: models.HTTP,
 		},
 		"bearer token": {
-			CallbackType: models.BEARER_TOKEN,
+			CallbackType: models.BearerToken,
 			Credentials: models.Credentials{
 				AccessToken: accessToken,
 			},
 			AuthenticationValidation: validateToken(accessToken),
 		},
 		"invalid bearer token": {
-			CallbackType: models.BEARER_TOKEN,
+			CallbackType: models.BearerToken,
 			Credentials: models.Credentials{
 				AccessToken: accessToken,
 			},
 			AuthenticationValidation: validateToken("invalid"),
 		},
 		"basic auth": {
-			CallbackType: models.BASIC_AUTH,
+			CallbackType: models.BasicAuth,
 			Credentials: models.Credentials{
 				BasicAuthUsername: "username",
 				BasicAuthPassword: "password",
@@ -61,7 +61,7 @@ func TestSendEvent(t *testing.T) {
 			AuthenticationValidation: validateUsernamePassword("username", "password"),
 		},
 		"basic invalid auth": {
-			CallbackType: models.BASIC_AUTH,
+			CallbackType: models.BasicAuth,
 			Credentials: models.Credentials{
 				BasicAuthUsername: "username",
 				BasicAuthPassword: "password",
@@ -92,11 +92,11 @@ func TestSendEvent(t *testing.T) {
 			var eventsReceived int32 = 0
 			subscriptionContext := &models.SubscriptionContext{
 				Subscription: models.Subscription{
-					Id:           "id",
-					CallbackUrl:  fmt.Sprintf("http://localhost:%[1]d/callback%[1]d%s", port, testCase.EndpointPostfix),
+					ID:           "id",
+					CallbackURL:  fmt.Sprintf("http://localhost:%[1]d/callback%[1]d%s", port, testCase.EndpointPostfix),
 					CallbackType: testCase.CallbackType,
 					Filters: map[models.EventType]models.Filter{
-						models.CHAIN_REGISTRATION: {Filtering: ""},
+						models.ChainRegistration: {Filtering: ""},
 					},
 					Credentials: testCase.Credentials,
 				},
@@ -117,10 +117,10 @@ func TestHTTPSEndpoint(t *testing.T) {
 	subscriptionContexts := []*models.SubscriptionContext{
 		{
 			Subscription: models.Subscription{
-				CallbackUrl:  "https://localhost:23232/callback23232",
-				CallbackType: models.BEARER_TOKEN,
+				CallbackURL:  "https://localhost:23232/callback23232",
+				CallbackType: models.BearerToken,
 				Filters: map[models.EventType]models.Filter{
-					models.CHAIN_REGISTRATION: {Filtering: ""},
+					models.ChainRegistration: {Filtering: ""},
 				},
 				Credentials: models.Credentials{
 					AccessToken: accessToken,
@@ -158,15 +158,15 @@ func TestHTTPSEndpoint(t *testing.T) {
 // test sending 5 subscriptions to two different endpoints
 func TestHandleEvents(t *testing.T) {
 	subscription1 := models.Subscription{
-		CallbackUrl: "http://localhost:23222/callback23222",
+		CallbackURL: "http://localhost:23222/callback23222",
 		Filters: map[models.EventType]models.Filter{
-			models.BLOCK_COMMIT: {Filtering: ""},
+			models.BlockCommit: {Filtering: ""},
 		},
 	}
 	subscription2 := models.Subscription{
-		CallbackUrl: "http://localhost:23223/callback23223",
+		CallbackURL: "http://localhost:23223/callback23223",
 		Filters: map[models.EventType]models.Filter{
-			models.BLOCK_COMMIT: {Filtering: ""},
+			models.BlockCommit: {Filtering: ""},
 		},
 	}
 	subscriptionContexts := []*models.SubscriptionContext{
@@ -179,7 +179,7 @@ func TestHandleEvents(t *testing.T) {
 
 	// init mock repository
 	mockStore := repository.InitMockRepository()
-	mockStore.On("GetActiveSubscriptions", models.BLOCK_COMMIT).Return(subscriptionContexts, nil).Once()
+	mockStore.On("GetActiveSubscriptions", models.BlockCommit).Return(subscriptionContexts, nil).Once()
 
 	var eventsReceived int32 = 0
 	factomEvent := mockFactomAnchorEvent()
@@ -209,15 +209,15 @@ func TestSendEventFailure(t *testing.T) {
 
 	testCases := map[string]*models.SubscriptionContext{
 		"update": {
-			Subscription: models.Subscription{Id: "id"},
+			Subscription: models.Subscription{ID: "id"},
 			Failures:     0,
 		},
 		"update-max-failures": {
-			Subscription: models.Subscription{Id: "id"},
+			Subscription: models.Subscription{ID: "id"},
 			Failures:     2,
 		},
 		"failure": {
-			Subscription: models.Subscription{Id: "error"},
+			Subscription: models.Subscription{ID: "error"},
 			Failures:     0,
 		},
 	}
@@ -227,7 +227,7 @@ func TestSendEventFailure(t *testing.T) {
 			sendEventFailure(subscriptionContext, "failed to deliver event")
 		})
 
-		mockStore.AssertCalled(t, "UpdateSubscription", subscriptionContext.Subscription.Id)
+		mockStore.AssertCalled(t, "UpdateSubscription", subscriptionContext.Subscription.ID)
 	}
 	mockStore.AssertExpectations(t)
 }
@@ -239,15 +239,15 @@ func TestSendEventSuccessful(t *testing.T) {
 
 	testCases := map[string]*models.SubscriptionContext{
 		"update": {
-			Subscription: models.Subscription{Id: "id"},
+			Subscription: models.Subscription{ID: "id"},
 			Failures:     1,
 		},
 		"update-nothing": {
-			Subscription: models.Subscription{Id: "id"},
+			Subscription: models.Subscription{ID: "id"},
 			Failures:     0,
 		},
 		"failure": {
-			Subscription: models.Subscription{Id: "error"},
+			Subscription: models.Subscription{ID: "error"},
 			Failures:     1,
 		},
 	}

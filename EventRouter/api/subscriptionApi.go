@@ -1,3 +1,5 @@
+package api
+
 // @title Live Feed API
 // @version 0.1
 // @description The live feed API is a service for receiving events from the factom blockchain. The API is connected to a factomd node. The received events will be emitted to the subscriptions in the API. Users can subscribe a callback url where able to receive different types of events.
@@ -8,8 +10,6 @@
 // @host localhost:8700
 // @BasePath /live/feed/v0.1
 // @schemes http https
-//
-package api
 
 import (
 	"encoding/json"
@@ -24,7 +24,8 @@ import (
 	"time"
 )
 
-type SubscriptionApi interface {
+// SubscriptionAPI is API endpoint that users allow to register an callback to receive events
+type SubscriptionAPI interface {
 	Start()
 }
 
@@ -32,7 +33,8 @@ type api struct {
 	apiConfig *config.SubscriptionConfig
 }
 
-func NewSubscriptionApi(apiConfig *config.SubscriptionConfig) SubscriptionApi {
+// NewSubscriptionAPI create a new SubscriptionAPI with a configuration
+func NewSubscriptionAPI(apiConfig *config.SubscriptionConfig) SubscriptionAPI {
 	return &api{
 		apiConfig: apiConfig,
 	}

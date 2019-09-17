@@ -21,29 +21,33 @@ const (
 	defaultReceiverPort        = 8040
 	defaultReceiverProtocol    = "tcp"
 
-	defaultSubscriptionApiAddress  = ""
-	defaultSubscriptionApiPort     = 8700
-	defaultSubscriptionApiBasePath = "/live/feed/v" + defaultVersion
+	defaultSubscriptionAPIAddress  = ""
+	defaultSubscriptionAPIPort     = 8700
+	defaultSubscriptionAPIBasePath = "/live/feed/v" + defaultVersion
 )
 
-var defaultSubscriptionApiSchemes = []string{"HTTP", "HTTPS"}
+var defaultSubscriptionAPISchemes = []string{"HTTP", "HTTPS"}
 
+// Config the configuration of the live-feed api
 type Config struct {
 	Log          *LogConfig
 	Receiver     *ReceiverConfig
 	Subscription *SubscriptionConfig
 }
 
+// LogConfig configuration for logging
 type LogConfig struct {
 	LogLevel string
 }
 
+// ReceiverConfig configuration for the receiver
 type ReceiverConfig struct {
 	Protocol    string
 	BindAddress string
 	Port        uint16
 }
 
+// SubscriptionConfig configuration for the subcription api
 type SubscriptionConfig struct {
 	Schemes     []string
 	BindAddress string // (Duplicated because extended interfaces are not supported by Viper)
@@ -51,14 +55,13 @@ type SubscriptionConfig struct {
 	BasePath    string
 }
 
-/* load configuration from default paths for live-feed.conf
- * look for configuration in:
- * - current path
- * - /etc/factom-live-feed
- * - $HOME/.factom
- * - $HOME/.factom/live-feed
- * - current path
- */
+// LoadConfiguration from default paths for live-feed.conf
+// look for configuration in:
+// - current path
+// - /etc/factom-live-feed
+// - $HOME/.factom
+// - $HOME/.factom/live-feed
+// - current path
 func LoadConfiguration() (*Config, error) {
 	configPaths := []string{
 		"",
@@ -80,7 +83,7 @@ func LoadConfiguration() (*Config, error) {
 	return defaultConfig(), nil
 }
 
-// load configuration from specific a file
+// LoadConfigurationFrom specific a file
 func LoadConfigurationFrom(filename string) (*Config, error) {
 	filename = substituteHomeDir(filename)
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
@@ -126,10 +129,10 @@ func defaultConfig() *Config {
 			Port:        defaultReceiverPort,
 		},
 		Subscription: &SubscriptionConfig{
-			Schemes:     defaultSubscriptionApiSchemes,
-			BindAddress: defaultSubscriptionApiAddress,
-			Port:        defaultSubscriptionApiPort,
-			BasePath:    defaultSubscriptionApiBasePath,
+			Schemes:     defaultSubscriptionAPISchemes,
+			BindAddress: defaultSubscriptionAPIAddress,
+			Port:        defaultSubscriptionAPIPort,
+			BasePath:    defaultSubscriptionAPIBasePath,
 		},
 	}
 }
@@ -144,10 +147,10 @@ func buildReceiverDefaults() map[string]interface{} {
 
 func buildSubscriptionDefaults() map[string]interface{} {
 	return map[string]interface{}{
-		"BindAddress": defaultSubscriptionApiAddress,
-		"Port":        defaultSubscriptionApiPort,
-		"Schemes":     defaultSubscriptionApiSchemes,
-		"BasePath":    defaultSubscriptionApiBasePath,
+		"BindAddress": defaultSubscriptionAPIAddress,
+		"Port":        defaultSubscriptionAPIPort,
+		"Schemes":     defaultSubscriptionAPISchemes,
+		"BasePath":    defaultSubscriptionAPIBasePath,
 	}
 }
 

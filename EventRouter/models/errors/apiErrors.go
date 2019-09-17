@@ -2,22 +2,31 @@ package errors
 
 import "github.com/FactomProject/live-feed-api/EventRouter/models"
 
-func NewInternalError(reason string) *models.ApiError {
-	return &models.ApiError{-410800, "internal error", reason}
+// NewInternalError create a new internal error
+func NewInternalError(reason string) *models.APIError {
+	return &models.APIError{
+		Code:    -410800,
+		Message: "internal error",
+		Details: reason,
+	}
 }
 
-func NewMethodNotFoundError() *models.ApiError {
-	return &models.ApiError{-410801, "method not found", ""}
+// NewMethodNotFoundError create a new method not found error
+func NewMethodNotFoundError() *models.APIError {
+	return &models.APIError{Code: -410801, Message: "method not found", Details: ""}
 }
 
-func NewInvalidRequest() *models.ApiError {
+// NewInvalidRequest create a new invalid request error
+func NewInvalidRequest() *models.APIError {
 	return NewInvalidRequestDetailed("")
 }
 
-func NewInvalidRequestDetailed(reason string) *models.ApiError {
-	return &models.ApiError{-410810, "invalid request", reason}
+// NewInvalidRequestDetailed create a new invalid request error with given details
+func NewInvalidRequestDetailed(reason string) *models.APIError {
+	return &models.APIError{Code: -410810, Message: "invalid request", Details: reason}
 }
 
-func NewParseError() *models.ApiError {
-	return &models.ApiError{-410800, "parse error", ""}
+// NewParseError create a new parse error
+func NewParseError() *models.APIError {
+	return &models.APIError{Code: -410800, Message: "parse error", Details: ""}
 }

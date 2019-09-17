@@ -1,6 +1,7 @@
 package models
 
-type ApiError struct {
+// APIError for api errors.
+type APIError struct {
 
 	// Error code.
 	Code int `json:"code"`
@@ -8,6 +9,6 @@ type ApiError struct {
 	// Error message.
 	Message string `json:"message"`
 
-	// Error details
+	// Error details.
 	Details string `json:"details"`
 }
