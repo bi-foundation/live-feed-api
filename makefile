@@ -68,7 +68,7 @@ generate:
 
 .PHONY: dev-deps
 dev-deps:
-	GO111MODULE=off $(GOGET) -v ${u} \
+	GO11MODULE=off $(GOGET) -v ${u} \
 		golang.org/x/lint/golint \
 		github.com/swaggo/swag/cmd/swag	\
 		github.com/swaggo/swag/gen	\
