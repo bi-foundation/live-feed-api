@@ -14,5 +14,4 @@ const (
 type Filter struct {
 	// Define a Filter on an EventType to filter the event. This allows to reduce the network traffic. The filtering is done with GraphQL
 	Filtering string `json:"filtering" example:"{ identityChainID { hashValue } value { ... on NodeMessage { messageCode messageText } } }"`
-
 }

@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	port = 8700
+	port     = 8700
 	basePath = "/live/feed"
 )
 
