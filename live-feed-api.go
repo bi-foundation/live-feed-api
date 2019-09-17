@@ -4,6 +4,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/FactomProject/live-feed-api/EventRouter/api"
 	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/events"
@@ -18,12 +19,10 @@ func main() {
 	info := docs.SwaggerInfo
 	log.Info("start %s %s", info.Title, info.Version)
 
-	configuration, err := config.LoadConfiguration()
-	if err != nil {
-		log.Fatal("failed to load configuration: %v", err)
-	}
+	configuration := loadConfiguration()
 	log.SetLevel(log.Parse(configuration.Log.LogLevel))
 
+	log.SetLevel(log.Parse(configuration.Log.LogLevel))
 	eventServer := events.NewReceiver(configuration.Receiver)
 	eventRouter := events.NewEventRouter(eventServer.GetEventQueue())
 
@@ -37,4 +36,20 @@ func main() {
 	}
 
 	eventServer.Stop()
+}
+
+func loadConfiguration() *config.Config {
+	explicitConfigFile := flag.String("config-file", "", "Override the configuration file")
+	flag.Parse()
+	var configuration *config.Config
+	var err error
+	if explicitConfigFile != nil && len(*explicitConfigFile) > 0 {
+		configuration, err = config.LoadConfigurationFrom(*explicitConfigFile)
+	} else {
+		configuration, err = config.LoadConfiguration()
+	}
+	if err != nil {
+		log.Fatal("failed to load configuration: %v", err)
+	}
+	return configuration
 }
