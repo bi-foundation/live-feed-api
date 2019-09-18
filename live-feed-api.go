@@ -29,7 +29,7 @@ func main() {
 	eventServer.Start()
 	eventRouter.Start()
 
-	api.NewSubscriptionApi(configuration.Subscription).Start()
+	api.NewSubscriptionAPI(configuration.Subscription).Start()
 
 	for eventServer.GetState() < models.Stopping {
 		time.Sleep(time.Second)

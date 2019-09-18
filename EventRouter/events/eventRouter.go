@@ -12,23 +12,30 @@ import (
 	"net/http"
 )
 
-const MAX_FAILURES_DEFAULT = 3
+const defaultMaxFailures = 3
 
-var maxFailures = MAX_FAILURES_DEFAULT
+var maxFailures = defaultMaxFailures
 
-type EventRouter struct {
+// EventRouter that route the events to subscriptions
+type EventRouter interface {
+	Start()
+}
+
+type eventRouter struct {
 	eventsInQueue chan *eventmessages.FactomEvent
 }
 
+// NewEventRouter create a new event router that listens to a given queue
 func NewEventRouter(queue chan *eventmessages.FactomEvent) EventRouter {
-	return EventRouter{eventsInQueue: queue}
+	return &eventRouter{eventsInQueue: queue}
 }
 
-func (evr *EventRouter) Start() {
+// Start the event router
+func (evr *eventRouter) Start() {
 	go evr.handleEvents()
 }
 
-func (evr *EventRouter) handleEvents() {
+func (evr *eventRouter) handleEvents() {
 	for factomEvent := range evr.eventsInQueue {
 		log.Debug("handle event: %v", factomEvent)
 
@@ -57,17 +64,17 @@ func (evr *EventRouter) handleEvents() {
 func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, error) {
 	switch factomEvent.Value.(type) {
 	case *eventmessages.FactomEvent_DirectoryBlockCommit:
-		return models.BLOCK_COMMIT, nil
+		return models.BlockCommit, nil
 	case *eventmessages.FactomEvent_ChainCommit:
-		return models.CHAIN_REGISTRATION, nil
+		return models.ChainRegistration, nil
 	case *eventmessages.FactomEvent_EntryCommit:
-		return models.ENTRY_REGISTRATION, nil
+		return models.EntryRegistration, nil
 	case *eventmessages.FactomEvent_EntryReveal:
-		return models.ENTRY_CONTENT_REGISTRATION, nil
+		return models.EntryContentRegistration, nil
 	case *eventmessages.FactomEvent_ProcessMessage:
-		return models.PROCESS_MESSAGE, nil
+		return models.ProcessMessage, nil
 	case *eventmessages.FactomEvent_NodeMessage:
-		return models.NODE_MESSAGE, nil
+		return models.NodeMessage, nil
 	default:
 		return "", fmt.Errorf("failed to map correct node")
 	}
@@ -86,7 +93,7 @@ func send(subscriptions []*models.SubscriptionContext, factomEvent *eventmessage
 
 func sendEvent(subscriptionContext *models.SubscriptionContext, event []byte) {
 	subscription := subscriptionContext.Subscription
-	url := subscription.CallbackUrl
+	url := subscription.CallbackURL
 
 	// Create a new request
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(event))
@@ -97,16 +104,16 @@ func sendEvent(subscriptionContext *models.SubscriptionContext, event []byte) {
 	}
 
 	// setup authentication
-	if subscription.CallbackType == models.BASIC_AUTH {
+	if subscription.CallbackType == models.BasicAuth {
 		auth := subscription.Credentials.BasicAuthUsername + ":" + subscription.Credentials.BasicAuthPassword
 		authentication := base64.StdEncoding.EncodeToString([]byte(auth))
 		request.Header.Add("Authorization", "Basic "+authentication)
-	} else if subscription.CallbackType == models.BEARER_TOKEN {
+	} else if subscription.CallbackType == models.BearerToken {
 		bearer := "Bearer " + subscription.Credentials.AccessToken
 		request.Header.Add("Authorization", bearer)
 	}
 
-	log.Debug("send event to '%s' %v", subscription.CallbackUrl, subscription.CallbackType)
+	log.Debug("send event to '%s' %v", subscription.CallbackURL, subscription.CallbackType)
 	// send request using default http Client
 	response, err := http.DefaultClient.Do(request)
 
@@ -134,7 +141,7 @@ func sendEvent(subscriptionContext *models.SubscriptionContext, event []byte) {
 func sendEventFailure(subscriptionContext *models.SubscriptionContext, reason string) {
 	subscriptionContext.Failures++
 	if subscriptionContext.Failures > maxFailures {
-		subscriptionContext.Subscription.SubscriptionStatus = models.SUSPENDED
+		subscriptionContext.Subscription.SubscriptionStatus = models.Suspended
 		subscriptionContext.Subscription.SubscriptionInfo = reason
 	}
 	// update the database
@@ -147,7 +154,7 @@ func sendEventFailure(subscriptionContext *models.SubscriptionContext, reason st
 func sendEventSuccessful(subscriptionContext *models.SubscriptionContext) {
 	if subscriptionContext.Failures > 0 {
 		subscriptionContext.Failures = 0
-		subscriptionContext.Subscription.SubscriptionStatus = models.ACTIVE
+		subscriptionContext.Subscription.SubscriptionStatus = models.Active
 		subscriptionContext.Subscription.SubscriptionInfo = ""
 
 		// update the database

@@ -11,14 +11,14 @@ GOLIST:=$(GOCMD) list
 GOVET:=$(GOCMD) vet
 u := $(if $(update),-u)
 
-PACKAGES:=$(shell $(GOLIST) ./...)
-GOFILES:=$(shell find . -name "*.go" -type f)
+PACKAGES:=$(shell $(GOLIST) ./EventRouter/...)
+GOFILES:=$(shell find . -path ./vendor -prune -o -name "*.go" -type f)
 
 GOBIN:=$(GOPATH)/bin
 export PATH := $(GOBIN):$(PATH)
-export GO111MODULEENV := on
+export GO11MODULEENV := on
 
-all: clean test build
+all: clean build test
 
 .PHONY: clean
 clean:
@@ -31,7 +31,6 @@ deps:
 
 .PHONY: build
 build: deps
-	$(GOCMD) generate \
 	$(GOBUILD) ./live-feed-api.go;
 
 .PHONY: install
@@ -56,7 +55,7 @@ test:
 			rm profile.out; \
 		fi; \
 	done; \
-	rm tmp.out;
+	rm tmp.out || true;
 
 .PHONY: run
 run:
@@ -68,10 +67,11 @@ generate:
 
 .PHONY: dev-deps
 dev-deps:
-	GO111MODULE=off $(GOGET) -v ${u} \
+	GO11MODULE=off $(GOGET) -v ${u} \
 		golang.org/x/lint/golint \
 		github.com/swaggo/swag/cmd/swag	\
 		github.com/swaggo/swag/gen	\
+		github.com/golang/protobuf/protoc-gen-go	\
 		github.com/bi-foundation/protobuf-graphql-extension/protoc-gen-gogoopsee
 
 .PHONY: lint

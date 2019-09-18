@@ -1,12 +1,13 @@
 package models
 
+// Subscription for subscribing a callback url to receive events
 type Subscription struct {
 
 	// The id of the subscription.
-	Id string `json:"id" binding:"required"`
+	ID string `json:"id" binding:"required"`
 
 	// The callback endpoint to receive the events.
-	CallbackUrl string `json:"callbackUrl" binding:"required" example:"https://server.com/events"`
+	CallbackURL string `json:"callbackUrl" binding:"required" example:"https://server.com/events"`
 
 	// Type of callback.
 	// - HTTP to deliver the events to a http/https endpoint.

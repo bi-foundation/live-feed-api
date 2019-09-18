@@ -1,4 +1,4 @@
-package inmemory
+package repository
 
 import (
 	"fmt"
@@ -10,49 +10,49 @@ import (
 	"testing"
 )
 
-const initId = 0
+const initID = 0
 
 var repo *inMemoryRepository
 
 func init() {
-	repo = New()
+	repo, _ = NewInMemoryRepository().(*inMemoryRepository)
 }
 
 func TestCRUD(t *testing.T) {
 	subscriptionContext := &models.SubscriptionContext{
 		Subscription: models.Subscription{
-			Id:          "ID",
-			CallbackUrl: "url",
+			ID:          "ID",
+			CallbackURL: "url",
 		},
 	}
 	createdSubscription, err := repo.CreateSubscription(subscriptionContext)
 
-	id := strconv.Itoa(initId)
+	id := strconv.Itoa(initID)
 
 	assert.Nil(t, err)
-	assert.Equal(t, id, createdSubscription.Subscription.Id)
-	assert.Equal(t, subscriptionContext.Subscription.CallbackUrl, createdSubscription.Subscription.CallbackUrl)
+	assert.Equal(t, id, createdSubscription.Subscription.ID)
+	assert.Equal(t, subscriptionContext.Subscription.CallbackURL, createdSubscription.Subscription.CallbackURL)
 
-	readSubscription, err := repo.ReadSubscription(subscriptionContext.Subscription.Id)
+	readSubscription, err := repo.ReadSubscription(subscriptionContext.Subscription.ID)
 	assert.Nil(t, err)
-	assert.Equal(t, id, readSubscription.Subscription.Id)
-	assert.Equal(t, subscriptionContext.Subscription.CallbackUrl, readSubscription.Subscription.CallbackUrl)
+	assert.Equal(t, id, readSubscription.Subscription.ID)
+	assert.Equal(t, subscriptionContext.Subscription.CallbackURL, readSubscription.Subscription.CallbackURL)
 
 	substituteSubscriptionContext := &models.SubscriptionContext{
 		Subscription: models.Subscription{
-			Id:          createdSubscription.Subscription.Id,
-			CallbackUrl: "updated-url",
+			ID:          createdSubscription.Subscription.ID,
+			CallbackURL: "updated-url",
 		},
 	}
 	updatedSubscription, err := repo.UpdateSubscription(substituteSubscriptionContext)
 	assert.Nil(t, err)
-	assert.Equal(t, id, updatedSubscription.Subscription.Id)
-	assert.Equal(t, substituteSubscriptionContext.Subscription.CallbackUrl, updatedSubscription.Subscription.CallbackUrl)
+	assert.Equal(t, id, updatedSubscription.Subscription.ID)
+	assert.Equal(t, substituteSubscriptionContext.Subscription.CallbackURL, updatedSubscription.Subscription.CallbackURL)
 
-	err = repo.DeleteSubscription(subscriptionContext.Subscription.Id)
+	err = repo.DeleteSubscription(subscriptionContext.Subscription.ID)
 	assert.Nil(t, err)
 
-	unknownSubscription, err := repo.ReadSubscription(subscriptionContext.Subscription.Id)
+	unknownSubscription, err := repo.ReadSubscription(subscriptionContext.Subscription.ID)
 	assert.IsType(t, errors.SubscriptionNotFound{}, err)
 	assert.Nil(t, unknownSubscription)
 }
@@ -66,13 +66,13 @@ func TestConcurrency(t *testing.T) {
 			defer wait.Done()
 			subscriptionContext := &models.SubscriptionContext{
 				Subscription: models.Subscription{
-					CallbackUrl: fmt.Sprintf("url: %d", x),
+					CallbackURL: fmt.Sprintf("url: %d", x),
 				},
 			}
 
 			subscriptionContext, err := repo.CreateSubscription(subscriptionContext)
 			assert.Nil(t, err)
-			t.Logf("%d: created %s", x, subscriptionContext.Subscription.Id)
+			t.Logf("%d: created %s", x, subscriptionContext.Subscription.ID)
 		}(i)
 	}
 	wait.Wait()

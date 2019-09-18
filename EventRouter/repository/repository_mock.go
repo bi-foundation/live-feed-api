@@ -5,19 +5,21 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// The mock repository contains additional methods for inspection
+// MockRepository contains additional methods for inspection
 type MockRepository struct {
 	mock.Mock
 }
 
+// CreateSubscription create a subscription
 func (m *MockRepository) CreateSubscription(subscriptionContext *models.SubscriptionContext) (*models.SubscriptionContext, error) {
-	rets := m.Called(subscriptionContext.Subscription.CallbackUrl)
+	rets := m.Called(subscriptionContext.Subscription.CallbackURL)
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
 	 * we need to typecast it to the type we expect, which in this case is []*subscription
 	 */
 	return subscriptionContext, rets.Error(1)
 }
 
+// ReadSubscription read a subscription
 func (m *MockRepository) ReadSubscription(id string) (*models.SubscriptionContext, error) {
 	rets := m.Called(id)
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
@@ -26,14 +28,16 @@ func (m *MockRepository) ReadSubscription(id string) (*models.SubscriptionContex
 	return rets.Get(0).(*models.SubscriptionContext), rets.Error(1)
 }
 
+// UpdateSubscription update a subscription
 func (m *MockRepository) UpdateSubscription(subscriptionContext *models.SubscriptionContext) (*models.SubscriptionContext, error) {
-	rets := m.Called(subscriptionContext.Subscription.Id)
+	rets := m.Called(subscriptionContext.Subscription.ID)
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
 	 * we need to typecast it to the type we expect, which in this case is []*subscription
 	 */
 	return subscriptionContext, rets.Error(1)
 }
 
+// DeleteSubscription delete a subscription
 func (m *MockRepository) DeleteSubscription(id string) error {
 	/* When this method is called, `m.Called` records the call, and also returns the result that we pass to it
 	 * (which you will see in the handler tests)
@@ -43,6 +47,7 @@ func (m *MockRepository) DeleteSubscription(id string) error {
 	return rets.Error(0)
 }
 
+// GetActiveSubscriptions get active subscriptions
 func (m *MockRepository) GetActiveSubscriptions(eventType models.EventType) ([]*models.SubscriptionContext, error) {
 	rets := m.Called(eventType)
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
@@ -51,6 +56,7 @@ func (m *MockRepository) GetActiveSubscriptions(eventType models.EventType) ([]*
 	return rets.Get(0).([]*models.SubscriptionContext), rets.Error(1)
 }
 
+// InitMockRepository initialize repository
 func InitMockRepository() *MockRepository {
 	/*
 		Like the InitStore function we defined earlier, this function

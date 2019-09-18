@@ -2,8 +2,10 @@ package models
 
 import "fmt"
 
+// RunState to define the state of the service
 type RunState int
 
+// Different run states
 const (
 	New RunState = iota
 	Booting
@@ -12,6 +14,7 @@ const (
 	Stopped
 )
 
+// String export the run state to a string
 func (runState RunState) String() string {
 	switch runState {
 	case New:

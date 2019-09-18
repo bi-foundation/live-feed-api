@@ -105,7 +105,7 @@ func connect(t *testing.T) net.Conn {
 	return conn
 }
 
-func listenForEvents(testId string, n int, timeLimit time.Duration) int {
+func listenForEvents(testID string, n int, timeLimit time.Duration) int {
 	var correctSendEvents int32 = 0
 	quit := make(chan bool)
 	go func() {
@@ -113,7 +113,7 @@ func listenForEvents(testId string, n int, timeLimit time.Duration) int {
 			select {
 			case <-eventsQueue:
 				atomic.AddInt32(&correctSendEvents, 1)
-				fmt.Printf("[%s] > received event in queue\n", testId)
+				fmt.Printf("[%s] > received event in queue\n", testID)
 			case <-quit:
 				return
 			default:

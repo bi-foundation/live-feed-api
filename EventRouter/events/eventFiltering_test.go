@@ -25,7 +25,7 @@ func TestQueryNodeMessage(t *testing.T) {
 			}
 		}
 	}`
-	expectedJson := `{ 
+	expectedJSON := `{ 
 		"event": {
 			"identityChainID": {
 				"hashValue": "OLqxRVt71+Xv0VxTx3fHnQyYjpIQ8dpJqZ2Vs6ZBe+k="
@@ -44,7 +44,7 @@ func TestQueryNodeMessage(t *testing.T) {
 		t.Fatalf("failed to marshal result: %v - %v", err, result)
 	}
 
-	assert.JSONEq(t, expectedJson, string(result))
+	assert.JSONEq(t, expectedJSON, string(result))
 }
 
 func testQueryFilter(t *testing.T) {

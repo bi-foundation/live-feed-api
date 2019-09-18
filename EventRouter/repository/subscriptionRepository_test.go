@@ -1,23 +1,21 @@
-package repository_test
+package repository
 
 import (
 	"fmt"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
-	"github.com/FactomProject/live-feed-api/EventRouter/repository"
-	"github.com/FactomProject/live-feed-api/EventRouter/repository/inmemory"
 	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
 )
 
-var repositories map[string]repository.Repository
+var repositories map[string]Repository
 
 func init() {
 	log.SetLevel(log.D)
 
-	repositories = map[string]repository.Repository{
-		"inmemory": inmemory.New(),
+	repositories = map[string]Repository{
+		"inmemory": NewInMemoryRepository(),
 	}
 }
 
@@ -25,13 +23,13 @@ func testCRUD(t *testing.T) {
 
 	subscriptionContext := &models.SubscriptionContext{
 		Subscription: models.Subscription{
-			CallbackUrl:        "url",
-			CallbackType:       models.BEARER_TOKEN,
-			SubscriptionStatus: models.ACTIVE,
+			CallbackURL:        "url",
+			CallbackType:       models.BearerToken,
+			SubscriptionStatus: models.Active,
 			Filters: map[models.EventType]models.Filter{
-				models.BLOCK_COMMIT:       {Filtering: fmt.Sprintf("filtering 1")},
-				models.ENTRY_REGISTRATION: {Filtering: fmt.Sprintf("filtering 2")},
-				models.CHAIN_REGISTRATION: {Filtering: fmt.Sprintf("filtering 3")},
+				models.BlockCommit:       {Filtering: fmt.Sprintf("filtering 1")},
+				models.EntryRegistration: {Filtering: fmt.Sprintf("filtering 2")},
+				models.ChainRegistration: {Filtering: fmt.Sprintf("filtering 3")},
 			},
 			Credentials: models.Credentials{
 				AccessToken: "token",
@@ -42,13 +40,13 @@ func testCRUD(t *testing.T) {
 
 	substituteSubscriptionContext := &models.SubscriptionContext{
 		Subscription: models.Subscription{
-			CallbackUrl:        "updated-url",
-			CallbackType:       models.BASIC_AUTH,
-			SubscriptionStatus: models.SUSPENDED,
+			CallbackURL:        "updated-url",
+			CallbackType:       models.BasicAuth,
+			SubscriptionStatus: models.Suspended,
 			SubscriptionInfo:   "reason",
 			Filters: map[models.EventType]models.Filter{
-				models.BLOCK_COMMIT:       {Filtering: fmt.Sprintf("filtering update 1")},
-				models.ENTRY_REGISTRATION: {Filtering: fmt.Sprintf("filtering update 2")},
+				models.BlockCommit:       {Filtering: fmt.Sprintf("filtering update 1")},
+				models.EntryRegistration: {Filtering: fmt.Sprintf("filtering update 2")},
 			},
 			Credentials: models.Credentials{
 				BasicAuthUsername: "username",
@@ -63,7 +61,7 @@ func testCRUD(t *testing.T) {
 			testCreate(t, repo, subscriptionContext)
 			testRead(t, repo, subscriptionContext)
 
-			substituteSubscriptionContext.Subscription.Id = subscriptionContext.Subscription.Id
+			substituteSubscriptionContext.Subscription.ID = subscriptionContext.Subscription.ID
 			testUpdate(t, repo, substituteSubscriptionContext)
 			testRead(t, repo, substituteSubscriptionContext)
 
@@ -73,32 +71,32 @@ func testCRUD(t *testing.T) {
 	}
 }
 
-func testCreate(t *testing.T, repository repository.Repository, subscriptionContext *models.SubscriptionContext) {
+func testCreate(t *testing.T, repository Repository, subscriptionContext *models.SubscriptionContext) {
 	createdSubscriptionContext, err := repository.CreateSubscription(subscriptionContext)
 	assertNilError(t, err)
 	assertSubscription(t, subscriptionContext, createdSubscriptionContext)
-	subscriptionContext.Subscription.Id = createdSubscriptionContext.Subscription.Id
+	subscriptionContext.Subscription.ID = createdSubscriptionContext.Subscription.ID
 }
 
-func testRead(t *testing.T, repository repository.Repository, subscriptionContext *models.SubscriptionContext) {
-	readSubscriptionContext, err := repository.ReadSubscription(subscriptionContext.Subscription.Id)
+func testRead(t *testing.T, repository Repository, subscriptionContext *models.SubscriptionContext) {
+	readSubscriptionContext, err := repository.ReadSubscription(subscriptionContext.Subscription.ID)
 	assertNilError(t, err)
 	assertSubscription(t, subscriptionContext, readSubscriptionContext)
 }
 
-func testUpdate(t *testing.T, repository repository.Repository, subscriptionContext *models.SubscriptionContext) {
+func testUpdate(t *testing.T, repository Repository, subscriptionContext *models.SubscriptionContext) {
 	updatedSubscriptionContext, err := repository.UpdateSubscription(subscriptionContext)
 	assertNilError(t, err)
 	assertSubscription(t, subscriptionContext, updatedSubscriptionContext)
 }
 
-func testDelete(t *testing.T, repository repository.Repository, subscriptionContext *models.SubscriptionContext) {
-	err := repository.DeleteSubscription(subscriptionContext.Subscription.Id)
+func testDelete(t *testing.T, repository Repository, subscriptionContext *models.SubscriptionContext) {
+	err := repository.DeleteSubscription(subscriptionContext.Subscription.ID)
 	assertNilError(t, err)
 }
 
-func testNoExits(t *testing.T, repository repository.Repository, subscriptionContext *models.SubscriptionContext) {
-	unknownSubscriptionContext, err := repository.ReadSubscription(subscriptionContext.Subscription.Id)
+func testNoExits(t *testing.T, repository Repository, subscriptionContext *models.SubscriptionContext) {
+	unknownSubscriptionContext, err := repository.ReadSubscription(subscriptionContext.Subscription.ID)
 	assert.NotNil(t, err)
 	assert.Nil(t, unknownSubscriptionContext)
 }
@@ -108,9 +106,9 @@ func assertSubscription(t *testing.T, expected *models.SubscriptionContext, actu
 		assert.Fail(t, "subscription is nil")
 		return
 	}
-	assert.NotNil(t, actual.Subscription.Id)
+	assert.NotNil(t, actual.Subscription.ID)
 	assert.Equal(t, expected.Failures, actual.Failures)
-	assert.Equal(t, expected.Subscription.CallbackUrl, actual.Subscription.CallbackUrl)
+	assert.Equal(t, expected.Subscription.CallbackURL, actual.Subscription.CallbackURL)
 	assert.Equal(t, expected.Subscription.CallbackType, actual.Subscription.CallbackType)
 	assert.Equal(t, expected.Subscription.SubscriptionStatus, actual.Subscription.SubscriptionStatus)
 	assert.Equal(t, expected.Subscription.SubscriptionInfo, actual.Subscription.SubscriptionInfo)
@@ -133,11 +131,11 @@ func testConcurrencyAllRepos(t *testing.T) {
 	}
 }
 
-func testConcurrency(t *testing.T, repository repository.Repository) {
-	eventType := models.ENTRY_REGISTRATION
+func testConcurrency(t *testing.T, repository Repository) {
+	eventType := models.EntryRegistration
 	subscription := models.Subscription{
-		CallbackUrl:        "url",
-		SubscriptionStatus: models.ACTIVE,
+		CallbackURL:        "url",
+		SubscriptionStatus: models.Active,
 		Filters: map[models.EventType]models.Filter{
 			eventType: {Filtering: ""},
 		},
@@ -161,7 +159,7 @@ func testConcurrency(t *testing.T, repository repository.Repository) {
 
 			subscriptionContext, err := repository.CreateSubscription(subscriptionContext)
 			assert.Nil(t, err)
-			t.Logf("%d: created %s", x, subscriptionContext.Subscription.Id)
+			t.Logf("%d: created %s", x, subscriptionContext.Subscription.ID)
 		}(i)
 	}
 	wait.Wait()

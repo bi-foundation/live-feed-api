@@ -1,5 +1,6 @@
 package models
 
+// Credentials of the endpoint in the subscription
 type Credentials struct {
 
 	// Access token for setting the bearer token when authenticating on at the callback url. This is required when the callback type is set on BEARER_TOKEN.
