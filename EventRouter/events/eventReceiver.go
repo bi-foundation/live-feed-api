@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	StandardChannelSize = 5000
-	supportedProtocolVersion  = byte(1)
+	defaultStandardChannelSize = 5000
+	supportedProtocolVersion   = byte(1)
 )
 
 // EventReceiver responsible to receive events from factomd
@@ -96,6 +96,7 @@ func (receiver *receiver) readEvents(conn net.Conn) (err error) {
 
 	// continuously read the stream of events from connection
 	for {
+		// Read the protocol version, return an error on mismatch
 		protocolVersion, err := reader.ReadByte()
 		if err != nil {
 			return fmt.Errorf("failed to protocol version from %s:, %v", getRemoteAddress(conn), err)
