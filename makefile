@@ -55,7 +55,7 @@ test:
 			rm profile.out; \
 		fi; \
 	done; \
-	rm tmp.out;
+	rm tmp.out || true;
 
 .PHONY: run
 run:
@@ -71,6 +71,7 @@ dev-deps:
 		golang.org/x/lint/golint \
 		github.com/swaggo/swag/cmd/swag	\
 		github.com/swaggo/swag/gen	\
+		github.com/golang/protobuf/protoc-gen-go	\
 		github.com/bi-foundation/protobuf-graphql-extension/protoc-gen-gogoopsee
 
 .PHONY: lint
