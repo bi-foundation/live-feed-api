@@ -1,24 +1,26 @@
-// Live Feed API
+// @title Live Feed API
+// @version 0.1
+// @description The live feed API is a service for receiving events from the factom blockchain. The API is connected to a factomd node. The received events will be emitted to the subscriptions in the API. Users can subscribe a callback url where able to receive different types of events.
+
+// @license.name MIT
+// @license.url http://opensource.org/licenses/MIT
 //
-// The live feed API is a service for receiving events from the factom blockchain. The API is connected to a factomd
-// node. The received events will be emitted to the subscriptions in the API. Users can subscribe a callback url where
-// able to receive different types of events.
+// @host localhost:8700
+// @BasePath /live/feed/v0.1
+// @schemes http https
 //
-//     Schemes: http
-//     Host: localhost:8700
-//     TODO change port
-//     Version: 0.0.1
-//     License: MIT http://opensource.org/licenses/MIT
-//
-// swagger:meta
 package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
 	"github.com/gorilla/mux"
+	"github.com/swaggo/swag"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -27,12 +29,12 @@ type SubscriptionApi interface {
 }
 
 type api struct {
-	address string
+	apiConfig *config.SubscriptionConfig
 }
 
-func NewSubscriptionApi(address string) SubscriptionApi {
+func NewSubscriptionApi(apiConfig *config.SubscriptionConfig) SubscriptionApi {
 	return &api{
-		address: address,
+		apiConfig: apiConfig,
 	}
 }
 
@@ -47,25 +49,42 @@ func logInterceptor(f http.Handler) http.Handler {
 func (api *api) Start() {
 	router := mux.NewRouter()
 	router.Use(logInterceptor)
-	router.HandleFunc("/subscriptions", subscribe).Methods(http.MethodPost)
-	router.HandleFunc("/subscriptions/{subscriptionId}", unsubscribe).Methods(http.MethodDelete)
-	router.HandleFunc("/subscriptions/{subscriptionId}", getSubscription).Methods(http.MethodGet)
-	router.HandleFunc("/subscriptions/{subscriptionId}", updateSubscription).Methods(http.MethodPut)
-	router.HandleFunc("/swagger.json", swagger).Methods(http.MethodGet)
-	router.Schemes("HTTP")
+	router.Schemes(api.apiConfig.Schemes...)
+
+	subscriptionRouter := router.PathPrefix(api.apiConfig.BasePath).Subrouter()
+	subscriptionRouter.HandleFunc("/subscriptions", subscribe).Methods(http.MethodPost)
+	subscriptionRouter.HandleFunc("/subscriptions/{subscriptionId}", unsubscribe).Methods(http.MethodDelete)
+	subscriptionRouter.HandleFunc("/subscriptions/{subscriptionId}", getSubscription).Methods(http.MethodGet)
+	subscriptionRouter.HandleFunc("/subscriptions/{subscriptionId}", updateSubscription).Methods(http.MethodPut)
+	subscriptionRouter.HandleFunc("/swagger.json", swagger).Methods(http.MethodGet)
 
 	go func() {
-		log.Info("start subscription api at: %s", api.address)
-		err := http.ListenAndServe(api.address, router)
+		address := fmt.Sprintf("%s:%d", api.apiConfig.BindAddress, api.apiConfig.Port)
+		log.Info("start subscription api at: [%s]://%s%s", strings.Join(api.apiConfig.Schemes, ", "), address, api.apiConfig.BasePath)
+		err := http.ListenAndServe(address, router)
 		if err != nil {
-			log.Error("%v", err)
+			log.Error("failed to start subscription api: %v", err)
 		}
 	}()
 }
 
-func swagger(writer http.ResponseWriter, request *http.Request) {
+func swagger(writer http.ResponseWriter, _ *http.Request) {
+	swagger, err := swag.ReadDoc()
+	if err != nil {
+		log.Error("failed to read swagger: %v", err)
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to read swagger"))
+		return
+	}
+
 	writer.Header().Set("Content-Type", "application/json")
-	http.ServeFile(writer, request, "swagger.json")
+	writer.WriteHeader(http.StatusOK)
+
+	_, err = fmt.Fprint(writer, swagger)
+	if err != nil {
+		log.Error("failed to write swagger: %v", err)
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to write swagger"))
+		return
+	}
 }
 
 func decode(writer http.ResponseWriter, request *http.Request, v interface{}) bool {
@@ -83,7 +102,8 @@ func responseError(writer http.ResponseWriter, statusCode int, error interface{}
 	err := json.NewEncoder(writer).Encode(error)
 	if err != nil {
 		log.Error("failed to write error '%v': %v", error, err)
-		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to write error"))
+		writer.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(writer, errors.NewInternalError("failed to write error"))
 	}
 }
 

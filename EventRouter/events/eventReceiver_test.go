@@ -3,6 +3,7 @@ package events
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
 	"github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
 	"github.com/gogo/protobuf/proto"
@@ -18,8 +19,14 @@ var eventsQueue chan *eventmessages.FactomEvent
 var address string
 
 func init() {
+	configuration := &config.ReceiverConfig{
+		Protocol:    "tcp",
+		BindAddress: "",
+		Port:        0,
+	}
+
 	// Start the new server at random port
-	server := NewReceiver("tcp", ":0")
+	server := NewReceiver(configuration)
 	server.Start()
 	time.Sleep(10 * time.Millisecond) // sleep to allow the server to start before making a connection
 	address = server.GetAddress()
@@ -50,10 +57,11 @@ func TestWriteEvents(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		t.Logf("written %d, %v", dataSize, status)
+		t.Logf("bytes offered: %d, bytes written: %v", dataSize, status)
 	}
 
 	correctSendEvents := listenForEvents("WRITE", n, 20*time.Second)
+	t.Logf("number of events sent: %d, number of events received: %d", n, correctSendEvents)
 	assert.EqualValues(t, n, correctSendEvents, "failed to receive the correct number of events %d != %d", n, correctSendEvents)
 }
 
