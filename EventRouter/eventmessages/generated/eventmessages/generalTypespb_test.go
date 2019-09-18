@@ -6,7 +6,6 @@ package eventmessages
 import (
 	fmt "fmt"
 	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto"
-	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	github_com_gogo_protobuf_proto "github.com/gogo/protobuf/proto"
 	proto "github.com/gogo/protobuf/proto"

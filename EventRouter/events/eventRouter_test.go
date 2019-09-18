@@ -339,7 +339,7 @@ func mockFactomAnchorEvent() *eventmessages.FactomEvent {
 	now := time.Now()
 	testHash := []byte("12345678901234567890123456789012")
 	return &eventmessages.FactomEvent{
-		StreamSource: 0,
+		EventSource: 0,
 		Value: &eventmessages.FactomEvent_DirectoryBlockCommit{
 			DirectoryBlockCommit: &eventmessages.DirectoryBlockCommit{
 				DirectoryBlock: &eventmessages.DirectoryBlock{

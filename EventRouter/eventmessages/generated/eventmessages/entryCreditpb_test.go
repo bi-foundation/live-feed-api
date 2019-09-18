@@ -189,15 +189,15 @@ func TestEntryCreditBlockEntryMarshalTo(t *testing.T) {
 	}
 }
 
-func TestEntryCreditChainRegistrationProto(t *testing.T) {
+func TestEntryCreditChainCommitProto(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditChainRegistration(popr, false)
+	p := NewPopulatedEntryCreditChainCommit(popr, false)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryCreditChainRegistration{}
+	msg := &EntryCreditChainCommit{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -220,10 +220,10 @@ func TestEntryCreditChainRegistrationProto(t *testing.T) {
 	}
 }
 
-func TestEntryCreditChainRegistrationMarshalTo(t *testing.T) {
+func TestEntryCreditChainCommitMarshalTo(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditChainRegistration(popr, false)
+	p := NewPopulatedEntryCreditChainCommit(popr, false)
 	size := p.Size()
 	dAtA := make([]byte, size)
 	for i := range dAtA {
@@ -233,7 +233,7 @@ func TestEntryCreditChainRegistrationMarshalTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryCreditChainRegistration{}
+	msg := &EntryCreditChainCommit{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -523,16 +523,16 @@ func TestEntryCreditBlockEntryJSON(t *testing.T) {
 		t.Fatalf("seed = %d, %#v !Json Equal %#v", seed, msg, p)
 	}
 }
-func TestEntryCreditChainRegistrationJSON(t *testing.T) {
+func TestEntryCreditChainCommitJSON(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditChainRegistration(popr, true)
+	p := NewPopulatedEntryCreditChainCommit(popr, true)
 	marshaler := github_com_gogo_protobuf_jsonpb.Marshaler{}
 	jsondata, err := marshaler.MarshalToString(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &EntryCreditChainRegistration{}
+	msg := &EntryCreditChainCommit{}
 	err = github_com_gogo_protobuf_jsonpb.UnmarshalString(jsondata, msg)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
@@ -697,12 +697,12 @@ func TestEntryCreditBlockEntryProtoCompactText(t *testing.T) {
 	}
 }
 
-func TestEntryCreditChainRegistrationProtoText(t *testing.T) {
+func TestEntryCreditChainCommitProtoText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditChainRegistration(popr, true)
+	p := NewPopulatedEntryCreditChainCommit(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.MarshalTextString(p)
-	msg := &EntryCreditChainRegistration{}
+	msg := &EntryCreditChainCommit{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -711,12 +711,12 @@ func TestEntryCreditChainRegistrationProtoText(t *testing.T) {
 	}
 }
 
-func TestEntryCreditChainRegistrationProtoCompactText(t *testing.T) {
+func TestEntryCreditChainCommitProtoCompactText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditChainRegistration(popr, true)
+	p := NewPopulatedEntryCreditChainCommit(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.CompactTextString(p)
-	msg := &EntryCreditChainRegistration{}
+	msg := &EntryCreditChainCommit{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -864,11 +864,11 @@ func TestEntryCreditBlockEntryGraphQL(t *testing.T) {
 		t.Fatalf("String want %v got %v", objdesc, pdesc)
 	}
 }
-func TestEntryCreditChainRegistrationGraphQL(t *testing.T) {
+func TestEntryCreditChainCommitGraphQL(t *testing.T) {
 	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntryCreditChainRegistration(popr, false)
+	_ = NewPopulatedEntryCreditChainCommit(popr, false)
 	objdesc := ""
-	pdesc := GraphQLEntryCreditChainRegistrationType.PrivateDescription
+	pdesc := GraphQLEntryCreditChainCommitType.PrivateDescription
 	if pdesc != objdesc {
 		t.Fatalf("String want %v got %v", objdesc, pdesc)
 	}
@@ -975,10 +975,10 @@ func TestEntryCreditBlockEntrySize(t *testing.T) {
 	}
 }
 
-func TestEntryCreditChainRegistrationSize(t *testing.T) {
+func TestEntryCreditChainCommitSize(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntryCreditChainRegistration(popr, true)
+	p := NewPopulatedEntryCreditChainCommit(popr, true)
 	size2 := github_com_gogo_protobuf_proto.Size(p)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {

@@ -1,3 +1,5 @@
+GO111MODULEBACKUP:=$(GO111MODULE)
+
 generate:
 # get protobuf-graphql-extension with modules turned off as protoc doesn't like @v1.0.0 tags in the include path
 	GO111MODULEBACKUP=${GO111MODULE}; \
@@ -6,7 +8,6 @@ generate:
 	protoc \
 	    --gogoopsee_out=plugins=grpc+graphql+bitflags,Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,Mgoogle/protobuf/descriptor.proto=github.com/gogo/protobuf/protoc-gen-gogo/descriptor:./eventmessages/generated \
 		--proto_path=$(GOPATH)/src:. eventmessages/*.proto; \
-#	export GO111MODULE=${GO111MODULEBACKUP}; // FIXME: GO111MODULEBACKUP is not saved for some reason
 	export GO111MODULE=${GO111MODULEBACKUP};
 clean:
 	rm -r -f eventmessages/generated/*

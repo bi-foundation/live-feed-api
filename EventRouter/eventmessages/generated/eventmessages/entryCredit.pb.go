@@ -179,8 +179,8 @@ func (m *EntryCreditBlockHeader) GetBodySize() uint64 {
 
 type EntryCreditBlockEntry struct {
 	// Types that are valid to be assigned to Value:
-	//	*EntryCreditBlockEntry_CommitChain
-	//	*EntryCreditBlockEntry_CommitEntry
+	//	*EntryCreditBlockEntry_EntryCreditChainCommit
+	//	*EntryCreditBlockEntry_EntryCreditEntryCommit
 	//	*EntryCreditBlockEntry_IncreaseBalance
 	//	*EntryCreditBlockEntry_MinuteNumber
 	//	*EntryCreditBlockEntry_ServerIndexNumber
@@ -230,11 +230,11 @@ type isEntryCreditBlockEntry_Value interface {
 	Size() int
 }
 
-type EntryCreditBlockEntry_CommitChain struct {
-	CommitChain *EntryCreditChainRegistration `protobuf:"bytes,1,opt,name=commitChain,proto3,oneof"`
+type EntryCreditBlockEntry_EntryCreditChainCommit struct {
+	EntryCreditChainCommit *EntryCreditChainCommit `protobuf:"bytes,1,opt,name=entryCreditChainCommit,proto3,oneof"`
 }
-type EntryCreditBlockEntry_CommitEntry struct {
-	CommitEntry *EntryCreditEntryCommit `protobuf:"bytes,2,opt,name=commitEntry,proto3,oneof"`
+type EntryCreditBlockEntry_EntryCreditEntryCommit struct {
+	EntryCreditEntryCommit *EntryCreditEntryCommit `protobuf:"bytes,2,opt,name=entryCreditEntryCommit,proto3,oneof"`
 }
 type EntryCreditBlockEntry_IncreaseBalance struct {
 	IncreaseBalance *IncreaseBalance `protobuf:"bytes,3,opt,name=increaseBalance,proto3,oneof"`
@@ -246,11 +246,11 @@ type EntryCreditBlockEntry_ServerIndexNumber struct {
 	ServerIndexNumber *ServerIndexNumber `protobuf:"bytes,5,opt,name=serverIndexNumber,proto3,oneof"`
 }
 
-func (*EntryCreditBlockEntry_CommitChain) isEntryCreditBlockEntry_Value()       {}
-func (*EntryCreditBlockEntry_CommitEntry) isEntryCreditBlockEntry_Value()       {}
-func (*EntryCreditBlockEntry_IncreaseBalance) isEntryCreditBlockEntry_Value()   {}
-func (*EntryCreditBlockEntry_MinuteNumber) isEntryCreditBlockEntry_Value()      {}
-func (*EntryCreditBlockEntry_ServerIndexNumber) isEntryCreditBlockEntry_Value() {}
+func (*EntryCreditBlockEntry_EntryCreditChainCommit) isEntryCreditBlockEntry_Value() {}
+func (*EntryCreditBlockEntry_EntryCreditEntryCommit) isEntryCreditBlockEntry_Value() {}
+func (*EntryCreditBlockEntry_IncreaseBalance) isEntryCreditBlockEntry_Value()        {}
+func (*EntryCreditBlockEntry_MinuteNumber) isEntryCreditBlockEntry_Value()           {}
+func (*EntryCreditBlockEntry_ServerIndexNumber) isEntryCreditBlockEntry_Value()      {}
 
 func (m *EntryCreditBlockEntry) GetValue() isEntryCreditBlockEntry_Value {
 	if m != nil {
@@ -259,16 +259,16 @@ func (m *EntryCreditBlockEntry) GetValue() isEntryCreditBlockEntry_Value {
 	return nil
 }
 
-func (m *EntryCreditBlockEntry) GetCommitChain() *EntryCreditChainRegistration {
-	if x, ok := m.GetValue().(*EntryCreditBlockEntry_CommitChain); ok {
-		return x.CommitChain
+func (m *EntryCreditBlockEntry) GetEntryCreditChainCommit() *EntryCreditChainCommit {
+	if x, ok := m.GetValue().(*EntryCreditBlockEntry_EntryCreditChainCommit); ok {
+		return x.EntryCreditChainCommit
 	}
 	return nil
 }
 
-func (m *EntryCreditBlockEntry) GetCommitEntry() *EntryCreditEntryCommit {
-	if x, ok := m.GetValue().(*EntryCreditBlockEntry_CommitEntry); ok {
-		return x.CommitEntry
+func (m *EntryCreditBlockEntry) GetEntryCreditEntryCommit() *EntryCreditEntryCommit {
+	if x, ok := m.GetValue().(*EntryCreditBlockEntry_EntryCreditEntryCommit); ok {
+		return x.EntryCreditEntryCommit
 	}
 	return nil
 }
@@ -297,15 +297,15 @@ func (m *EntryCreditBlockEntry) GetServerIndexNumber() *ServerIndexNumber {
 // XXX_OneofWrappers is for the internal use of the proto package.
 func (*EntryCreditBlockEntry) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
-		(*EntryCreditBlockEntry_CommitChain)(nil),
-		(*EntryCreditBlockEntry_CommitEntry)(nil),
+		(*EntryCreditBlockEntry_EntryCreditChainCommit)(nil),
+		(*EntryCreditBlockEntry_EntryCreditEntryCommit)(nil),
 		(*EntryCreditBlockEntry_IncreaseBalance)(nil),
 		(*EntryCreditBlockEntry_MinuteNumber)(nil),
 		(*EntryCreditBlockEntry_ServerIndexNumber)(nil),
 	}
 }
 
-type EntryCreditChainRegistration struct {
+type EntryCreditChainCommit struct {
 	EntityState          EntityState      `protobuf:"varint,1,opt,name=entityState,proto3,enum=eventmessages.EntityState" json:"entityState,omitempty"`
 	ChainIDHash          *Hash            `protobuf:"bytes,2,opt,name=chainIDHash,proto3" json:"chainIDHash,omitempty"`
 	EntryHash            *Hash            `protobuf:"bytes,3,opt,name=entryHash,proto3" json:"entryHash,omitempty"`
@@ -319,18 +319,18 @@ type EntryCreditChainRegistration struct {
 	XXX_sizecache        int32            `json:"-"`
 }
 
-func (m *EntryCreditChainRegistration) Reset()         { *m = EntryCreditChainRegistration{} }
-func (m *EntryCreditChainRegistration) String() string { return proto.CompactTextString(m) }
-func (*EntryCreditChainRegistration) ProtoMessage()    {}
-func (*EntryCreditChainRegistration) Descriptor() ([]byte, []int) {
+func (m *EntryCreditChainCommit) Reset()         { *m = EntryCreditChainCommit{} }
+func (m *EntryCreditChainCommit) String() string { return proto.CompactTextString(m) }
+func (*EntryCreditChainCommit) ProtoMessage()    {}
+func (*EntryCreditChainCommit) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2805fc15da93467e, []int{3}
 }
-func (m *EntryCreditChainRegistration) XXX_Unmarshal(b []byte) error {
+func (m *EntryCreditChainCommit) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EntryCreditChainRegistration) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EntryCreditChainCommit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EntryCreditChainRegistration.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EntryCreditChainCommit.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -340,68 +340,68 @@ func (m *EntryCreditChainRegistration) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-func (m *EntryCreditChainRegistration) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EntryCreditChainRegistration.Merge(m, src)
+func (m *EntryCreditChainCommit) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EntryCreditChainCommit.Merge(m, src)
 }
-func (m *EntryCreditChainRegistration) XXX_Size() int {
+func (m *EntryCreditChainCommit) XXX_Size() int {
 	return m.Size()
 }
-func (m *EntryCreditChainRegistration) XXX_DiscardUnknown() {
-	xxx_messageInfo_EntryCreditChainRegistration.DiscardUnknown(m)
+func (m *EntryCreditChainCommit) XXX_DiscardUnknown() {
+	xxx_messageInfo_EntryCreditChainCommit.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EntryCreditChainRegistration proto.InternalMessageInfo
+var xxx_messageInfo_EntryCreditChainCommit proto.InternalMessageInfo
 
-func (m *EntryCreditChainRegistration) GetEntityState() EntityState {
+func (m *EntryCreditChainCommit) GetEntityState() EntityState {
 	if m != nil {
 		return m.EntityState
 	}
 	return EntityState_REQUESTED
 }
 
-func (m *EntryCreditChainRegistration) GetChainIDHash() *Hash {
+func (m *EntryCreditChainCommit) GetChainIDHash() *Hash {
 	if m != nil {
 		return m.ChainIDHash
 	}
 	return nil
 }
 
-func (m *EntryCreditChainRegistration) GetEntryHash() *Hash {
+func (m *EntryCreditChainCommit) GetEntryHash() *Hash {
 	if m != nil {
 		return m.EntryHash
 	}
 	return nil
 }
 
-func (m *EntryCreditChainRegistration) GetWeld() *Hash {
+func (m *EntryCreditChainCommit) GetWeld() *Hash {
 	if m != nil {
 		return m.Weld
 	}
 	return nil
 }
 
-func (m *EntryCreditChainRegistration) GetTimestamp() *types.Timestamp {
+func (m *EntryCreditChainCommit) GetTimestamp() *types.Timestamp {
 	if m != nil {
 		return m.Timestamp
 	}
 	return nil
 }
 
-func (m *EntryCreditChainRegistration) GetCredits() uint32 {
+func (m *EntryCreditChainCommit) GetCredits() uint32 {
 	if m != nil {
 		return m.Credits
 	}
 	return 0
 }
 
-func (m *EntryCreditChainRegistration) GetEntryCreditPublicKey() []byte {
+func (m *EntryCreditChainCommit) GetEntryCreditPublicKey() []byte {
 	if m != nil {
 		return m.EntryCreditPublicKey
 	}
 	return nil
 }
 
-func (m *EntryCreditChainRegistration) GetSignature() []byte {
+func (m *EntryCreditChainCommit) GetSignature() []byte {
 	if m != nil {
 		return m.Signature
 	}
@@ -496,7 +496,7 @@ func (m *EntryCreditEntryCommit) GetSignature() []byte {
 }
 
 type IncreaseBalance struct {
-	EcPubKey             []byte   `protobuf:"bytes,1,opt,name=ecPubKey,proto3" json:"ecPubKey,omitempty"`
+	EntryCreditPublicKey []byte   `protobuf:"bytes,1,opt,name=entryCreditPublicKey,proto3" json:"entryCreditPublicKey,omitempty"`
 	TransactionID        *Hash    `protobuf:"bytes,2,opt,name=transactionID,proto3" json:"transactionID,omitempty"`
 	Index                uint64   `protobuf:"varint,3,opt,name=index,proto3" json:"index,omitempty"`
 	Amount               uint64   `protobuf:"varint,4,opt,name=amount,proto3" json:"amount,omitempty"`
@@ -538,9 +538,9 @@ func (m *IncreaseBalance) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_IncreaseBalance proto.InternalMessageInfo
 
-func (m *IncreaseBalance) GetEcPubKey() []byte {
+func (m *IncreaseBalance) GetEntryCreditPublicKey() []byte {
 	if m != nil {
-		return m.EcPubKey
+		return m.EntryCreditPublicKey
 	}
 	return nil
 }
@@ -664,7 +664,7 @@ func init() {
 	proto.RegisterType((*EntryCreditBlock)(nil), "eventmessages.EntryCreditBlock")
 	proto.RegisterType((*EntryCreditBlockHeader)(nil), "eventmessages.EntryCreditBlockHeader")
 	proto.RegisterType((*EntryCreditBlockEntry)(nil), "eventmessages.EntryCreditBlockEntry")
-	proto.RegisterType((*EntryCreditChainRegistration)(nil), "eventmessages.EntryCreditChainRegistration")
+	proto.RegisterType((*EntryCreditChainCommit)(nil), "eventmessages.EntryCreditChainCommit")
 	proto.RegisterType((*EntryCreditEntryCommit)(nil), "eventmessages.EntryCreditEntryCommit")
 	proto.RegisterType((*IncreaseBalance)(nil), "eventmessages.IncreaseBalance")
 	proto.RegisterType((*MinuteNumber)(nil), "eventmessages.MinuteNumber")
@@ -674,59 +674,58 @@ func init() {
 func init() { proto.RegisterFile("eventmessages/entryCredit.proto", fileDescriptor_2805fc15da93467e) }
 
 var fileDescriptor_2805fc15da93467e = []byte{
-	// 822 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x56, 0x4b, 0x8f, 0xe3, 0x44,
-	0x10, 0x9e, 0x9e, 0xbc, 0x76, 0x2a, 0x09, 0xbb, 0xdb, 0xbb, 0xac, 0xac, 0xb0, 0x64, 0x2d, 0x0b,
-	0x44, 0x24, 0x18, 0x07, 0x82, 0x38, 0x20, 0x5e, 0x9a, 0xc9, 0x2e, 0x4a, 0x40, 0xbb, 0x8c, 0x7a,
-	0x56, 0x1c, 0xb8, 0xb5, 0x9d, 0x9a, 0xa4, 0xc1, 0x8f, 0x60, 0xb7, 0xc3, 0x84, 0x7f, 0xc1, 0x05,
-	0x71, 0xe1, 0xc2, 0x89, 0x33, 0x27, 0x8e, 0x1c, 0x39, 0xf2, 0x13, 0xd8, 0xfc, 0x0a, 0x8e, 0xc8,
-	0x6d, 0x27, 0xb1, 0x1d, 0xcf, 0x43, 0x3b, 0xa7, 0xa4, 0xaa, 0xbe, 0xef, 0x4b, 0xf7, 0x57, 0x5d,
-	0xa5, 0xc0, 0x23, 0x5c, 0xa0, 0x27, 0x5d, 0x0c, 0x43, 0x3e, 0xc5, 0xb0, 0x8f, 0x9e, 0x0c, 0x96,
-	0xc3, 0x00, 0x27, 0x42, 0x9a, 0xf3, 0xc0, 0x97, 0x3e, 0x6d, 0xe7, 0x00, 0x1d, 0x3d, 0x8f, 0x9f,
-	0xa2, 0x87, 0x01, 0x77, 0x9e, 0x2f, 0xe7, 0x18, 0x26, 0x84, 0xce, 0xb3, 0xa9, 0x90, 0xb3, 0xc8,
-	0x32, 0x6d, 0xdf, 0xed, 0x5b, 0xe2, 0xf0, 0xcc, 0x8f, 0xbc, 0x09, 0x97, 0xc2, 0xf7, 0xfa, 0xaa,
-	0x6e, 0x45, 0x67, 0x87, 0xd3, 0x80, 0xcf, 0x67, 0xdf, 0x3b, 0x87, 0x78, 0x2e, 0xd1, 0x0b, 0xe3,
-	0x52, 0x9a, 0x51, 0x88, 0x75, 0x90, 0xea, 0x7d, 0x7d, 0x63, 0x3d, 0x19, 0x9f, 0xae, 0x2f, 0x85,
-	0x8b, 0xa1, 0xe4, 0xee, 0x3c, 0xd1, 0x35, 0x7e, 0x22, 0x70, 0xe7, 0xc9, 0xf6, 0xba, 0xc7, 0x8e,
-	0x6f, 0x7f, 0x47, 0x3f, 0x81, 0xfa, 0x0c, 0xf9, 0x04, 0x03, 0x8d, 0xe8, 0xa4, 0xd7, 0x1c, 0xbc,
-	0x69, 0xe6, 0xee, 0x6b, 0x16, 0x09, 0x23, 0x05, 0x66, 0x29, 0x89, 0x7e, 0x0a, 0x8d, 0xd8, 0x41,
-	0x81, 0xa1, 0xb6, 0xaf, 0x57, 0x7a, 0xcd, 0xc1, 0x1b, 0x57, 0xf0, 0x55, 0xcc, 0xd6, 0x24, 0xe3,
-	0xc5, 0x3e, 0x3c, 0x28, 0xff, 0x09, 0xda, 0x87, 0x5b, 0x96, 0x3f, 0x59, 0x8e, 0x78, 0x38, 0x4b,
-	0xcf, 0x76, 0xaf, 0xa0, 0x1d, 0x97, 0xd8, 0x06, 0x44, 0x87, 0x40, 0xe7, 0x01, 0x2e, 0x84, 0x1f,
-	0x85, 0x89, 0x84, 0xa2, 0xee, 0x5f, 0x4c, 0x2d, 0x81, 0xd3, 0xcf, 0xe0, 0xce, 0x3a, 0xfb, 0x79,
-	0xe4, 0x38, 0x4a, 0xa2, 0x72, 0xb1, 0xc4, 0x0e, 0x98, 0xea, 0xd0, 0xb4, 0x92, 0x5b, 0x88, 0xe9,
-	0x4c, 0x6a, 0x55, 0x9d, 0xf4, 0xda, 0x2c, 0x9b, 0xa2, 0xef, 0xc2, 0xbd, 0xc4, 0xbd, 0x27, 0xe7,
-	0x73, 0xae, 0xba, 0x77, 0x14, 0x20, 0xd7, 0x6a, 0x3a, 0xe9, 0xb5, 0x58, 0x59, 0x29, 0xd6, 0xf4,
-	0xad, 0x6f, 0xd1, 0x96, 0x43, 0x3f, 0xf2, 0xa4, 0x56, 0xd7, 0x49, 0xaf, 0xca, 0xb2, 0x29, 0xda,
-	0x49, 0xcc, 0x3a, 0x15, 0x3f, 0xa2, 0xd6, 0x50, 0xe5, 0x4d, 0x6c, 0xfc, 0x5a, 0x81, 0x57, 0x4b,
-	0xdb, 0x40, 0xbf, 0x82, 0xa6, 0xed, 0xbb, 0xae, 0x90, 0xc3, 0x19, 0x17, 0x5e, 0xea, 0xf2, 0xdb,
-	0x17, 0x77, 0x50, 0xc1, 0x18, 0x4e, 0x45, 0x28, 0x03, 0xf5, 0x22, 0x47, 0x7b, 0x2c, 0xab, 0x40,
-	0xc7, 0x6b, 0x41, 0x45, 0x4a, 0xbd, 0xbf, 0xe4, 0x49, 0x25, 0x5f, 0x15, 0x63, 0x2b, 0x95, 0x9c,
-	0xed, 0x0b, 0xb8, 0x2d, 0x3c, 0x3b, 0x40, 0x1e, 0xe2, 0x31, 0x77, 0xb8, 0x67, 0x63, 0xda, 0x87,
-	0x6e, 0x41, 0x6e, 0x9c, 0x47, 0x8d, 0xf6, 0x58, 0x91, 0x48, 0x8f, 0xa0, 0xe5, 0x0a, 0x2f, 0x92,
-	0xf8, 0x2c, 0x72, 0x2d, 0x0c, 0x54, 0x53, 0x9a, 0x83, 0xd7, 0x0a, 0x42, 0x4f, 0x33, 0x90, 0xd1,
-	0x1e, 0xcb, 0x51, 0xe8, 0x09, 0xdc, 0x0d, 0x31, 0x58, 0x60, 0x30, 0xf6, 0x26, 0x78, 0x9e, 0xea,
-	0xd4, 0x94, 0x8e, 0x5e, 0xd0, 0x39, 0x2d, 0xe2, 0x46, 0x7b, 0x6c, 0x97, 0x7c, 0xdc, 0x80, 0xda,
-	0x82, 0x3b, 0x11, 0x1a, 0xbf, 0x54, 0xe0, 0xe1, 0x65, 0x26, 0xd3, 0x8f, 0xa1, 0x89, 0x9e, 0x14,
-	0x72, 0x79, 0x2a, 0xb9, 0x44, 0xd5, 0xa6, 0x57, 0x06, 0x9d, 0x5d, 0x57, 0xd7, 0x08, 0x96, 0x85,
-	0xd3, 0x0f, 0xa0, 0x69, 0xc7, 0x92, 0xe3, 0xc7, 0x57, 0xcd, 0x43, 0x16, 0x47, 0xdf, 0x83, 0x03,
-	0xb5, 0x1b, 0xaf, 0x9a, 0x80, 0x2d, 0x8a, 0xbe, 0x05, 0xd5, 0x1f, 0xd0, 0x99, 0xa4, 0xf6, 0x96,
-	0xa2, 0x15, 0x80, 0x7e, 0x04, 0x07, 0x9b, 0xe5, 0x94, 0x9a, 0xf8, 0xba, 0x99, 0xdd, 0x60, 0xa6,
-	0xda, 0x60, 0xe6, 0xf3, 0x35, 0x88, 0x6d, 0xf1, 0x54, 0x83, 0x86, 0xad, 0x8c, 0x0a, 0xd5, 0x20,
-	0xb4, 0xd9, 0x3a, 0xa4, 0x03, 0xb8, 0x9f, 0x59, 0xe7, 0x27, 0x91, 0xe5, 0x08, 0xfb, 0x4b, 0x5c,
-	0xaa, 0x81, 0x68, 0xb1, 0xd2, 0x1a, 0x7d, 0x08, 0x07, 0xa1, 0x98, 0x7a, 0x5c, 0x46, 0x01, 0x6a,
-	0xb7, 0x14, 0x70, 0x9b, 0x30, 0xfe, 0xc8, 0xaf, 0xa7, 0xcc, 0x73, 0xbd, 0x61, 0x53, 0x72, 0xee,
-	0xee, 0x5f, 0xcb, 0xdd, 0x9c, 0x69, 0x95, 0x97, 0x37, 0xad, 0x7a, 0x3d, 0xd3, 0x6a, 0xd7, 0x35,
-	0xad, 0x5e, 0x34, 0xed, 0x67, 0x02, 0xb7, 0x0b, 0x43, 0x19, 0xef, 0x27, 0xb4, 0x4f, 0x22, 0x2b,
-	0x56, 0x26, 0x8a, 0xb0, 0x89, 0xe9, 0x87, 0xd0, 0x96, 0x01, 0xf7, 0x42, 0x6e, 0xc7, 0xaf, 0x7d,
-	0xfc, 0xf8, 0x32, 0x3f, 0xf2, 0x48, 0x7a, 0x1f, 0x6a, 0x22, 0x1e, 0x29, 0xe5, 0x47, 0x95, 0x25,
-	0x01, 0x7d, 0x00, 0x75, 0xee, 0xaa, 0x4d, 0x59, 0x55, 0xe9, 0x34, 0x32, 0x06, 0xd0, 0xca, 0xce,
-	0x38, 0x35, 0x0a, 0x6b, 0x81, 0x28, 0x67, 0x72, 0x39, 0xe3, 0x08, 0xee, 0xee, 0xcc, 0x33, 0x7d,
-	0xa7, 0x6c, 0x19, 0x24, 0xec, 0x92, 0x41, 0x7f, 0xfa, 0xdf, 0x8b, 0x2e, 0xf9, 0x7d, 0xd5, 0x25,
-	0x7f, 0xae, 0xba, 0xe4, 0xef, 0x55, 0x97, 0xfc, 0xb3, 0xea, 0x92, 0x7f, 0x57, 0x5d, 0xf2, 0xd7,
-	0x6f, 0x8f, 0x08, 0xe8, 0xb6, 0xef, 0x9a, 0x67, 0xdc, 0x96, 0x9b, 0x8f, 0x49, 0xfe, 0xe2, 0xdf,
-	0xe4, 0xff, 0x90, 0x58, 0x75, 0xd5, 0xec, 0xf7, 0xff, 0x0f, 0x00, 0x00, 0xff, 0xff, 0xc2, 0x5a,
-	0x48, 0xd8, 0xc9, 0x08, 0x00, 0x00,
+	// 807 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x56, 0xcd, 0x6e, 0xeb, 0x44,
+	0x14, 0xce, 0xe4, 0xb7, 0x9d, 0x24, 0xb4, 0x9d, 0x96, 0xca, 0x0a, 0x90, 0x5a, 0x16, 0x88, 0x2c,
+	0xa8, 0x03, 0x41, 0x2c, 0x10, 0x7f, 0x6a, 0xd3, 0xa2, 0x04, 0xd4, 0xaa, 0x72, 0x2b, 0x16, 0x6c,
+	0xd0, 0xd8, 0x39, 0x4d, 0x06, 0xfc, 0x13, 0xec, 0x71, 0x68, 0x78, 0x0b, 0x78, 0x04, 0x56, 0xac,
+	0x58, 0xb0, 0x62, 0x89, 0x74, 0x37, 0x77, 0x79, 0x1f, 0xe1, 0x36, 0x4f, 0x71, 0x97, 0x57, 0x1e,
+	0x3b, 0x89, 0xed, 0x38, 0x4d, 0x75, 0xbb, 0xaa, 0xe6, 0x9c, 0xef, 0xfb, 0x8e, 0xe7, 0x3b, 0x73,
+	0x4e, 0x83, 0x8f, 0x60, 0x02, 0x36, 0xb7, 0xc0, 0xf3, 0xe8, 0x10, 0xbc, 0x36, 0xd8, 0xdc, 0x9d,
+	0x76, 0x5d, 0x18, 0x30, 0xae, 0x8e, 0x5d, 0x87, 0x3b, 0xa4, 0x9e, 0x00, 0x34, 0xe4, 0x24, 0x7e,
+	0x08, 0x36, 0xb8, 0xd4, 0xbc, 0x99, 0x8e, 0xc1, 0x0b, 0x09, 0x8d, 0xcb, 0x21, 0xe3, 0x23, 0x5f,
+	0x57, 0x0d, 0xc7, 0x6a, 0xeb, 0xec, 0xf8, 0xd6, 0xf1, 0xed, 0x01, 0xe5, 0xcc, 0xb1, 0xdb, 0x22,
+	0xaf, 0xfb, 0xb7, 0xc7, 0x43, 0x97, 0x8e, 0x47, 0xbf, 0x9a, 0xc7, 0x70, 0xc7, 0xc1, 0xf6, 0x82,
+	0x54, 0x14, 0x11, 0x88, 0xf9, 0x21, 0xd2, 0xfb, 0xe1, 0xc9, 0x7a, 0x3c, 0xf8, 0xba, 0x36, 0x67,
+	0x16, 0x78, 0x9c, 0x5a, 0xe3, 0x50, 0x57, 0xf9, 0x03, 0xe1, 0xdd, 0xf3, 0xe5, 0x75, 0x4f, 0x4d,
+	0xc7, 0xf8, 0x85, 0x7c, 0x85, 0xcb, 0x23, 0xa0, 0x03, 0x70, 0x25, 0x24, 0xa3, 0x56, 0xb5, 0xf3,
+	0x81, 0x9a, 0xb8, 0xaf, 0x9a, 0x26, 0xf4, 0x04, 0x58, 0x8b, 0x48, 0xe4, 0x6b, 0x5c, 0x09, 0x1c,
+	0x64, 0xe0, 0x49, 0x79, 0xb9, 0xd0, 0xaa, 0x76, 0xde, 0xdf, 0xc0, 0x17, 0x67, 0x6d, 0x4e, 0x52,
+	0xee, 0xf3, 0xf8, 0x30, 0xbb, 0x04, 0x69, 0xe3, 0x2d, 0xdd, 0x19, 0x4c, 0x7b, 0xd4, 0x1b, 0x45,
+	0xdf, 0xb6, 0x9f, 0xd2, 0x0e, 0x52, 0xda, 0x02, 0x44, 0xba, 0x98, 0x8c, 0x5d, 0x98, 0x30, 0xc7,
+	0xf7, 0x42, 0x09, 0x41, 0xcd, 0xaf, 0xa7, 0x66, 0xc0, 0xc9, 0x37, 0x78, 0x77, 0x1e, 0xfd, 0xd6,
+	0x37, 0x4d, 0x21, 0x51, 0x58, 0x2f, 0xb1, 0x02, 0x26, 0x32, 0xae, 0xea, 0xe1, 0x2d, 0xd8, 0x70,
+	0xc4, 0xa5, 0xa2, 0x8c, 0x5a, 0x75, 0x2d, 0x1e, 0x22, 0x1f, 0xe3, 0xfd, 0xd0, 0xbd, 0xf3, 0xbb,
+	0x31, 0x15, 0xdd, 0x3b, 0x71, 0x81, 0x4a, 0x25, 0x19, 0xb5, 0x6a, 0x5a, 0x56, 0x2a, 0xd0, 0x74,
+	0xf4, 0x9f, 0xc1, 0xe0, 0x5d, 0xc7, 0xb7, 0xb9, 0x54, 0x96, 0x51, 0xab, 0xa8, 0xc5, 0x43, 0xa4,
+	0x11, 0x9a, 0x75, 0xcd, 0x7e, 0x07, 0xa9, 0x22, 0xd2, 0x8b, 0xb3, 0xf2, 0xac, 0x80, 0xdf, 0xce,
+	0x6c, 0x03, 0xf9, 0x09, 0x1f, 0xc6, 0xde, 0x7f, 0x77, 0x44, 0x99, 0xdd, 0x75, 0x2c, 0x8b, 0xf1,
+	0xcd, 0x8f, 0x21, 0x06, 0xee, 0xe5, 0xb4, 0x35, 0x32, 0xa9, 0x02, 0x21, 0x3d, 0x2c, 0x90, 0xdf,
+	0x54, 0x20, 0x06, 0x4e, 0x15, 0x88, 0x65, 0xc8, 0x77, 0x78, 0x87, 0xd9, 0x86, 0x0b, 0xd4, 0x83,
+	0x53, 0x6a, 0x52, 0xdb, 0x80, 0xa8, 0x5b, 0xcd, 0x94, 0x72, 0x3f, 0x89, 0xea, 0xe5, 0xb4, 0x34,
+	0x91, 0x9c, 0xe0, 0x9a, 0xc5, 0x6c, 0x9f, 0xc3, 0xa5, 0x6f, 0xe9, 0xe0, 0x8a, 0xd6, 0x55, 0x3b,
+	0xef, 0xa4, 0x84, 0x2e, 0x62, 0x90, 0x5e, 0x4e, 0x4b, 0x50, 0xc8, 0x15, 0xde, 0xf3, 0xc0, 0x9d,
+	0x80, 0xdb, 0xb7, 0x07, 0x70, 0x17, 0xe9, 0x94, 0x84, 0x8e, 0x9c, 0xd2, 0xb9, 0x4e, 0xe3, 0x7a,
+	0x39, 0x6d, 0x95, 0x7c, 0x5a, 0xc1, 0xa5, 0x09, 0x35, 0x7d, 0x50, 0xfe, 0x2c, 0x24, 0x26, 0x25,
+	0xee, 0xf2, 0x97, 0xb8, 0x0a, 0x36, 0x67, 0x7c, 0x7a, 0xcd, 0x29, 0x07, 0xd1, 0xbb, 0xb7, 0x3a,
+	0x8d, 0x55, 0x6b, 0xe7, 0x08, 0x2d, 0x0e, 0x27, 0x9f, 0xe1, 0xaa, 0x11, 0x88, 0xf5, 0xcf, 0x36,
+	0xcd, 0x4b, 0x1c, 0x47, 0x3e, 0xc1, 0xdb, 0xa2, 0x27, 0x9b, 0x26, 0x64, 0x89, 0x22, 0x1f, 0xe2,
+	0xe2, 0x6f, 0x60, 0x0e, 0x22, 0x63, 0x33, 0xd1, 0x02, 0x40, 0xbe, 0xc0, 0xdb, 0x8b, 0xe5, 0x15,
+	0xd9, 0xf7, 0x9e, 0x1a, 0xdf, 0x70, 0xaa, 0xd8, 0x70, 0xea, 0xcd, 0x1c, 0xa4, 0x2d, 0xf1, 0x44,
+	0xc2, 0x15, 0x43, 0x58, 0xe4, 0x89, 0x41, 0xa9, 0x6b, 0xf3, 0x23, 0xe9, 0xe0, 0x83, 0xd8, 0x33,
+	0xba, 0xf2, 0x75, 0x93, 0x19, 0xdf, 0xc3, 0x54, 0x0c, 0x4c, 0x4d, 0xcb, 0xcc, 0x91, 0x77, 0xf1,
+	0xb6, 0xc7, 0x86, 0x36, 0xe5, 0xbe, 0x0b, 0xd2, 0x96, 0x00, 0x2e, 0x03, 0xca, 0xbf, 0xc9, 0xf5,
+	0x15, 0x7f, 0x99, 0x4f, 0x6b, 0x4a, 0xc2, 0xdd, 0xfc, 0xa3, 0xdc, 0x4d, 0x98, 0x56, 0x78, 0x73,
+	0xd3, 0x8a, 0x8f, 0x33, 0xad, 0xf4, 0x58, 0xd3, 0xca, 0x69, 0xd3, 0xfe, 0x41, 0x78, 0x27, 0x35,
+	0x8e, 0x6b, 0xab, 0xa0, 0x07, 0xaa, 0x7c, 0x8e, 0xeb, 0xdc, 0xa5, 0xb6, 0x47, 0x8d, 0xe0, 0x9f,
+	0x63, 0xff, 0xec, 0x21, 0x9f, 0x92, 0x48, 0x72, 0x80, 0x4b, 0x2c, 0x18, 0x32, 0xe1, 0x53, 0x51,
+	0x0b, 0x0f, 0xe4, 0x10, 0x97, 0xa9, 0x25, 0x36, 0x6c, 0x51, 0x84, 0xa3, 0x93, 0xd2, 0xc1, 0xb5,
+	0xf8, 0xd4, 0x13, 0x25, 0xb5, 0x28, 0x90, 0x70, 0x2c, 0x11, 0x53, 0x4e, 0xf0, 0xde, 0xca, 0x84,
+	0x93, 0x8f, 0xb2, 0xd6, 0x43, 0xc8, 0xce, 0x18, 0xfd, 0x8b, 0x57, 0xf7, 0x4d, 0xf4, 0xf7, 0xac,
+	0x89, 0xfe, 0x9b, 0x35, 0xd1, 0xf3, 0x59, 0x13, 0xbd, 0x98, 0x35, 0xd1, 0xcb, 0x59, 0x13, 0xfd,
+	0xff, 0xd7, 0x11, 0xc2, 0xb2, 0xe1, 0x58, 0xea, 0x2d, 0x35, 0xf8, 0xe2, 0xcf, 0x20, 0x79, 0xf1,
+	0x1f, 0x93, 0x3f, 0x64, 0xf4, 0xb2, 0x78, 0x04, 0x9f, 0xbe, 0x0e, 0x00, 0x00, 0xff, 0xff, 0x11,
+	0xdd, 0x7b, 0x5a, 0x01, 0x09, 0x00, 0x00,
 }
 
 func (this *EntryCreditBlock) Equal(that interface{}) bool {
@@ -842,14 +841,14 @@ func (this *EntryCreditBlockEntry) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *EntryCreditBlockEntry_CommitChain) Equal(that interface{}) bool {
+func (this *EntryCreditBlockEntry_EntryCreditChainCommit) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*EntryCreditBlockEntry_CommitChain)
+	that1, ok := that.(*EntryCreditBlockEntry_EntryCreditChainCommit)
 	if !ok {
-		that2, ok := that.(EntryCreditBlockEntry_CommitChain)
+		that2, ok := that.(EntryCreditBlockEntry_EntryCreditChainCommit)
 		if ok {
 			that1 = &that2
 		} else {
@@ -861,19 +860,19 @@ func (this *EntryCreditBlockEntry_CommitChain) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.CommitChain.Equal(that1.CommitChain) {
+	if !this.EntryCreditChainCommit.Equal(that1.EntryCreditChainCommit) {
 		return false
 	}
 	return true
 }
-func (this *EntryCreditBlockEntry_CommitEntry) Equal(that interface{}) bool {
+func (this *EntryCreditBlockEntry_EntryCreditEntryCommit) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*EntryCreditBlockEntry_CommitEntry)
+	that1, ok := that.(*EntryCreditBlockEntry_EntryCreditEntryCommit)
 	if !ok {
-		that2, ok := that.(EntryCreditBlockEntry_CommitEntry)
+		that2, ok := that.(EntryCreditBlockEntry_EntryCreditEntryCommit)
 		if ok {
 			that1 = &that2
 		} else {
@@ -885,7 +884,7 @@ func (this *EntryCreditBlockEntry_CommitEntry) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.CommitEntry.Equal(that1.CommitEntry) {
+	if !this.EntryCreditEntryCommit.Equal(that1.EntryCreditEntryCommit) {
 		return false
 	}
 	return true
@@ -962,14 +961,14 @@ func (this *EntryCreditBlockEntry_ServerIndexNumber) Equal(that interface{}) boo
 	}
 	return true
 }
-func (this *EntryCreditChainRegistration) Equal(that interface{}) bool {
+func (this *EntryCreditChainCommit) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*EntryCreditChainRegistration)
+	that1, ok := that.(*EntryCreditChainCommit)
 	if !ok {
-		that2, ok := that.(EntryCreditChainRegistration)
+		that2, ok := that.(EntryCreditChainCommit)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1071,7 +1070,7 @@ func (this *IncreaseBalance) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !bytes.Equal(this.EcPubKey, that1.EcPubKey) {
+	if !bytes.Equal(this.EntryCreditPublicKey, that1.EntryCreditPublicKey) {
 		return false
 	}
 	if !this.TransactionID.Equal(that1.TransactionID) {
@@ -1162,11 +1161,11 @@ type EntryCreditBlockEntryGetter interface {
 var GraphQLEntryCreditBlockEntryType *github_com_graphql_go_graphql.Object
 var GraphQLEntryCreditBlockEntryValueUnion *github_com_graphql_go_graphql.Union
 
-type EntryCreditChainRegistrationGetter interface {
-	GetEntryCreditChainRegistration() *EntryCreditChainRegistration
+type EntryCreditChainCommitGetter interface {
+	GetEntryCreditChainCommit() *EntryCreditChainCommit
 }
 
-var GraphQLEntryCreditChainRegistrationType *github_com_graphql_go_graphql.Object
+var GraphQLEntryCreditChainCommitType *github_com_graphql_go_graphql.Object
 
 type EntryCreditEntryCommitGetter interface {
 	GetEntryCreditEntryCommit() *EntryCreditEntryCommit
@@ -1192,11 +1191,11 @@ type ServerIndexNumberGetter interface {
 
 var GraphQLServerIndexNumberType *github_com_graphql_go_graphql.Object
 
-func (g *EntryCreditBlockEntry_CommitChain) GetEntryCreditChainRegistration() *EntryCreditChainRegistration {
-	return g.CommitChain
+func (g *EntryCreditBlockEntry_EntryCreditChainCommit) GetEntryCreditChainCommit() *EntryCreditChainCommit {
+	return g.EntryCreditChainCommit
 }
-func (g *EntryCreditBlockEntry_CommitEntry) GetEntryCreditEntryCommit() *EntryCreditEntryCommit {
-	return g.CommitEntry
+func (g *EntryCreditBlockEntry_EntryCreditEntryCommit) GetEntryCreditEntryCommit() *EntryCreditEntryCommit {
+	return g.EntryCreditEntryCommit
 }
 func (g *EntryCreditBlockEntry_IncreaseBalance) GetIncreaseBalance() *IncreaseBalance {
 	return g.IncreaseBalance
@@ -1439,8 +1438,8 @@ func init() {
 			}
 		}),
 	})
-	GraphQLEntryCreditChainRegistrationType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "EntryCreditChainRegistration",
+	GraphQLEntryCreditChainCommitType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
+		Name:        "EntryCreditChainCommit",
 		Description: "",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
@@ -1448,13 +1447,13 @@ func init() {
 					Type:        GraphQLEntityStateEnum,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryCreditChainRegistration)
+						obj, ok := p.Source.(*EntryCreditChainCommit)
 						if ok {
 							return int(EntityState_value[obj.EntityState.String()]), nil
 						}
-						inter, ok := p.Source.(EntryCreditChainRegistrationGetter)
+						inter, ok := p.Source.(EntryCreditChainCommitGetter)
 						if ok {
-							face := inter.GetEntryCreditChainRegistration()
+							face := inter.GetEntryCreditChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -1467,16 +1466,16 @@ func init() {
 					Type:        GraphQLHashType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryCreditChainRegistration)
+						obj, ok := p.Source.(*EntryCreditChainCommit)
 						if ok {
 							if obj.ChainIDHash == nil {
 								return nil, nil
 							}
 							return obj.GetChainIDHash(), nil
 						}
-						inter, ok := p.Source.(EntryCreditChainRegistrationGetter)
+						inter, ok := p.Source.(EntryCreditChainCommitGetter)
 						if ok {
-							face := inter.GetEntryCreditChainRegistration()
+							face := inter.GetEntryCreditChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -1492,16 +1491,16 @@ func init() {
 					Type:        GraphQLHashType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryCreditChainRegistration)
+						obj, ok := p.Source.(*EntryCreditChainCommit)
 						if ok {
 							if obj.EntryHash == nil {
 								return nil, nil
 							}
 							return obj.GetEntryHash(), nil
 						}
-						inter, ok := p.Source.(EntryCreditChainRegistrationGetter)
+						inter, ok := p.Source.(EntryCreditChainCommitGetter)
 						if ok {
-							face := inter.GetEntryCreditChainRegistration()
+							face := inter.GetEntryCreditChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -1517,16 +1516,16 @@ func init() {
 					Type:        GraphQLHashType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryCreditChainRegistration)
+						obj, ok := p.Source.(*EntryCreditChainCommit)
 						if ok {
 							if obj.Weld == nil {
 								return nil, nil
 							}
 							return obj.GetWeld(), nil
 						}
-						inter, ok := p.Source.(EntryCreditChainRegistrationGetter)
+						inter, ok := p.Source.(EntryCreditChainCommitGetter)
 						if ok {
-							face := inter.GetEntryCreditChainRegistration()
+							face := inter.GetEntryCreditChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -1542,16 +1541,16 @@ func init() {
 					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.Timestamp,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryCreditChainRegistration)
+						obj, ok := p.Source.(*EntryCreditChainCommit)
 						if ok {
 							if obj.Timestamp == nil {
 								return nil, nil
 							}
 							return obj.GetTimestamp(), nil
 						}
-						inter, ok := p.Source.(EntryCreditChainRegistrationGetter)
+						inter, ok := p.Source.(EntryCreditChainCommitGetter)
 						if ok {
-							face := inter.GetEntryCreditChainRegistration()
+							face := inter.GetEntryCreditChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -1567,13 +1566,13 @@ func init() {
 					Type:        github_com_graphql_go_graphql.Int,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryCreditChainRegistration)
+						obj, ok := p.Source.(*EntryCreditChainCommit)
 						if ok {
 							return obj.Credits, nil
 						}
-						inter, ok := p.Source.(EntryCreditChainRegistrationGetter)
+						inter, ok := p.Source.(EntryCreditChainCommitGetter)
 						if ok {
-							face := inter.GetEntryCreditChainRegistration()
+							face := inter.GetEntryCreditChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -1586,13 +1585,13 @@ func init() {
 					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryCreditChainRegistration)
+						obj, ok := p.Source.(*EntryCreditChainCommit)
 						if ok {
 							return obj.EntryCreditPublicKey, nil
 						}
-						inter, ok := p.Source.(EntryCreditChainRegistrationGetter)
+						inter, ok := p.Source.(EntryCreditChainCommitGetter)
 						if ok {
-							face := inter.GetEntryCreditChainRegistration()
+							face := inter.GetEntryCreditChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -1605,13 +1604,13 @@ func init() {
 					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryCreditChainRegistration)
+						obj, ok := p.Source.(*EntryCreditChainCommit)
 						if ok {
 							return obj.Signature, nil
 						}
-						inter, ok := p.Source.(EntryCreditChainRegistrationGetter)
+						inter, ok := p.Source.(EntryCreditChainCommitGetter)
 						if ok {
-							face := inter.GetEntryCreditChainRegistration()
+							face := inter.GetEntryCreditChainCommit()
 							if face == nil {
 								return nil, nil
 							}
@@ -1762,13 +1761,13 @@ func init() {
 		Description: "",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
-				"ecPubKey": &github_com_graphql_go_graphql.Field{
+				"entryCreditPublicKey": &github_com_graphql_go_graphql.Field{
 					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*IncreaseBalance)
 						if ok {
-							return obj.EcPubKey, nil
+							return obj.EntryCreditPublicKey, nil
 						}
 						inter, ok := p.Source.(IncreaseBalanceGetter)
 						if ok {
@@ -1776,9 +1775,9 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							return face.EcPubKey, nil
+							return face.EntryCreditPublicKey, nil
 						}
-						return nil, fmt.Errorf("field ecPubKey not resolved")
+						return nil, fmt.Errorf("field entryCreditPublicKey not resolved")
 					},
 				},
 				"transactionID": &github_com_graphql_go_graphql.Field{
@@ -1905,17 +1904,17 @@ func init() {
 		Name:        "EntryCreditBlockEntryValue",
 		Description: "",
 		Types: []*github_com_graphql_go_graphql.Object{
-			GraphQLEntryCreditChainRegistrationType,
+			GraphQLEntryCreditChainCommitType,
 			GraphQLEntryCreditEntryCommitType,
 			GraphQLIncreaseBalanceType,
 			GraphQLMinuteNumberType,
 			GraphQLServerIndexNumberType,
 		},
 		ResolveType: func(p github_com_graphql_go_graphql.ResolveTypeParams) *github_com_graphql_go_graphql.Object {
-			if _, ok := p.Value.(*EntryCreditBlockEntry_CommitChain); ok {
-				return GraphQLEntryCreditChainRegistrationType
+			if _, ok := p.Value.(*EntryCreditBlockEntry_EntryCreditChainCommit); ok {
+				return GraphQLEntryCreditChainCommitType
 			}
-			if _, ok := p.Value.(*EntryCreditBlockEntry_CommitEntry); ok {
+			if _, ok := p.Value.(*EntryCreditBlockEntry_EntryCreditEntryCommit); ok {
 				return GraphQLEntryCreditEntryCommitType
 			}
 			if _, ok := p.Value.(*EntryCreditBlockEntry_IncreaseBalance); ok {
@@ -2105,15 +2104,15 @@ func (m *EntryCreditBlockEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *EntryCreditBlockEntry_CommitChain) MarshalTo(dAtA []byte) (int, error) {
+func (m *EntryCreditBlockEntry_EntryCreditChainCommit) MarshalTo(dAtA []byte) (int, error) {
 	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
-func (m *EntryCreditBlockEntry_CommitChain) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EntryCreditBlockEntry_EntryCreditChainCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if m.CommitChain != nil {
+	if m.EntryCreditChainCommit != nil {
 		{
-			size, err := m.CommitChain.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.EntryCreditChainCommit.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -2125,15 +2124,15 @@ func (m *EntryCreditBlockEntry_CommitChain) MarshalToSizedBuffer(dAtA []byte) (i
 	}
 	return len(dAtA) - i, nil
 }
-func (m *EntryCreditBlockEntry_CommitEntry) MarshalTo(dAtA []byte) (int, error) {
+func (m *EntryCreditBlockEntry_EntryCreditEntryCommit) MarshalTo(dAtA []byte) (int, error) {
 	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
-func (m *EntryCreditBlockEntry_CommitEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EntryCreditBlockEntry_EntryCreditEntryCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if m.CommitEntry != nil {
+	if m.EntryCreditEntryCommit != nil {
 		{
-			size, err := m.CommitEntry.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.EntryCreditEntryCommit.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -2205,7 +2204,7 @@ func (m *EntryCreditBlockEntry_ServerIndexNumber) MarshalToSizedBuffer(dAtA []by
 	}
 	return len(dAtA) - i, nil
 }
-func (m *EntryCreditChainRegistration) Marshal() (dAtA []byte, err error) {
+func (m *EntryCreditChainCommit) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -2215,12 +2214,12 @@ func (m *EntryCreditChainRegistration) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EntryCreditChainRegistration) MarshalTo(dAtA []byte) (int, error) {
+func (m *EntryCreditChainCommit) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EntryCreditChainRegistration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EntryCreditChainCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -2425,10 +2424,10 @@ func (m *IncreaseBalance) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.EcPubKey) > 0 {
-		i -= len(m.EcPubKey)
-		copy(dAtA[i:], m.EcPubKey)
-		i = encodeVarintEntryCredit(dAtA, i, uint64(len(m.EcPubKey)))
+	if len(m.EntryCreditPublicKey) > 0 {
+		i -= len(m.EntryCreditPublicKey)
+		copy(dAtA[i:], m.EntryCreditPublicKey)
+		i = encodeVarintEntryCredit(dAtA, i, uint64(len(m.EntryCreditPublicKey)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -2558,9 +2557,9 @@ func NewPopulatedEntryCreditBlockEntry(r randyEntryCredit, easy bool) *EntryCred
 	oneofNumber_Value := []int32{1, 2, 3, 4, 5}[r.Intn(5)]
 	switch oneofNumber_Value {
 	case 1:
-		this.Value = NewPopulatedEntryCreditBlockEntry_CommitChain(r, easy)
+		this.Value = NewPopulatedEntryCreditBlockEntry_EntryCreditChainCommit(r, easy)
 	case 2:
-		this.Value = NewPopulatedEntryCreditBlockEntry_CommitEntry(r, easy)
+		this.Value = NewPopulatedEntryCreditBlockEntry_EntryCreditEntryCommit(r, easy)
 	case 3:
 		this.Value = NewPopulatedEntryCreditBlockEntry_IncreaseBalance(r, easy)
 	case 4:
@@ -2574,14 +2573,14 @@ func NewPopulatedEntryCreditBlockEntry(r randyEntryCredit, easy bool) *EntryCred
 	return this
 }
 
-func NewPopulatedEntryCreditBlockEntry_CommitChain(r randyEntryCredit, easy bool) *EntryCreditBlockEntry_CommitChain {
-	this := &EntryCreditBlockEntry_CommitChain{}
-	this.CommitChain = NewPopulatedEntryCreditChainRegistration(r, easy)
+func NewPopulatedEntryCreditBlockEntry_EntryCreditChainCommit(r randyEntryCredit, easy bool) *EntryCreditBlockEntry_EntryCreditChainCommit {
+	this := &EntryCreditBlockEntry_EntryCreditChainCommit{}
+	this.EntryCreditChainCommit = NewPopulatedEntryCreditChainCommit(r, easy)
 	return this
 }
-func NewPopulatedEntryCreditBlockEntry_CommitEntry(r randyEntryCredit, easy bool) *EntryCreditBlockEntry_CommitEntry {
-	this := &EntryCreditBlockEntry_CommitEntry{}
-	this.CommitEntry = NewPopulatedEntryCreditEntryCommit(r, easy)
+func NewPopulatedEntryCreditBlockEntry_EntryCreditEntryCommit(r randyEntryCredit, easy bool) *EntryCreditBlockEntry_EntryCreditEntryCommit {
+	this := &EntryCreditBlockEntry_EntryCreditEntryCommit{}
+	this.EntryCreditEntryCommit = NewPopulatedEntryCreditEntryCommit(r, easy)
 	return this
 }
 func NewPopulatedEntryCreditBlockEntry_IncreaseBalance(r randyEntryCredit, easy bool) *EntryCreditBlockEntry_IncreaseBalance {
@@ -2599,8 +2598,8 @@ func NewPopulatedEntryCreditBlockEntry_ServerIndexNumber(r randyEntryCredit, eas
 	this.ServerIndexNumber = NewPopulatedServerIndexNumber(r, easy)
 	return this
 }
-func NewPopulatedEntryCreditChainRegistration(r randyEntryCredit, easy bool) *EntryCreditChainRegistration {
-	this := &EntryCreditChainRegistration{}
+func NewPopulatedEntryCreditChainCommit(r randyEntryCredit, easy bool) *EntryCreditChainCommit {
+	this := &EntryCreditChainCommit{}
 	this.EntityState = EntityState([]int32{0, 1, 2, 3, 4}[r.Intn(5)])
 	if r.Intn(5) != 0 {
 		this.ChainIDHash = NewPopulatedHash(r, easy)
@@ -2660,9 +2659,9 @@ func NewPopulatedEntryCreditEntryCommit(r randyEntryCredit, easy bool) *EntryCre
 func NewPopulatedIncreaseBalance(r randyEntryCredit, easy bool) *IncreaseBalance {
 	this := &IncreaseBalance{}
 	v7 := r.Intn(100)
-	this.EcPubKey = make([]byte, v7)
+	this.EntryCreditPublicKey = make([]byte, v7)
 	for i := 0; i < v7; i++ {
-		this.EcPubKey[i] = byte(r.Intn(256))
+		this.EntryCreditPublicKey[i] = byte(r.Intn(256))
 	}
 	if r.Intn(5) != 0 {
 		this.TransactionID = NewPopulatedHash(r, easy)
@@ -2839,26 +2838,26 @@ func (m *EntryCreditBlockEntry) Size() (n int) {
 	return n
 }
 
-func (m *EntryCreditBlockEntry_CommitChain) Size() (n int) {
+func (m *EntryCreditBlockEntry_EntryCreditChainCommit) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.CommitChain != nil {
-		l = m.CommitChain.Size()
+	if m.EntryCreditChainCommit != nil {
+		l = m.EntryCreditChainCommit.Size()
 		n += 1 + l + sovEntryCredit(uint64(l))
 	}
 	return n
 }
-func (m *EntryCreditBlockEntry_CommitEntry) Size() (n int) {
+func (m *EntryCreditBlockEntry_EntryCreditEntryCommit) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.CommitEntry != nil {
-		l = m.CommitEntry.Size()
+	if m.EntryCreditEntryCommit != nil {
+		l = m.EntryCreditEntryCommit.Size()
 		n += 1 + l + sovEntryCredit(uint64(l))
 	}
 	return n
@@ -2899,7 +2898,7 @@ func (m *EntryCreditBlockEntry_ServerIndexNumber) Size() (n int) {
 	}
 	return n
 }
-func (m *EntryCreditChainRegistration) Size() (n int) {
+func (m *EntryCreditChainCommit) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2981,7 +2980,7 @@ func (m *IncreaseBalance) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.EcPubKey)
+	l = len(m.EntryCreditPublicKey)
 	if l > 0 {
 		n += 1 + l + sovEntryCredit(uint64(l))
 	}
@@ -3445,7 +3444,7 @@ func (m *EntryCreditBlockEntry) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CommitChain", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field EntryCreditChainCommit", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -3472,15 +3471,15 @@ func (m *EntryCreditBlockEntry) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			v := &EntryCreditChainRegistration{}
+			v := &EntryCreditChainCommit{}
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &EntryCreditBlockEntry_CommitChain{v}
+			m.Value = &EntryCreditBlockEntry_EntryCreditChainCommit{v}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CommitEntry", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field EntryCreditEntryCommit", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -3511,7 +3510,7 @@ func (m *EntryCreditBlockEntry) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &EntryCreditBlockEntry_CommitEntry{v}
+			m.Value = &EntryCreditBlockEntry_EntryCreditEntryCommit{v}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
@@ -3643,7 +3642,7 @@ func (m *EntryCreditBlockEntry) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EntryCreditChainRegistration) Unmarshal(dAtA []byte) error {
+func (m *EntryCreditChainCommit) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3666,10 +3665,10 @@ func (m *EntryCreditChainRegistration) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EntryCreditChainRegistration: wiretype end group for non-group")
+			return fmt.Errorf("proto: EntryCreditChainCommit: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EntryCreditChainRegistration: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EntryCreditChainCommit: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -4210,7 +4209,7 @@ func (m *IncreaseBalance) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EcPubKey", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field EntryCreditPublicKey", wireType)
 			}
 			var byteLen int
 			for shift := uint(0); ; shift += 7 {
@@ -4237,9 +4236,9 @@ func (m *IncreaseBalance) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.EcPubKey = append(m.EcPubKey[:0], dAtA[iNdEx:postIndex]...)
-			if m.EcPubKey == nil {
-				m.EcPubKey = []byte{}
+			m.EntryCreditPublicKey = append(m.EntryCreditPublicKey[:0], dAtA[iNdEx:postIndex]...)
+			if m.EntryCreditPublicKey == nil {
+				m.EntryCreditPublicKey = []byte{}
 			}
 			iNdEx = postIndex
 		case 2:
