@@ -1,5 +1,5 @@
 # Live Feed API
-The Live Feed API is a second layer application for the [factom](https://github.com/FactomProject/factomd) blockchain. The API emits live events from factomd to subscribers. Users can subscribe on receiving events.     
+The Live Feed API is a second layer application for the [factom](https://github.com/FactomProject/factomd) blockchain. The API emits live events from factomd to subscribers. Users can subscribe on receiving events.
 
 
 ## Getting started
@@ -167,7 +167,9 @@ As the API also provide event filtering with GraphQL a plugin is needed to gener
 The swagger that established the contract for the subscription API is also generated. Generating the swagger is done with [swaggo/swag](https://github.com/swaggo/swag). In the code comments provide information about the API. The comments are used as input for the swagger.
      
  ### Generate sources
-Retrieving the develop dependencies will install swag, protoc, protobuf-graphql-extension. The 
+Retrieving the develop dependencies will install swag, protoc-gen-go, protobuf-graphql-extension.
+#### Prerequisites
+A [protocol buffers](https://github.com/protocolbuffers/protobuf) compiler needs to be installed. Use the [install-protoc.sh](install-protoc.sh) to install protoc on linux or look at the [installation manual](https://github.com/protocolbuffers/protobuf#protocol-compiler-installation) for other platforms.   
 ```
 make dev-deps
 make generate
