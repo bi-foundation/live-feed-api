@@ -12,7 +12,7 @@ import (
 const (
 	defaultVersion = "0.1"
 
-	defaultConfigName = "live-feed.conf"
+	defaultConfigName = "factom-live-feed.conf"
 	defaultConfigDir  = "live-feed"
 
 	defaultLogLevel = "info"
@@ -57,12 +57,12 @@ type SubscriptionConfig struct {
 	PrivateKeyFile  string
 }
 
-// LoadConfiguration from default paths for live-feed.conf
+// LoadConfiguration from default paths for factom-live-feed.conf
 // look for configuration in:
 // - current path
 // - /etc/factom-live-feed
 // - $HOME/.factom
-// - $HOME/.factom/live-feed
+// - $HOME/.factom/factom-live-feed
 // - current path
 func LoadConfiguration() (*Config, error) {
 	configPaths := []string{

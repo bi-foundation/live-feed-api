@@ -9,8 +9,8 @@ install go 1.12 or higher
 
 
 ### Configuration
-For configuration there is by default a file called live-feed.conf.
-The file can be stored in `/etc/live-feed`, `$FACTOM_HOME` or `$FACTOM_HOME/live-feed`. 
+For configuration there is by default a file called factom-live-feed.conf.
+The file can be stored in `/etc/factom-live-feed`, `$FACTOM_HOME` or `$FACTOM_HOME/factom-live-feed`. 
 The configuration file can also be overridden using a command line flag `--config-file=<path-to-file>`. 
 Environment variables can used to override properties of the configuration. For example, to set the receiver port use environment key: `FACTOM_LIVE_FEED_RECEIVER_PORT`.
 
@@ -25,7 +25,7 @@ Environment variables can used to override properties of the configuration. For 
 | log / loglevel             | The log level                                                                       | debug, info, warning, error, fatal
 
 
-This is what live-feed.conf looks like with the default settings:
+This is what factom-live-feed.conf looks like with the default settings:
 
 ```
 [receiver]
@@ -44,7 +44,7 @@ This is what live-feed.conf looks like with the default settings:
 
 
 ## Database
-The Live Feed API need to be able to store subscriptions in a database. A in-memory database can be used to rapid development. Alternative a mysql database can be used.  
+The Live Feed API need to be able to store subscriptions in a database. A in-memory database can be used for rapid development. Note: this should not be used in production as after closing the application the subscriptions be lost. Alternative a mysql database can be used.  
 
 ### MYSQL database
 Configuration for the mysql database.
@@ -161,7 +161,7 @@ POST /live/feed/v0.1/subscriptions
 ## Live Feed API Development
 The live feed api uses sources that are generated. The sources are provided, but need to be updated if the API changes. If models are changed, these files needed to be regenerated. 
 
-For the communication between factomd and the live-feed api the models are written as protobuf. The code for serialization and serialization is generated with protoc. Further information: [golang/protobuf](https://github.com/golang/protobuf). 
+For the communication between factomd and the live-feed api the models are written as protobuf. The code for serialization and deserialization is generated with protoc. Further information: [golang/protobuf](https://github.com/golang/protobuf). 
 As the API also provide event filtering with GraphQL a plugin is needed to generate the schemes of the models. The plugin that is used: [protobuf-graphql-extension](https://github.com/bi-foundation/protobuf-graphql-extension).
 
 The swagger that established the contract for the subscription API is also generated. Generating the swagger is done with [swaggo/swag](https://github.com/swaggo/swag). In the code comments provide information about the API. The comments are used as input for the swagger.

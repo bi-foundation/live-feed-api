@@ -59,7 +59,7 @@ func testSpecificConfigFile(t *testing.T) {
 }
 
 func testConfigFileInConfigHome(t *testing.T) {
-	configFilename := "$HOME/.factom/live-feed.conf"
+	configFilename := "$HOME/.factom/factom-live-feed.conf"
 	cleanup := createConfigFile(t, configFilename)
 	defer cleanup()
 
@@ -69,7 +69,7 @@ func testConfigFileInConfigHome(t *testing.T) {
 }
 
 func testEnvVarOverrides(t *testing.T) {
-	configFilename := "$HOME/.factom/live-feed/live-feed.conf"
+	configFilename := "$HOME/.factom/live-feed/factom-live-feed.conf"
 	cleanup := createConfigFile(t, configFilename)
 	defer cleanup()
 
