@@ -51,7 +51,7 @@ func logInterceptor(f http.Handler) http.Handler {
 func (api *api) Start() {
 	router := mux.NewRouter()
 	router.Use(logInterceptor)
-	router.Schemes(api.apiConfig.Schemes...)
+	router.Schemes(api.apiConfig.Scheme)
 
 	subscriptionRouter := router.PathPrefix(api.apiConfig.BasePath).Subrouter()
 	subscriptionRouter.HandleFunc("/subscriptions", subscribe).Methods(http.MethodPost)
@@ -62,8 +62,15 @@ func (api *api) Start() {
 
 	go func() {
 		address := fmt.Sprintf("%s:%d", api.apiConfig.BindAddress, api.apiConfig.Port)
-		log.Info("start subscription api at: [%s]://%s%s", strings.Join(api.apiConfig.Schemes, ", "), address, api.apiConfig.BasePath)
-		err := http.ListenAndServe(address, router)
+		log.Info("start subscription api at: %s://%s%s", api.apiConfig.Scheme, address, api.apiConfig.BasePath)
+
+		var err error
+		if strings.ToUpper(api.apiConfig.Scheme) == "HTTPS" {
+			err = http.ListenAndServeTLS(address, api.apiConfig.CertificateFile, api.apiConfig.PrivateKeyFile, router)
+		} else {
+			err = http.ListenAndServe(address, router)
+		}
+
 		if err != nil {
 			log.Error("failed to start subscription api: %v", err)
 		}
