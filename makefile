@@ -16,7 +16,7 @@ GOFILES:=$(shell find . -path ./vendor -prune -o -name "*.go" -type f)
 
 GOBIN:=$(GOPATH)/bin
 export PATH := $(GOBIN):$(PATH)
-export GO11MODULEENV := on
+export GO111MODULE := on
 
 all: clean build test
 
