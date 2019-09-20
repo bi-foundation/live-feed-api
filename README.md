@@ -2,9 +2,19 @@
 The Live Feed API is a second layer application for the [factom](https://github.com/FactomProject/factomd) blockchain. The API emits live events from factomd to subscribers. Users can subscribe on receiving events.
 
 
+## Contents
+- [Getting started](#getting-started)
+  - [Configuration](#configuration)
+  - [Setup database](#setup-database)
+  - [Starting Live Feed API](#starting-live-feed-api)
+- [Using the Live Feed API](#using-the-live-feed-api)
+  - [Subscriptions](#subscriptions)
+- [Live Feed API Development](#live-feed-api-development)
+	- [Generate sources](#generate-sources)
+
 ## Getting started
 
-### Prerequisites
+#### Prerequisites
 install go 1.12 or higher
 
 
@@ -44,10 +54,10 @@ This is what factom-live-feed.conf looks like with the default settings:
 ```
 
 
-## Database
+### Setup Database
 The Live Feed API needs to be able to store subscriptions in a database. An in-memory database can be used for rapid development. Note: this should not be used in production as after closing the application the subscriptions be lost. Alternative a MySQL database can be used.  
 
-### MYSQL database
+#### MYSQL database
 Configuration for the mysql database.
 ```sql
 # drivename: mysql
@@ -167,7 +177,7 @@ As the API also provides event filtering with GraphQL a plugin is needed to gene
 
 The swagger that established the contract for the subscription API is also generated. Generating the swagger is done with [swaggo/swag](https://github.com/swaggo/swag). In the code, comments provide information about the API. The comments are used as input for the swagger.
      
- ### Generate sources
+### Generate sources
 Retrieving the develop dependencies will install swag, protoc-gen-go, protobuf-graphql-extension.
 
 #### Prerequisites
