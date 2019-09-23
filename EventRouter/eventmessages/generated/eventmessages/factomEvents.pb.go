@@ -3094,21 +3094,6 @@ type NodeMessageGetter interface {
 
 var GraphQLNodeMessageType *github_com_graphql_go_graphql.Object
 
-func (g *EntryCreditBlockEntry_ChainCommit) GetChainCommit() *ChainCommit {
-	return g.ChainCommit
-}
-func (g *EntryCreditBlockEntry_EntryCommit) GetEntryCommit() *EntryCommit {
-	return g.EntryCommit
-}
-func (g *EntryCreditBlockEntry_IncreaseBalance) GetIncreaseBalance() *IncreaseBalance {
-	return g.IncreaseBalance
-}
-func (g *EntryCreditBlockEntry_MinuteNumber) GetMinuteNumber() *MinuteNumber {
-	return g.MinuteNumber
-}
-func (g *EntryCreditBlockEntry_ServerIndexNumber) GetServerIndexNumber() *ServerIndexNumber {
-	return g.ServerIndexNumber
-}
 func (g *FactomEvent_ChainCommit) GetChainCommit() *ChainCommit {
 	return g.ChainCommit
 }
@@ -3129,6 +3114,21 @@ func (g *FactomEvent_ProcessMessage) GetProcessMessage() *ProcessMessage {
 }
 func (g *FactomEvent_NodeMessage) GetNodeMessage() *NodeMessage {
 	return g.NodeMessage
+}
+func (g *EntryCreditBlockEntry_ChainCommit) GetChainCommit() *ChainCommit {
+	return g.ChainCommit
+}
+func (g *EntryCreditBlockEntry_EntryCommit) GetEntryCommit() *EntryCommit {
+	return g.EntryCommit
+}
+func (g *EntryCreditBlockEntry_IncreaseBalance) GetIncreaseBalance() *IncreaseBalance {
+	return g.IncreaseBalance
+}
+func (g *EntryCreditBlockEntry_MinuteNumber) GetMinuteNumber() *MinuteNumber {
+	return g.MinuteNumber
+}
+func (g *EntryCreditBlockEntry_ServerIndexNumber) GetServerIndexNumber() *ServerIndexNumber {
+	return g.ServerIndexNumber
 }
 
 func init() {
@@ -5048,35 +5048,6 @@ func init() {
 			}
 		}),
 	})
-	GraphQLEntryCreditBlockEntryValueUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
-		Name:        "EntryCreditBlockEntryValue",
-		Description: "",
-		Types: []*github_com_graphql_go_graphql.Object{
-			GraphQLChainCommitType,
-			GraphQLEntryCommitType,
-			GraphQLIncreaseBalanceType,
-			GraphQLMinuteNumberType,
-			GraphQLServerIndexNumberType,
-		},
-		ResolveType: func(p github_com_graphql_go_graphql.ResolveTypeParams) *github_com_graphql_go_graphql.Object {
-			if _, ok := p.Value.(*EntryCreditBlockEntry_ChainCommit); ok {
-				return GraphQLChainCommitType
-			}
-			if _, ok := p.Value.(*EntryCreditBlockEntry_EntryCommit); ok {
-				return GraphQLEntryCommitType
-			}
-			if _, ok := p.Value.(*EntryCreditBlockEntry_IncreaseBalance); ok {
-				return GraphQLIncreaseBalanceType
-			}
-			if _, ok := p.Value.(*EntryCreditBlockEntry_MinuteNumber); ok {
-				return GraphQLMinuteNumberType
-			}
-			if _, ok := p.Value.(*EntryCreditBlockEntry_ServerIndexNumber); ok {
-				return GraphQLServerIndexNumberType
-			}
-			return nil
-		},
-	})
 	GraphQLFactomEventValueUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
 		Name:        "FactomEventValue",
 		Description: "",
@@ -5110,6 +5081,35 @@ func init() {
 			}
 			if _, ok := p.Value.(*FactomEvent_NodeMessage); ok {
 				return GraphQLNodeMessageType
+			}
+			return nil
+		},
+	})
+	GraphQLEntryCreditBlockEntryValueUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
+		Name:        "EntryCreditBlockEntryValue",
+		Description: "",
+		Types: []*github_com_graphql_go_graphql.Object{
+			GraphQLChainCommitType,
+			GraphQLEntryCommitType,
+			GraphQLIncreaseBalanceType,
+			GraphQLMinuteNumberType,
+			GraphQLServerIndexNumberType,
+		},
+		ResolveType: func(p github_com_graphql_go_graphql.ResolveTypeParams) *github_com_graphql_go_graphql.Object {
+			if _, ok := p.Value.(*EntryCreditBlockEntry_ChainCommit); ok {
+				return GraphQLChainCommitType
+			}
+			if _, ok := p.Value.(*EntryCreditBlockEntry_EntryCommit); ok {
+				return GraphQLEntryCommitType
+			}
+			if _, ok := p.Value.(*EntryCreditBlockEntry_IncreaseBalance); ok {
+				return GraphQLIncreaseBalanceType
+			}
+			if _, ok := p.Value.(*EntryCreditBlockEntry_MinuteNumber); ok {
+				return GraphQLMinuteNumberType
+			}
+			if _, ok := p.Value.(*EntryCreditBlockEntry_ServerIndexNumber); ok {
+				return GraphQLServerIndexNumberType
 			}
 			return nil
 		},

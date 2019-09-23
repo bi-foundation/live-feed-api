@@ -224,36 +224,95 @@ func (m *Signature) GetSignature() []byte {
 	return nil
 }
 
+type TransactionAddress struct {
+	Amount               uint64   `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	Address              *Hash    `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *TransactionAddress) Reset()         { *m = TransactionAddress{} }
+func (m *TransactionAddress) String() string { return proto.CompactTextString(m) }
+func (*TransactionAddress) ProtoMessage()    {}
+func (*TransactionAddress) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d0b97f284493f539, []int{4}
+}
+func (m *TransactionAddress) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TransactionAddress) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TransactionAddress.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TransactionAddress) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TransactionAddress.Merge(m, src)
+}
+func (m *TransactionAddress) XXX_Size() int {
+	return m.Size()
+}
+func (m *TransactionAddress) XXX_DiscardUnknown() {
+	xxx_messageInfo_TransactionAddress.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TransactionAddress proto.InternalMessageInfo
+
+func (m *TransactionAddress) GetAmount() uint64 {
+	if m != nil {
+		return m.Amount
+	}
+	return 0
+}
+
+func (m *TransactionAddress) GetAddress() *Hash {
+	if m != nil {
+		return m.Address
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*Hash)(nil), "eventmessages.Hash")
 	proto.RegisterType((*ExternalId)(nil), "eventmessages.ExternalId")
 	proto.RegisterType((*Content)(nil), "eventmessages.Content")
 	proto.RegisterType((*Signature)(nil), "eventmessages.Signature")
+	proto.RegisterType((*TransactionAddress)(nil), "eventmessages.TransactionAddress")
 }
 
 func init() { proto.RegisterFile("eventmessages/sharedTypes.proto", fileDescriptor_d0b97f284493f539) }
 
 var fileDescriptor_d0b97f284493f539 = []byte{
-	// 300 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x91, 0xb1, 0x4a, 0x33, 0x41,
-	0x14, 0x85, 0x99, 0x9f, 0x1f, 0x25, 0xa3, 0x36, 0xa9, 0x42, 0x90, 0x49, 0x08, 0x16, 0x82, 0x64,
-	0xb7, 0xf0, 0x0d, 0x14, 0x51, 0x11, 0x2d, 0x54, 0x52, 0xd8, 0xdd, 0xd9, 0xbd, 0xd9, 0x19, 0xd8,
-	0x9d, 0x59, 0x67, 0xee, 0x48, 0xf2, 0x3a, 0x56, 0x3e, 0x82, 0xa5, 0xa5, 0xa5, 0x8f, 0xa0, 0xfb,
-	0x14, 0x96, 0xb2, 0x89, 0x59, 0xb3, 0x9d, 0x60, 0xb5, 0xec, 0x77, 0x3e, 0x0e, 0x87, 0xb9, 0x7c,
-	0x80, 0x0f, 0x68, 0xa8, 0x40, 0xef, 0x21, 0x43, 0x1f, 0x7b, 0x05, 0x0e, 0xd3, 0xdb, 0x79, 0x89,
-	0x3e, 0x2a, 0x9d, 0x25, 0xdb, 0xdd, 0x69, 0x09, 0xfd, 0xab, 0x4c, 0x93, 0x0a, 0x32, 0x4a, 0x6c,
-	0x11, 0x4b, 0x3d, 0x9e, 0xda, 0x60, 0x52, 0x20, 0x6d, 0x4d, 0xbc, 0xd0, 0x65, 0x98, 0x8e, 0x33,
-	0x07, 0xa5, 0xba, 0xcf, 0xc7, 0x38, 0x23, 0x34, 0xbe, 0x8e, 0xbe, 0xc9, 0xc2, 0x58, 0xfd, 0x2c,
-	0xeb, 0xfb, 0x93, 0x3f, 0xf7, 0x51, 0x3d, 0x36, 0x26, 0x5d, 0xa0, 0x27, 0x28, 0xca, 0x65, 0xef,
-	0x68, 0x8f, 0xff, 0x3f, 0x03, 0xaf, 0xba, 0xbb, 0xbc, 0xa3, 0xc0, 0xab, 0x09, 0xe4, 0x01, 0x7b,
-	0x6c, 0xc8, 0xf6, 0xb7, 0xaf, 0x7f, 0xc0, 0x28, 0xe2, 0xfc, 0x64, 0x46, 0xe8, 0x0c, 0xe4, 0xe7,
-	0x69, 0x77, 0xc8, 0xb7, 0xa4, 0x36, 0xe0, 0xe6, 0xeb, 0xf6, 0x3a, 0x1a, 0x1d, 0xf0, 0xcd, 0x63,
-	0x6b, 0x08, 0x0d, 0xfd, 0x42, 0x3e, 0xe5, 0x9d, 0x1b, 0x9d, 0x19, 0xa0, 0xe0, 0xb0, 0xde, 0x51,
-	0x06, 0x99, 0xeb, 0xe4, 0x02, 0xe7, 0xab, 0x1d, 0x0d, 0xa8, 0x53, 0xbf, 0x52, 0x7b, 0xff, 0x96,
-	0x69, 0x03, 0x8e, 0x2e, 0x3f, 0x3f, 0x04, 0x7b, 0xaa, 0x04, 0x7b, 0xae, 0x04, 0x7b, 0xad, 0x04,
-	0x7b, 0xab, 0x04, 0x7b, 0xaf, 0x04, 0x7b, 0x79, 0x1c, 0x30, 0x3e, 0x4c, 0x6c, 0x11, 0x4d, 0x21,
-	0xa1, 0xe6, 0x93, 0x46, 0xad, 0x9b, 0xdd, 0xb5, 0x4f, 0x28, 0x37, 0x16, 0x2f, 0x74, 0xf8, 0x15,
-	0x00, 0x00, 0xff, 0xff, 0xde, 0x56, 0xa9, 0x18, 0xfb, 0x01, 0x00, 0x00,
+	// 349 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x92, 0xc1, 0x4a, 0xeb, 0x40,
+	0x14, 0x86, 0x99, 0x4b, 0x69, 0xe9, 0xf4, 0xde, 0x4d, 0x2e, 0x5c, 0x4a, 0xb9, 0xa4, 0x25, 0xb8,
+	0x10, 0x24, 0x09, 0xe8, 0x13, 0xa8, 0x88, 0x8a, 0xe8, 0xa2, 0x96, 0x2e, 0x74, 0x75, 0x92, 0x9c,
+	0x26, 0x81, 0x64, 0x26, 0xce, 0x9c, 0x48, 0xfb, 0x3a, 0xae, 0x7c, 0x04, 0x97, 0x2e, 0x5d, 0xfa,
+	0x08, 0x9a, 0xa7, 0x70, 0x29, 0x49, 0x9a, 0xda, 0xec, 0x04, 0x57, 0xe1, 0xfc, 0xe7, 0xe3, 0xe3,
+	0xf0, 0x67, 0xf8, 0x18, 0xef, 0x51, 0x50, 0x8a, 0x5a, 0x43, 0x88, 0xda, 0xd5, 0x11, 0x28, 0x0c,
+	0x66, 0xab, 0x0c, 0xb5, 0x93, 0x29, 0x49, 0xd2, 0xf8, 0xd3, 0x02, 0x46, 0x57, 0x61, 0x4c, 0x51,
+	0xee, 0x39, 0xbe, 0x4c, 0x5d, 0x2f, 0xb6, 0x17, 0x32, 0x17, 0x01, 0x50, 0x2c, 0x85, 0x5b, 0xe1,
+	0x5e, 0xbe, 0xb0, 0x43, 0x05, 0x59, 0x74, 0x97, 0xd8, 0xb8, 0x24, 0x14, 0xba, 0x5c, 0xad, 0x93,
+	0x8a, 0x68, 0x86, 0x5a, 0x3f, 0x9a, 0xff, 0xd8, 0x47, 0xe5, 0xb1, 0x2e, 0xc5, 0x29, 0x6a, 0x82,
+	0x34, 0xab, 0xbd, 0xd6, 0x0e, 0xef, 0x9c, 0x81, 0x8e, 0x8c, 0xff, 0xbc, 0x1f, 0x81, 0x8e, 0xe6,
+	0x90, 0xe4, 0x38, 0x64, 0x13, 0xb6, 0xfb, 0x7b, 0xfa, 0x15, 0x58, 0x0e, 0xe7, 0x27, 0x4b, 0x42,
+	0x25, 0x20, 0x39, 0x0f, 0x8c, 0x09, 0x1f, 0x78, 0xb1, 0x00, 0xb5, 0xda, 0xa6, 0xb7, 0x23, 0x6b,
+	0x8f, 0xf7, 0x8e, 0xa5, 0x20, 0x14, 0xf4, 0x0d, 0xf8, 0x94, 0xf7, 0xaf, 0xe3, 0x50, 0x00, 0xe5,
+	0x0a, 0xcb, 0x3b, 0xb2, 0xdc, 0x4b, 0x62, 0xff, 0x02, 0x57, 0xcd, 0x1d, 0x9b, 0xa0, 0xdc, 0xea,
+	0x06, 0x1d, 0xfe, 0xaa, 0xb7, 0x9b, 0xc0, 0xba, 0xe5, 0xc6, 0x4c, 0x81, 0xd0, 0xe0, 0x97, 0xc5,
+	0x1c, 0x06, 0x81, 0x42, 0xad, 0x8d, 0x7f, 0xbc, 0x0b, 0xa9, 0xcc, 0x05, 0x55, 0xba, 0xce, 0x74,
+	0x3d, 0x19, 0x36, 0xef, 0x41, 0x8d, 0x54, 0xa6, 0xc1, 0xfe, 0x5f, 0xa7, 0xf5, 0x0b, 0x9d, 0xb2,
+	0x97, 0x69, 0xc3, 0x1c, 0x5d, 0x7e, 0xbc, 0x9b, 0xec, 0xb1, 0x30, 0xd9, 0x53, 0x61, 0xb2, 0x97,
+	0xc2, 0x64, 0xaf, 0x85, 0xc9, 0xde, 0x0a, 0x93, 0x3d, 0x3f, 0x8c, 0x19, 0x9f, 0xf8, 0x32, 0x75,
+	0x16, 0xe0, 0xd3, 0xe6, 0x13, 0xb4, 0x6d, 0x37, 0xed, 0xf7, 0xe1, 0x75, 0xab, 0xfa, 0x0f, 0x3e,
+	0x03, 0x00, 0x00, 0xff, 0xff, 0x78, 0xab, 0x26, 0x3b, 0x58, 0x02, 0x00, 0x00,
 }
 
 func (this *Hash) Equal(that interface{}) bool {
@@ -367,6 +426,36 @@ func (this *Signature) Equal(that interface{}) bool {
 	}
 	return true
 }
+func (this *TransactionAddress) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TransactionAddress)
+	if !ok {
+		that2, ok := that.(TransactionAddress)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Amount != that1.Amount {
+		return false
+	}
+	if !this.Address.Equal(that1.Address) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
 
 type HashGetter interface {
 	GetHash() *Hash
@@ -391,6 +480,12 @@ type SignatureGetter interface {
 }
 
 var GraphQLSignatureType *github_com_graphql_go_graphql.Object
+
+type TransactionAddressGetter interface {
+	GetTransactionAddress() *TransactionAddress
+}
+
+var GraphQLTransactionAddressType *github_com_graphql_go_graphql.Object
 
 func init() {
 	GraphQLHashType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
@@ -515,6 +610,58 @@ func init() {
 							return face.Signature, nil
 						}
 						return nil, fmt.Errorf("field signature not resolved")
+					},
+				},
+			}
+		}),
+	})
+	GraphQLTransactionAddressType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
+		Name:        "TransactionAddress",
+		Description: "",
+		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
+			return github_com_graphql_go_graphql.Fields{
+				"amount": &github_com_graphql_go_graphql.Field{
+					Type:        github_com_graphql_go_graphql.Int,
+					Description: "",
+					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
+						obj, ok := p.Source.(*TransactionAddress)
+						if ok {
+							return obj.Amount, nil
+						}
+						inter, ok := p.Source.(TransactionAddressGetter)
+						if ok {
+							face := inter.GetTransactionAddress()
+							if face == nil {
+								return nil, nil
+							}
+							return face.Amount, nil
+						}
+						return nil, fmt.Errorf("field amount not resolved")
+					},
+				},
+				"address": &github_com_graphql_go_graphql.Field{
+					Type:        GraphQLHashType,
+					Description: "",
+					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
+						obj, ok := p.Source.(*TransactionAddress)
+						if ok {
+							if obj.Address == nil {
+								return nil, nil
+							}
+							return obj.GetAddress(), nil
+						}
+						inter, ok := p.Source.(TransactionAddressGetter)
+						if ok {
+							face := inter.GetTransactionAddress()
+							if face == nil {
+								return nil, nil
+							}
+							if face.Address == nil {
+								return nil, nil
+							}
+							return face.GetAddress(), nil
+						}
+						return nil, fmt.Errorf("field address not resolved")
 					},
 				},
 			}
@@ -664,6 +811,50 @@ func (m *Signature) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *TransactionAddress) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TransactionAddress) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TransactionAddress) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.Address != nil {
+		{
+			size, err := m.Address.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintSharedTypes(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Amount != 0 {
+		i = encodeVarintSharedTypes(dAtA, i, uint64(m.Amount))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintSharedTypes(dAtA []byte, offset int, v uint64) int {
 	offset -= sovSharedTypes(v)
 	base := offset
@@ -725,6 +916,18 @@ func NewPopulatedSignature(r randySharedTypes, easy bool) *Signature {
 	this.Signature = make([]byte, v5)
 	for i := 0; i < v5; i++ {
 		this.Signature[i] = byte(r.Intn(256))
+	}
+	if !easy && r.Intn(10) != 0 {
+		this.XXX_unrecognized = randUnrecognizedSharedTypes(r, 3)
+	}
+	return this
+}
+
+func NewPopulatedTransactionAddress(r randySharedTypes, easy bool) *TransactionAddress {
+	this := &TransactionAddress{}
+	this.Amount = uint64(uint64(r.Uint32()))
+	if r.Intn(5) != 0 {
+		this.Address = NewPopulatedHash(r, easy)
 	}
 	if !easy && r.Intn(10) != 0 {
 		this.XXX_unrecognized = randUnrecognizedSharedTypes(r, 3)
@@ -864,6 +1067,25 @@ func (m *Signature) Size() (n int) {
 	}
 	l = len(m.Signature)
 	if l > 0 {
+		n += 1 + l + sovSharedTypes(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *TransactionAddress) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Amount != 0 {
+		n += 1 + sovSharedTypes(uint64(m.Amount))
+	}
+	if m.Address != nil {
+		l = m.Address.Size()
 		n += 1 + l + sovSharedTypes(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
@@ -1237,6 +1459,115 @@ func (m *Signature) Unmarshal(dAtA []byte) error {
 			m.Signature = append(m.Signature[:0], dAtA[iNdEx:postIndex]...)
 			if m.Signature == nil {
 				m.Signature = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipSharedTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthSharedTypes
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthSharedTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TransactionAddress) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowSharedTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TransactionAddress: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TransactionAddress: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			m.Amount = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSharedTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Amount |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSharedTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthSharedTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthSharedTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Address == nil {
+				m.Address = &Hash{}
+			}
+			if err := m.Address.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
