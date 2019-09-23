@@ -115,13 +115,13 @@ func (m *FactoidBlock) GetTransactions() []*Transaction {
 }
 
 type Transaction struct {
-	TransactionId                 *Hash                    `protobuf:"bytes,1,opt,name=transactionId,proto3" json:"transactionId,omitempty"`
+	TransactionID                 *Hash                    `protobuf:"bytes,1,opt,name=transactionID,proto3" json:"transactionID,omitempty"`
 	BlockHeight                   uint32                   `protobuf:"varint,2,opt,name=blockHeight,proto3" json:"blockHeight,omitempty"`
 	Timestamp                     *types.Timestamp         `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Inputs                        []*TransactionAddress    `protobuf:"bytes,4,rep,name=inputs,proto3" json:"inputs,omitempty"`
-	Outputs                       []*TransactionAddress    `protobuf:"bytes,5,rep,name=outputs,proto3" json:"outputs,omitempty"`
-	OutputEntryCredits            []*TransactionAddress    `protobuf:"bytes,6,rep,name=outputEntryCredits,proto3" json:"outputEntryCredits,omitempty"`
-	RedeemConditionDatastructures []*RCD                   `protobuf:"bytes,7,rep,name=redeemConditionDatastructures,proto3" json:"redeemConditionDatastructures,omitempty"`
+	FactoidInputs                 []*TransactionAddress    `protobuf:"bytes,4,rep,name=factoidInputs,proto3" json:"factoidInputs,omitempty"`
+	FactoidOutputs                []*TransactionAddress    `protobuf:"bytes,5,rep,name=factoidOutputs,proto3" json:"factoidOutputs,omitempty"`
+	EntryCreditOutputs            []*TransactionAddress    `protobuf:"bytes,6,rep,name=entryCreditOutputs,proto3" json:"entryCreditOutputs,omitempty"`
+	RedeemConditionDataStructures []*RCD                   `protobuf:"bytes,7,rep,name=redeemConditionDataStructures,proto3" json:"redeemConditionDataStructures,omitempty"`
 	SignatureBlocks               []*FactoidSignatureBlock `protobuf:"bytes,8,rep,name=signatureBlocks,proto3" json:"signatureBlocks,omitempty"`
 	XXX_NoUnkeyedLiteral          struct{}                 `json:"-"`
 	XXX_unrecognized              []byte                   `json:"-"`
@@ -161,9 +161,9 @@ func (m *Transaction) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Transaction proto.InternalMessageInfo
 
-func (m *Transaction) GetTransactionId() *Hash {
+func (m *Transaction) GetTransactionID() *Hash {
 	if m != nil {
-		return m.TransactionId
+		return m.TransactionID
 	}
 	return nil
 }
@@ -182,30 +182,30 @@ func (m *Transaction) GetTimestamp() *types.Timestamp {
 	return nil
 }
 
-func (m *Transaction) GetInputs() []*TransactionAddress {
+func (m *Transaction) GetFactoidInputs() []*TransactionAddress {
 	if m != nil {
-		return m.Inputs
+		return m.FactoidInputs
 	}
 	return nil
 }
 
-func (m *Transaction) GetOutputs() []*TransactionAddress {
+func (m *Transaction) GetFactoidOutputs() []*TransactionAddress {
 	if m != nil {
-		return m.Outputs
+		return m.FactoidOutputs
 	}
 	return nil
 }
 
-func (m *Transaction) GetOutputEntryCredits() []*TransactionAddress {
+func (m *Transaction) GetEntryCreditOutputs() []*TransactionAddress {
 	if m != nil {
-		return m.OutputEntryCredits
+		return m.EntryCreditOutputs
 	}
 	return nil
 }
 
-func (m *Transaction) GetRedeemConditionDatastructures() []*RCD {
+func (m *Transaction) GetRedeemConditionDataStructures() []*RCD {
 	if m != nil {
-		return m.RedeemConditionDatastructures
+		return m.RedeemConditionDataStructures
 	}
 	return nil
 }
@@ -213,61 +213,6 @@ func (m *Transaction) GetRedeemConditionDatastructures() []*RCD {
 func (m *Transaction) GetSignatureBlocks() []*FactoidSignatureBlock {
 	if m != nil {
 		return m.SignatureBlocks
-	}
-	return nil
-}
-
-type TransactionAddress struct {
-	Amount               uint64   `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
-	Address              *Hash    `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *TransactionAddress) Reset()         { *m = TransactionAddress{} }
-func (m *TransactionAddress) String() string { return proto.CompactTextString(m) }
-func (*TransactionAddress) ProtoMessage()    {}
-func (*TransactionAddress) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1291991795dfbb48, []int{2}
-}
-func (m *TransactionAddress) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *TransactionAddress) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_TransactionAddress.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *TransactionAddress) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TransactionAddress.Merge(m, src)
-}
-func (m *TransactionAddress) XXX_Size() int {
-	return m.Size()
-}
-func (m *TransactionAddress) XXX_DiscardUnknown() {
-	xxx_messageInfo_TransactionAddress.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TransactionAddress proto.InternalMessageInfo
-
-func (m *TransactionAddress) GetAmount() uint64 {
-	if m != nil {
-		return m.Amount
-	}
-	return 0
-}
-
-func (m *TransactionAddress) GetAddress() *Hash {
-	if m != nil {
-		return m.Address
 	}
 	return nil
 }
@@ -285,7 +230,7 @@ func (m *RCD) Reset()         { *m = RCD{} }
 func (m *RCD) String() string { return proto.CompactTextString(m) }
 func (*RCD) ProtoMessage()    {}
 func (*RCD) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1291991795dfbb48, []int{3}
+	return fileDescriptor_1291991795dfbb48, []int{2}
 }
 func (m *RCD) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -359,7 +304,7 @@ func (m *RCD1) Reset()         { *m = RCD1{} }
 func (m *RCD1) String() string { return proto.CompactTextString(m) }
 func (*RCD1) ProtoMessage()    {}
 func (*RCD1) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1291991795dfbb48, []int{4}
+	return fileDescriptor_1291991795dfbb48, []int{3}
 }
 func (m *RCD1) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -406,7 +351,7 @@ func (m *FactoidSignatureBlock) Reset()         { *m = FactoidSignatureBlock{} }
 func (m *FactoidSignatureBlock) String() string { return proto.CompactTextString(m) }
 func (*FactoidSignatureBlock) ProtoMessage()    {}
 func (*FactoidSignatureBlock) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1291991795dfbb48, []int{5}
+	return fileDescriptor_1291991795dfbb48, []int{4}
 }
 func (m *FactoidSignatureBlock) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -453,7 +398,7 @@ func (m *FactoidSignature) Reset()         { *m = FactoidSignature{} }
 func (m *FactoidSignature) String() string { return proto.CompactTextString(m) }
 func (*FactoidSignature) ProtoMessage()    {}
 func (*FactoidSignature) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1291991795dfbb48, []int{6}
+	return fileDescriptor_1291991795dfbb48, []int{5}
 }
 func (m *FactoidSignature) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -492,7 +437,6 @@ func (m *FactoidSignature) GetSignatureValue() []byte {
 func init() {
 	proto.RegisterType((*FactoidBlock)(nil), "eventmessages.FactoidBlock")
 	proto.RegisterType((*Transaction)(nil), "eventmessages.Transaction")
-	proto.RegisterType((*TransactionAddress)(nil), "eventmessages.TransactionAddress")
 	proto.RegisterType((*RCD)(nil), "eventmessages.RCD")
 	proto.RegisterType((*RCD1)(nil), "eventmessages.RCD1")
 	proto.RegisterType((*FactoidSignatureBlock)(nil), "eventmessages.FactoidSignatureBlock")
@@ -502,48 +446,47 @@ func init() {
 func init() { proto.RegisterFile("eventmessages/factoidBlock.proto", fileDescriptor_1291991795dfbb48) }
 
 var fileDescriptor_1291991795dfbb48 = []byte{
-	// 654 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x94, 0xc1, 0x6e, 0xd3, 0x4c,
-	0x10, 0xc7, 0x3f, 0xb7, 0x69, 0xf2, 0x75, 0x92, 0xf6, 0xfb, 0xb4, 0xa8, 0xc8, 0x2a, 0x34, 0x0d,
-	0x56, 0x85, 0xc2, 0x21, 0x8e, 0x5a, 0x4e, 0xa5, 0x02, 0x89, 0x26, 0xa0, 0x56, 0xa5, 0x95, 0x58,
-	0x4a, 0x85, 0xe0, 0xb4, 0xb6, 0xa7, 0x8e, 0xd5, 0xd8, 0x6b, 0x76, 0xd7, 0x55, 0xf3, 0x2e, 0x9c,
-	0x38, 0xf1, 0x08, 0x1c, 0x39, 0x72, 0xe4, 0x11, 0x20, 0xaf, 0xc0, 0x85, 0x23, 0xb2, 0x63, 0x37,
-	0xb1, 0xdb, 0x84, 0x4a, 0x9c, 0x92, 0x9d, 0xf9, 0xfd, 0xff, 0x9a, 0x19, 0xef, 0x2c, 0x34, 0xf0,
-	0x1c, 0x03, 0xe5, 0xa3, 0x94, 0xcc, 0x45, 0xd9, 0x3e, 0x65, 0xb6, 0xe2, 0x9e, 0xb3, 0xdb, 0xe7,
-	0xf6, 0x99, 0x19, 0x0a, 0xae, 0x38, 0x59, 0xca, 0x11, 0xab, 0x05, 0x81, 0x8b, 0x01, 0x0a, 0xd6,
-	0x3f, 0x1e, 0x84, 0x28, 0x47, 0x82, 0xd5, 0x23, 0xd7, 0x53, 0xbd, 0xc8, 0x32, 0x6d, 0xee, 0xb7,
-	0x2d, 0xaf, 0x75, 0xca, 0xa3, 0xc0, 0x61, 0xca, 0xe3, 0x41, 0x3b, 0xc9, 0x5b, 0xd1, 0x69, 0xcb,
-	0x15, 0x2c, 0xec, 0xbd, 0xef, 0xb7, 0xf0, 0x42, 0x61, 0x20, 0xe3, 0x54, 0x1a, 0x49, 0x88, 0xec,
-	0x90, 0xfa, 0x9d, 0xfc, 0xb5, 0x9f, 0x8a, 0xab, 0x6b, 0x2b, 0xcf, 0x47, 0xa9, 0x98, 0x1f, 0x8e,
-	0x7c, 0x8d, 0x9f, 0x73, 0x50, 0x7b, 0x3e, 0xd1, 0x2f, 0xd9, 0x81, 0x65, 0x8b, 0x3b, 0x83, 0x43,
-	0x14, 0x67, 0x7d, 0xa4, 0x9c, 0x2b, 0x5d, 0x6b, 0x68, 0xcd, 0xea, 0xd6, 0x2d, 0x33, 0xd7, 0xb3,
-	0xb9, 0xc7, 0x64, 0x8f, 0x16, 0x50, 0xb2, 0x0f, 0x2b, 0xa1, 0xc0, 0x73, 0x8f, 0x47, 0xf2, 0x00,
-	0x27, 0x3d, 0xe6, 0xa6, 0x7b, 0x5c, 0xaf, 0x20, 0xaf, 0xe1, 0x4e, 0x96, 0x78, 0x81, 0x8e, 0x8b,
-	0x22, 0x6f, 0x38, 0x3f, 0xdd, 0x70, 0x96, 0x8e, 0x18, 0x50, 0xc3, 0x0b, 0xbb, 0xc7, 0x02, 0x17,
-	0x29, 0x53, 0xa8, 0x97, 0x1a, 0x5a, 0xb3, 0x44, 0x73, 0x31, 0xd2, 0x80, 0xaa, 0x15, 0xcf, 0x62,
-	0x0f, 0x3d, 0xb7, 0xa7, 0xf4, 0x85, 0x86, 0xd6, 0x5c, 0xa2, 0x93, 0x21, 0xf2, 0x04, 0x6a, 0x4a,
-	0xb0, 0x40, 0x32, 0x3b, 0xfe, 0x04, 0x52, 0x2f, 0x37, 0xe6, 0x9b, 0xd5, 0xad, 0xd5, 0x42, 0x35,
-	0xc7, 0x63, 0x84, 0xe6, 0x78, 0xe3, 0x43, 0x09, 0xaa, 0x13, 0x59, 0xb2, 0x0d, 0x4b, 0x13, 0xf9,
-	0x7d, 0x67, 0xd6, 0xcc, 0xf3, 0x64, 0xb1, 0xd8, 0xb9, 0xab, 0xc5, 0xee, 0xc0, 0xe2, 0xe5, 0x57,
-	0x4f, 0xe7, 0xb6, 0x66, 0x4e, 0x5e, 0x0d, 0x33, 0xb9, 0x1a, 0xe6, 0x71, 0x06, 0xd1, 0x31, 0x4f,
-	0xb6, 0xa1, 0xec, 0x05, 0x61, 0xa4, 0xa4, 0x5e, 0x4a, 0x7a, 0xbc, 0x37, 0xbd, 0xc7, 0xa7, 0x8e,
-	0x23, 0x50, 0x4a, 0x9a, 0x0a, 0xc8, 0x0e, 0x54, 0x78, 0xa4, 0x12, 0xed, 0xc2, 0x4d, 0xb5, 0x99,
-	0x82, 0xbc, 0x04, 0x32, 0xfa, 0xfb, 0x2c, 0x50, 0x62, 0xd0, 0x11, 0xe8, 0x78, 0x2a, 0x9b, 0xf3,
-	0x0d, 0x7c, 0xae, 0x11, 0x93, 0x37, 0xb0, 0x26, 0xd0, 0x41, 0xf4, 0x3b, 0x3c, 0x70, 0xbc, 0x98,
-	0xee, 0x32, 0xc5, 0xa4, 0x12, 0x91, 0xad, 0x22, 0x81, 0x52, 0xaf, 0x24, 0xee, 0xa4, 0xe0, 0x4e,
-	0x3b, 0x5d, 0x3a, 0x5b, 0x48, 0x8e, 0xe0, 0x3f, 0xe9, 0xb9, 0x01, 0x8b, 0x4f, 0xc9, 0x16, 0x49,
-	0xfd, 0xdf, 0xc4, 0x6b, 0xa3, 0xe0, 0x95, 0x6e, 0xda, 0xab, 0x1c, 0x4c, 0x8b, 0x62, 0xe3, 0x1d,
-	0x90, 0xab, 0x3d, 0x91, 0xdb, 0x50, 0x66, 0x3e, 0x8f, 0x82, 0xd1, 0x46, 0x96, 0x68, 0x7a, 0x22,
-	0x2d, 0xa8, 0xb0, 0x11, 0x32, 0x6b, 0xcd, 0x32, 0xc6, 0xd8, 0x86, 0x79, 0xda, 0xe9, 0x92, 0x07,
-	0x50, 0x12, 0xb6, 0xb3, 0x39, 0xe5, 0xa6, 0xd1, 0x4e, 0x77, 0x73, 0xef, 0x1f, 0x9a, 0x20, 0xbb,
-	0x15, 0x58, 0x38, 0x67, 0xfd, 0x08, 0x8d, 0x0d, 0x28, 0xc5, 0x09, 0x72, 0x17, 0x16, 0xc3, 0xc8,
-	0xea, 0x7b, 0xf6, 0x01, 0x0e, 0x12, 0x83, 0x1a, 0x1d, 0x07, 0x8c, 0x13, 0x58, 0xb9, 0xb6, 0x4f,
-	0xf2, 0x18, 0x16, 0x2f, 0x3b, 0xd5, 0xb5, 0x64, 0x40, 0xeb, 0x7f, 0x18, 0x10, 0x1d, 0x2b, 0x8c,
-	0x47, 0xf0, 0x7f, 0x31, 0x4d, 0xee, 0xc3, 0xf2, 0x25, 0x70, 0x12, 0xd7, 0x98, 0x96, 0x53, 0x88,
-	0xee, 0x1e, 0xfe, 0xfa, 0x51, 0xd7, 0x3e, 0x0d, 0xeb, 0xda, 0xe7, 0x61, 0x5d, 0xfb, 0x3a, 0xac,
-	0x6b, 0xdf, 0x86, 0x75, 0xed, 0xfb, 0xb0, 0xae, 0x7d, 0xf9, 0xb8, 0xae, 0x41, 0xc3, 0xe6, 0xbe,
-	0x99, 0xbc, 0xfa, 0xd9, 0x8f, 0x93, 0xaf, 0xeb, 0x6d, 0xfe, 0xfd, 0xb7, 0xca, 0xc9, 0xde, 0x3c,
-	0xfc, 0x1d, 0x00, 0x00, 0xff, 0xff, 0xfe, 0x2c, 0xb5, 0xb2, 0x39, 0x06, 0x00, 0x00,
+	// 627 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x94, 0x41, 0x4f, 0x13, 0x4f,
+	0x18, 0xc6, 0xff, 0x0b, 0x05, 0xfe, 0xbc, 0x6d, 0xd1, 0x8c, 0x21, 0xd9, 0xa0, 0x94, 0x75, 0x43,
+	0x4c, 0x3d, 0xb0, 0x0d, 0x78, 0x42, 0xa2, 0x89, 0xb4, 0x51, 0x1a, 0x04, 0xe3, 0x80, 0xc4, 0x78,
+	0x9b, 0xdd, 0x7d, 0xd9, 0x6e, 0x68, 0x77, 0xd6, 0x99, 0x59, 0x42, 0xbf, 0x8e, 0x27, 0x3f, 0x02,
+	0x47, 0x8f, 0x1e, 0xfd, 0x08, 0xda, 0xaf, 0xe0, 0xc5, 0xa3, 0xd9, 0x61, 0x4b, 0xbb, 0x2b, 0xad,
+	0x24, 0x9e, 0x9a, 0x7d, 0xdf, 0xe7, 0xf9, 0xe5, 0x79, 0x67, 0xde, 0x29, 0x58, 0x78, 0x8e, 0x91,
+	0xea, 0xa1, 0x94, 0x2c, 0x40, 0xd9, 0x38, 0x65, 0x9e, 0xe2, 0xa1, 0xbf, 0xdb, 0xe5, 0xde, 0x99,
+	0x13, 0x0b, 0xae, 0x38, 0xa9, 0xe6, 0x14, 0x2b, 0x6b, 0x79, 0x83, 0xec, 0x30, 0x81, 0xfe, 0x71,
+	0x3f, 0x46, 0x79, 0xa5, 0x5f, 0x39, 0x0c, 0x42, 0xd5, 0x49, 0x5c, 0xc7, 0xe3, 0xbd, 0x86, 0x1b,
+	0x6e, 0x9c, 0xf2, 0x24, 0xf2, 0x99, 0x0a, 0x79, 0xd4, 0xd0, 0x7d, 0x37, 0x39, 0xdd, 0x08, 0x04,
+	0x8b, 0x3b, 0x1f, 0xbb, 0x1b, 0x78, 0xa1, 0x30, 0x92, 0x69, 0x2b, 0xab, 0x68, 0xc5, 0xf0, 0x23,
+	0xe3, 0x9d, 0xfc, 0x33, 0x4f, 0xa5, 0xe9, 0x1a, 0x2a, 0xec, 0xa1, 0x54, 0xac, 0x17, 0x5f, 0x71,
+	0xed, 0x9f, 0x33, 0x50, 0x79, 0x39, 0x36, 0x2e, 0xd9, 0x81, 0x25, 0x97, 0xfb, 0xfd, 0x03, 0x14,
+	0x67, 0x5d, 0xa4, 0x9c, 0x2b, 0xd3, 0xb0, 0x8c, 0x7a, 0x79, 0xeb, 0x9e, 0x93, 0x1b, 0xd9, 0xd9,
+	0x63, 0xb2, 0x43, 0x0b, 0x52, 0xd2, 0x86, 0xe5, 0x58, 0xe0, 0x79, 0xc8, 0x13, 0xb9, 0x8f, 0xe3,
+	0x8c, 0x99, 0xc9, 0x8c, 0x9b, 0x1d, 0xe4, 0x1d, 0xdc, 0x1f, 0x36, 0x5e, 0xa3, 0x1f, 0xa0, 0xc8,
+	0x03, 0x67, 0x27, 0x03, 0xa7, 0xf9, 0x88, 0x0d, 0x15, 0xbc, 0xf0, 0x3a, 0x2c, 0x0a, 0x90, 0x32,
+	0x85, 0x66, 0xc9, 0x32, 0xea, 0x25, 0x9a, 0xab, 0x11, 0x0b, 0xca, 0x6e, 0x7a, 0x16, 0x7b, 0x18,
+	0x06, 0x1d, 0x65, 0xce, 0x59, 0x46, 0xbd, 0x4a, 0xc7, 0x4b, 0xe4, 0x39, 0x54, 0x94, 0x60, 0x91,
+	0x64, 0x5e, 0x7a, 0x05, 0xd2, 0x9c, 0xb7, 0x66, 0xeb, 0xe5, 0xad, 0x95, 0x42, 0x9a, 0xe3, 0x91,
+	0x84, 0xe6, 0xf4, 0xf6, 0x65, 0x09, 0xca, 0x63, 0x5d, 0xb2, 0x0d, 0xd5, 0xb1, 0x7e, 0xbb, 0x35,
+	0xed, 0xcc, 0xf3, 0xca, 0x62, 0xd8, 0x99, 0x3f, 0xc3, 0xee, 0xc0, 0xe2, 0xf5, 0xad, 0x67, 0xe7,
+	0xb6, 0xea, 0x8c, 0xaf, 0x86, 0xa3, 0x57, 0xc3, 0x39, 0x1e, 0x8a, 0xe8, 0x48, 0x4f, 0x5e, 0x41,
+	0x35, 0x7b, 0x0d, 0xed, 0x28, 0x4e, 0x94, 0x34, 0x4b, 0x7a, 0xd4, 0x87, 0x93, 0x47, 0x7d, 0xe1,
+	0xfb, 0x02, 0xa5, 0xa4, 0x79, 0x1f, 0x69, 0xc3, 0x52, 0x56, 0x78, 0x93, 0x28, 0x4d, 0x9a, 0xbb,
+	0x2d, 0xa9, 0x60, 0x24, 0x6f, 0x81, 0x60, 0xa4, 0x44, 0xbf, 0x29, 0xd0, 0x0f, 0xd5, 0x10, 0x37,
+	0x7f, 0x5b, 0xdc, 0x0d, 0x66, 0xf2, 0x1e, 0x56, 0x05, 0xfa, 0x88, 0xbd, 0x26, 0x8f, 0xfc, 0x30,
+	0x55, 0xb7, 0x98, 0x62, 0x47, 0x4a, 0x24, 0x9e, 0x4a, 0x04, 0x4a, 0x73, 0x41, 0xd3, 0x49, 0x81,
+	0x4e, 0x9b, 0x2d, 0x3a, 0xdd, 0x48, 0x0e, 0xe1, 0x8e, 0x0c, 0x83, 0x88, 0xa5, 0x5f, 0xfa, 0x85,
+	0x49, 0xf3, 0x7f, 0xcd, 0x5a, 0x2f, 0xb0, 0xb2, 0x57, 0x78, 0x94, 0x13, 0xd3, 0xa2, 0xd9, 0xde,
+	0x86, 0x59, 0xda, 0x6c, 0x91, 0xc7, 0x50, 0x12, 0x9e, 0xbf, 0x39, 0x61, 0x51, 0x68, 0xb3, 0xb5,
+	0xb9, 0xf7, 0x1f, 0xd5, 0x92, 0xdd, 0x05, 0x98, 0x3b, 0x67, 0xdd, 0x04, 0xed, 0x75, 0x28, 0xa5,
+	0x0d, 0xf2, 0x00, 0x16, 0xe3, 0xc4, 0xed, 0x86, 0xde, 0x3e, 0xf6, 0x35, 0xa0, 0x42, 0x47, 0x05,
+	0xfb, 0x04, 0x96, 0x6f, 0x8c, 0x42, 0x9e, 0xc1, 0xe2, 0x75, 0x18, 0xd3, 0xd0, 0x33, 0xac, 0xfd,
+	0x65, 0x06, 0x3a, 0x72, 0xd8, 0x4f, 0xe1, 0x6e, 0xb1, 0x4d, 0x1e, 0xc1, 0xd2, 0xb5, 0xe0, 0x24,
+	0xcd, 0x98, 0xc5, 0x29, 0x54, 0x77, 0x0f, 0x7e, 0xfd, 0xa8, 0x19, 0x9f, 0x07, 0x35, 0xe3, 0x72,
+	0x50, 0x33, 0xbe, 0x0e, 0x6a, 0xc6, 0xb7, 0x41, 0xcd, 0xf8, 0x3e, 0xa8, 0x19, 0x5f, 0x3e, 0xad,
+	0x19, 0x60, 0x79, 0xbc, 0xe7, 0xe8, 0x1d, 0x19, 0xfe, 0xf8, 0xf9, 0x5c, 0x1f, 0xf2, 0xff, 0xde,
+	0xee, 0xbc, 0x5e, 0xfb, 0x27, 0xbf, 0x03, 0x00, 0x00, 0xff, 0xff, 0xf4, 0xf7, 0x35, 0x39, 0xf7,
+	0x05, 0x00, 0x00,
 }
 
 func (this *FactoidBlock) Equal(that interface{}) bool {
@@ -612,7 +555,7 @@ func (this *Transaction) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.TransactionId.Equal(that1.TransactionId) {
+	if !this.TransactionID.Equal(that1.TransactionID) {
 		return false
 	}
 	if this.BlockHeight != that1.BlockHeight {
@@ -621,35 +564,35 @@ func (this *Transaction) Equal(that interface{}) bool {
 	if !this.Timestamp.Equal(that1.Timestamp) {
 		return false
 	}
-	if len(this.Inputs) != len(that1.Inputs) {
+	if len(this.FactoidInputs) != len(that1.FactoidInputs) {
 		return false
 	}
-	for i := range this.Inputs {
-		if !this.Inputs[i].Equal(that1.Inputs[i]) {
+	for i := range this.FactoidInputs {
+		if !this.FactoidInputs[i].Equal(that1.FactoidInputs[i]) {
 			return false
 		}
 	}
-	if len(this.Outputs) != len(that1.Outputs) {
+	if len(this.FactoidOutputs) != len(that1.FactoidOutputs) {
 		return false
 	}
-	for i := range this.Outputs {
-		if !this.Outputs[i].Equal(that1.Outputs[i]) {
+	for i := range this.FactoidOutputs {
+		if !this.FactoidOutputs[i].Equal(that1.FactoidOutputs[i]) {
 			return false
 		}
 	}
-	if len(this.OutputEntryCredits) != len(that1.OutputEntryCredits) {
+	if len(this.EntryCreditOutputs) != len(that1.EntryCreditOutputs) {
 		return false
 	}
-	for i := range this.OutputEntryCredits {
-		if !this.OutputEntryCredits[i].Equal(that1.OutputEntryCredits[i]) {
+	for i := range this.EntryCreditOutputs {
+		if !this.EntryCreditOutputs[i].Equal(that1.EntryCreditOutputs[i]) {
 			return false
 		}
 	}
-	if len(this.RedeemConditionDatastructures) != len(that1.RedeemConditionDatastructures) {
+	if len(this.RedeemConditionDataStructures) != len(that1.RedeemConditionDataStructures) {
 		return false
 	}
-	for i := range this.RedeemConditionDatastructures {
-		if !this.RedeemConditionDatastructures[i].Equal(that1.RedeemConditionDatastructures[i]) {
+	for i := range this.RedeemConditionDataStructures {
+		if !this.RedeemConditionDataStructures[i].Equal(that1.RedeemConditionDataStructures[i]) {
 			return false
 		}
 	}
@@ -660,36 +603,6 @@ func (this *Transaction) Equal(that interface{}) bool {
 		if !this.SignatureBlocks[i].Equal(that1.SignatureBlocks[i]) {
 			return false
 		}
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *TransactionAddress) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*TransactionAddress)
-	if !ok {
-		that2, ok := that.(TransactionAddress)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Amount != that1.Amount {
-		return false
-	}
-	if !this.Address.Equal(that1.Address) {
-		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
 		return false
@@ -851,12 +764,6 @@ type TransactionGetter interface {
 }
 
 var GraphQLTransactionType *github_com_graphql_go_graphql.Object
-
-type TransactionAddressGetter interface {
-	GetTransactionAddress() *TransactionAddress
-}
-
-var GraphQLTransactionAddressType *github_com_graphql_go_graphql.Object
 
 type RCDGetter interface {
 	GetRCD() *RCD
@@ -1033,16 +940,16 @@ func init() {
 		Description: "",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
-				"transactionId": &github_com_graphql_go_graphql.Field{
+				"transactionID": &github_com_graphql_go_graphql.Field{
 					Type:        GraphQLHashType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Transaction)
 						if ok {
-							if obj.TransactionId == nil {
+							if obj.TransactionID == nil {
 								return nil, nil
 							}
-							return obj.GetTransactionId(), nil
+							return obj.GetTransactionID(), nil
 						}
 						inter, ok := p.Source.(TransactionGetter)
 						if ok {
@@ -1050,12 +957,12 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.TransactionId == nil {
+							if face.TransactionID == nil {
 								return nil, nil
 							}
-							return face.GetTransactionId(), nil
+							return face.GetTransactionID(), nil
 						}
-						return nil, fmt.Errorf("field transactionId not resolved")
+						return nil, fmt.Errorf("field transactionID not resolved")
 					},
 				},
 				"blockHeight": &github_com_graphql_go_graphql.Field{
@@ -1102,13 +1009,13 @@ func init() {
 						return nil, fmt.Errorf("field timestamp not resolved")
 					},
 				},
-				"inputs": &github_com_graphql_go_graphql.Field{
+				"factoidInputs": &github_com_graphql_go_graphql.Field{
 					Type:        github_com_graphql_go_graphql.NewList(GraphQLTransactionAddressType),
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Transaction)
 						if ok {
-							return obj.Inputs, nil
+							return obj.FactoidInputs, nil
 						}
 						inter, ok := p.Source.(TransactionGetter)
 						if ok {
@@ -1116,18 +1023,18 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							return face.Inputs, nil
+							return face.FactoidInputs, nil
 						}
-						return nil, fmt.Errorf("field inputs not resolved")
+						return nil, fmt.Errorf("field factoidInputs not resolved")
 					},
 				},
-				"outputs": &github_com_graphql_go_graphql.Field{
+				"factoidOutputs": &github_com_graphql_go_graphql.Field{
 					Type:        github_com_graphql_go_graphql.NewList(GraphQLTransactionAddressType),
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Transaction)
 						if ok {
-							return obj.Outputs, nil
+							return obj.FactoidOutputs, nil
 						}
 						inter, ok := p.Source.(TransactionGetter)
 						if ok {
@@ -1135,18 +1042,18 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							return face.Outputs, nil
+							return face.FactoidOutputs, nil
 						}
-						return nil, fmt.Errorf("field outputs not resolved")
+						return nil, fmt.Errorf("field factoidOutputs not resolved")
 					},
 				},
-				"outputEntryCredits": &github_com_graphql_go_graphql.Field{
+				"entryCreditOutputs": &github_com_graphql_go_graphql.Field{
 					Type:        github_com_graphql_go_graphql.NewList(GraphQLTransactionAddressType),
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Transaction)
 						if ok {
-							return obj.OutputEntryCredits, nil
+							return obj.EntryCreditOutputs, nil
 						}
 						inter, ok := p.Source.(TransactionGetter)
 						if ok {
@@ -1154,18 +1061,18 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							return face.OutputEntryCredits, nil
+							return face.EntryCreditOutputs, nil
 						}
-						return nil, fmt.Errorf("field outputEntryCredits not resolved")
+						return nil, fmt.Errorf("field entryCreditOutputs not resolved")
 					},
 				},
-				"redeemConditionDatastructures": &github_com_graphql_go_graphql.Field{
+				"redeemConditionDataStructures": &github_com_graphql_go_graphql.Field{
 					Type:        github_com_graphql_go_graphql.NewList(GraphQLRCDType),
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Transaction)
 						if ok {
-							return obj.RedeemConditionDatastructures, nil
+							return obj.RedeemConditionDataStructures, nil
 						}
 						inter, ok := p.Source.(TransactionGetter)
 						if ok {
@@ -1173,9 +1080,9 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							return face.RedeemConditionDatastructures, nil
+							return face.RedeemConditionDataStructures, nil
 						}
-						return nil, fmt.Errorf("field redeemConditionDatastructures not resolved")
+						return nil, fmt.Errorf("field redeemConditionDataStructures not resolved")
 					},
 				},
 				"signatureBlocks": &github_com_graphql_go_graphql.Field{
@@ -1195,58 +1102,6 @@ func init() {
 							return face.SignatureBlocks, nil
 						}
 						return nil, fmt.Errorf("field signatureBlocks not resolved")
-					},
-				},
-			}
-		}),
-	})
-	GraphQLTransactionAddressType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "TransactionAddress",
-		Description: "",
-		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
-			return github_com_graphql_go_graphql.Fields{
-				"amount": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*TransactionAddress)
-						if ok {
-							return obj.Amount, nil
-						}
-						inter, ok := p.Source.(TransactionAddressGetter)
-						if ok {
-							face := inter.GetTransactionAddress()
-							if face == nil {
-								return nil, nil
-							}
-							return face.Amount, nil
-						}
-						return nil, fmt.Errorf("field amount not resolved")
-					},
-				},
-				"address": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*TransactionAddress)
-						if ok {
-							if obj.Address == nil {
-								return nil, nil
-							}
-							return obj.GetAddress(), nil
-						}
-						inter, ok := p.Source.(TransactionAddressGetter)
-						if ok {
-							face := inter.GetTransactionAddress()
-							if face == nil {
-								return nil, nil
-							}
-							if face.Address == nil {
-								return nil, nil
-							}
-							return face.GetAddress(), nil
-						}
-						return nil, fmt.Errorf("field address not resolved")
 					},
 				},
 			}
@@ -1491,10 +1346,10 @@ func (m *Transaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x42
 		}
 	}
-	if len(m.RedeemConditionDatastructures) > 0 {
-		for iNdEx := len(m.RedeemConditionDatastructures) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.RedeemConditionDataStructures) > 0 {
+		for iNdEx := len(m.RedeemConditionDataStructures) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.RedeemConditionDatastructures[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.RedeemConditionDataStructures[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -1505,10 +1360,10 @@ func (m *Transaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x3a
 		}
 	}
-	if len(m.OutputEntryCredits) > 0 {
-		for iNdEx := len(m.OutputEntryCredits) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.EntryCreditOutputs) > 0 {
+		for iNdEx := len(m.EntryCreditOutputs) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.OutputEntryCredits[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.EntryCreditOutputs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -1519,10 +1374,10 @@ func (m *Transaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x32
 		}
 	}
-	if len(m.Outputs) > 0 {
-		for iNdEx := len(m.Outputs) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.FactoidOutputs) > 0 {
+		for iNdEx := len(m.FactoidOutputs) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.Outputs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.FactoidOutputs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -1533,10 +1388,10 @@ func (m *Transaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x2a
 		}
 	}
-	if len(m.Inputs) > 0 {
-		for iNdEx := len(m.Inputs) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.FactoidInputs) > 0 {
+		for iNdEx := len(m.FactoidInputs) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.Inputs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.FactoidInputs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -1564,9 +1419,9 @@ func (m *Transaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x10
 	}
-	if m.TransactionId != nil {
+	if m.TransactionID != nil {
 		{
-			size, err := m.TransactionId.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.TransactionID.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -1575,50 +1430,6 @@ func (m *Transaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 		i--
 		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *TransactionAddress) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *TransactionAddress) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *TransactionAddress) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if m.Address != nil {
-		{
-			size, err := m.Address.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x12
-	}
-	if m.Amount != 0 {
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.Amount))
-		i--
-		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
 }
@@ -1828,7 +1639,7 @@ func NewPopulatedFactoidBlock(r randyFactoidBlock, easy bool) *FactoidBlock {
 func NewPopulatedTransaction(r randyFactoidBlock, easy bool) *Transaction {
 	this := &Transaction{}
 	if r.Intn(5) != 0 {
-		this.TransactionId = NewPopulatedHash(r, easy)
+		this.TransactionID = NewPopulatedHash(r, easy)
 	}
 	this.BlockHeight = uint32(r.Uint32())
 	if r.Intn(5) != 0 {
@@ -1836,30 +1647,30 @@ func NewPopulatedTransaction(r randyFactoidBlock, easy bool) *Transaction {
 	}
 	if r.Intn(5) != 0 {
 		v2 := r.Intn(5)
-		this.Inputs = make([]*TransactionAddress, v2)
+		this.FactoidInputs = make([]*TransactionAddress, v2)
 		for i := 0; i < v2; i++ {
-			this.Inputs[i] = NewPopulatedTransactionAddress(r, easy)
+			this.FactoidInputs[i] = NewPopulatedTransactionAddress(r, easy)
 		}
 	}
 	if r.Intn(5) != 0 {
 		v3 := r.Intn(5)
-		this.Outputs = make([]*TransactionAddress, v3)
+		this.FactoidOutputs = make([]*TransactionAddress, v3)
 		for i := 0; i < v3; i++ {
-			this.Outputs[i] = NewPopulatedTransactionAddress(r, easy)
+			this.FactoidOutputs[i] = NewPopulatedTransactionAddress(r, easy)
 		}
 	}
 	if r.Intn(5) != 0 {
 		v4 := r.Intn(5)
-		this.OutputEntryCredits = make([]*TransactionAddress, v4)
+		this.EntryCreditOutputs = make([]*TransactionAddress, v4)
 		for i := 0; i < v4; i++ {
-			this.OutputEntryCredits[i] = NewPopulatedTransactionAddress(r, easy)
+			this.EntryCreditOutputs[i] = NewPopulatedTransactionAddress(r, easy)
 		}
 	}
 	if r.Intn(5) != 0 {
 		v5 := r.Intn(5)
-		this.RedeemConditionDatastructures = make([]*RCD, v5)
+		this.RedeemConditionDataStructures = make([]*RCD, v5)
 		for i := 0; i < v5; i++ {
-			this.RedeemConditionDatastructures[i] = NewPopulatedRCD(r, easy)
+			this.RedeemConditionDataStructures[i] = NewPopulatedRCD(r, easy)
 		}
 	}
 	if r.Intn(5) != 0 {
@@ -1871,18 +1682,6 @@ func NewPopulatedTransaction(r randyFactoidBlock, easy bool) *Transaction {
 	}
 	if !easy && r.Intn(10) != 0 {
 		this.XXX_unrecognized = randUnrecognizedFactoidBlock(r, 9)
-	}
-	return this
-}
-
-func NewPopulatedTransactionAddress(r randyFactoidBlock, easy bool) *TransactionAddress {
-	this := &TransactionAddress{}
-	this.Amount = uint64(uint64(r.Uint32()))
-	if r.Intn(5) != 0 {
-		this.Address = NewPopulatedHash(r, easy)
-	}
-	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactoidBlock(r, 3)
 	}
 	return this
 }
@@ -2060,8 +1859,8 @@ func (m *Transaction) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.TransactionId != nil {
-		l = m.TransactionId.Size()
+	if m.TransactionID != nil {
+		l = m.TransactionID.Size()
 		n += 1 + l + sovFactoidBlock(uint64(l))
 	}
 	if m.BlockHeight != 0 {
@@ -2071,26 +1870,26 @@ func (m *Transaction) Size() (n int) {
 		l = m.Timestamp.Size()
 		n += 1 + l + sovFactoidBlock(uint64(l))
 	}
-	if len(m.Inputs) > 0 {
-		for _, e := range m.Inputs {
+	if len(m.FactoidInputs) > 0 {
+		for _, e := range m.FactoidInputs {
 			l = e.Size()
 			n += 1 + l + sovFactoidBlock(uint64(l))
 		}
 	}
-	if len(m.Outputs) > 0 {
-		for _, e := range m.Outputs {
+	if len(m.FactoidOutputs) > 0 {
+		for _, e := range m.FactoidOutputs {
 			l = e.Size()
 			n += 1 + l + sovFactoidBlock(uint64(l))
 		}
 	}
-	if len(m.OutputEntryCredits) > 0 {
-		for _, e := range m.OutputEntryCredits {
+	if len(m.EntryCreditOutputs) > 0 {
+		for _, e := range m.EntryCreditOutputs {
 			l = e.Size()
 			n += 1 + l + sovFactoidBlock(uint64(l))
 		}
 	}
-	if len(m.RedeemConditionDatastructures) > 0 {
-		for _, e := range m.RedeemConditionDatastructures {
+	if len(m.RedeemConditionDataStructures) > 0 {
+		for _, e := range m.RedeemConditionDataStructures {
 			l = e.Size()
 			n += 1 + l + sovFactoidBlock(uint64(l))
 		}
@@ -2100,25 +1899,6 @@ func (m *Transaction) Size() (n int) {
 			l = e.Size()
 			n += 1 + l + sovFactoidBlock(uint64(l))
 		}
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *TransactionAddress) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Amount != 0 {
-		n += 1 + sovFactoidBlock(uint64(m.Amount))
-	}
-	if m.Address != nil {
-		l = m.Address.Size()
-		n += 1 + l + sovFactoidBlock(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -2474,7 +2254,7 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TransactionId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TransactionID", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2501,10 +2281,10 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.TransactionId == nil {
-				m.TransactionId = &Hash{}
+			if m.TransactionID == nil {
+				m.TransactionID = &Hash{}
 			}
-			if err := m.TransactionId.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.TransactionID.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2565,7 +2345,7 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Inputs", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field FactoidInputs", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2592,14 +2372,14 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Inputs = append(m.Inputs, &TransactionAddress{})
-			if err := m.Inputs[len(m.Inputs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.FactoidInputs = append(m.FactoidInputs, &TransactionAddress{})
+			if err := m.FactoidInputs[len(m.FactoidInputs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Outputs", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field FactoidOutputs", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2626,14 +2406,14 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Outputs = append(m.Outputs, &TransactionAddress{})
-			if err := m.Outputs[len(m.Outputs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.FactoidOutputs = append(m.FactoidOutputs, &TransactionAddress{})
+			if err := m.FactoidOutputs[len(m.FactoidOutputs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OutputEntryCredits", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field EntryCreditOutputs", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2660,14 +2440,14 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OutputEntryCredits = append(m.OutputEntryCredits, &TransactionAddress{})
-			if err := m.OutputEntryCredits[len(m.OutputEntryCredits)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.EntryCreditOutputs = append(m.EntryCreditOutputs, &TransactionAddress{})
+			if err := m.EntryCreditOutputs[len(m.EntryCreditOutputs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 7:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RedeemConditionDatastructures", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field RedeemConditionDataStructures", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2694,8 +2474,8 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.RedeemConditionDatastructures = append(m.RedeemConditionDatastructures, &RCD{})
-			if err := m.RedeemConditionDatastructures[len(m.RedeemConditionDatastructures)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.RedeemConditionDataStructures = append(m.RedeemConditionDataStructures, &RCD{})
+			if err := m.RedeemConditionDataStructures[len(m.RedeemConditionDataStructures)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2730,115 +2510,6 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			}
 			m.SignatureBlocks = append(m.SignatureBlocks, &FactoidSignatureBlock{})
 			if err := m.SignatureBlocks[len(m.SignatureBlocks)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipFactoidBlock(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *TransactionAddress) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowFactoidBlock
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: TransactionAddress: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: TransactionAddress: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
-			}
-			m.Amount = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactoidBlock
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Amount |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactoidBlock
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Address == nil {
-				m.Address = &Hash{}
-			}
-			if err := m.Address.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
