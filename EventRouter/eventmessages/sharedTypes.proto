@@ -26,7 +26,3 @@ message Signature {
     bytes signature = 2;
 }
 
-message TransAddress {
-    uint64 amount = 1;
-    Hash address = 2;
-}

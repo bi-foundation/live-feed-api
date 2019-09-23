@@ -738,7 +738,7 @@ func TestFactoidSignatureProtoCompactText(t *testing.T) {
 func TestFactoidBlockGraphQL(t *testing.T) {
 	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
 	_ = NewPopulatedFactoidBlock(popr, false)
-	objdesc := ""
+	objdesc := "====  FACTOID BLOCK STRUCTURES ====="
 	pdesc := GraphQLFactoidBlockType.PrivateDescription
 	if pdesc != objdesc {
 		t.Fatalf("String want %v got %v", objdesc, pdesc)

@@ -90,7 +90,7 @@ message CancelCoinbaseDescriptor {
 }
 
 message CoinbaseDescriptor {
-    repeated TransAddress factoidOutputs = 1;
+    repeated TransactionAddress factoidOutputs = 1;
 }
 
 message DirectoryBlockSignatureEntry {

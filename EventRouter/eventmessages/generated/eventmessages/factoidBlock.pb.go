@@ -27,6 +27,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// ====  FACTOID BLOCK STRUCTURES =====
 type FactoidBlock struct {
 	BodyMerkleRoot              *Hash          `protobuf:"bytes,1,opt,name=bodyMerkleRoot,proto3" json:"bodyMerkleRoot,omitempty"`
 	PreviousKeyMerkleRoot       *Hash          `protobuf:"bytes,2,opt,name=previousKeyMerkleRoot,proto3" json:"previousKeyMerkleRoot,omitempty"`
@@ -322,7 +323,7 @@ type isRCD_Value interface {
 }
 
 type RCD_Rcd1 struct {
-	Rcd1 *RCD1 `protobuf:"bytes,1,opt,name=rcd1,proto3,oneof"`
+	Rcd1 *RCD1 `protobuf:"bytes,1,opt,name=rcd1,proto3,oneof" json:"rcd1,omitempty"`
 }
 
 func (*RCD_Rcd1) isRCD_Value() {}
@@ -891,7 +892,7 @@ func (g *RCD_Rcd1) GetRCD1() *RCD1 {
 func init() {
 	GraphQLFactoidBlockType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
 		Name:        "FactoidBlock",
-		Description: "",
+		Description: "====  FACTOID BLOCK STRUCTURES =====",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"bodyMerkleRoot": &github_com_graphql_go_graphql.Field{
@@ -1661,7 +1662,8 @@ func (m *RCD) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *RCD_Rcd1) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *RCD_Rcd1) MarshalToSizedBuffer(dAtA []byte) (int, error) {

@@ -1962,7 +1962,7 @@ func TestServerFaultProtoCompactText(t *testing.T) {
 func TestAdminBlockGraphQL(t *testing.T) {
 	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
 	_ = NewPopulatedAdminBlock(popr, false)
-	objdesc := ""
+	objdesc := "====  ADMIN BLOCK STRUCTURES ====="
 	pdesc := GraphQLAdminBlockType.PrivateDescription
 	if pdesc != objdesc {
 		t.Fatalf("String want %v got %v", objdesc, pdesc)
