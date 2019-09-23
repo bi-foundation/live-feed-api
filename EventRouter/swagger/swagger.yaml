@@ -1,12 +1,12 @@
 basePath: /live/feed/v0.1
 definitions:
-  models.ApiError:
+  models.APIError:
     properties:
       code:
         description: Error code.
         type: integer
       details:
-        description: Error details
+        description: Error details.
         type: string
       message:
         description: Error message.
@@ -75,10 +75,12 @@ definitions:
         type: object
       id:
         description: The id of the subscription.
+        readOnly: true
         type: string
       info:
         description: Information of the subscription. An information message can be
           for example about why the subscription is suspended.
+        readOnly: true
         type: string
       status:
         description: Status of subscription. Normally a subscription is active. When
@@ -89,11 +91,11 @@ definitions:
         - ACTIVE
         - SUSPENDED
         example: ACTIVE
+        readOnly: true
         type: string
     required:
     - callbackType
     - callbackUrl
-    - id
     type: object
 host: localhost:8700
 info:
@@ -131,7 +133,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ApiError'
+            $ref: '#/definitions/models.APIError'
       summary: subscribe an application
   /subscriptions/{id}:
     delete:
@@ -152,11 +154,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ApiError'
+            $ref: '#/definitions/models.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/models.ApiError'
+            $ref: '#/definitions/models.APIError'
       summary: delete a subscription
     get:
       consumes:
@@ -178,11 +180,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ApiError'
+            $ref: '#/definitions/models.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/models.ApiError'
+            $ref: '#/definitions/models.APIError'
       summary: get a subscription
     put:
       consumes:
@@ -214,11 +216,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ApiError'
+            $ref: '#/definitions/models.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/models.ApiError'
+            $ref: '#/definitions/models.APIError'
       summary: update a subscription
 schemes:
 - http

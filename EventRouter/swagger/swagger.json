@@ -49,7 +49,7 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ApiError"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -84,13 +84,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ApiError"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ApiError"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -133,13 +133,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ApiError"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ApiError"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -169,13 +169,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ApiError"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ApiError"
+                            "$ref": "#/definitions/models.APIError"
                         }
                     }
                 }
@@ -183,7 +183,7 @@
         }
     },
     "definitions": {
-        "models.ApiError": {
+        "models.APIError": {
             "type": "object",
             "properties": {
                 "code": {
@@ -191,7 +191,7 @@
                     "type": "integer"
                 },
                 "details": {
-                    "description": "Error details",
+                    "description": "Error details.",
                     "type": "string"
                 },
                 "message": {
@@ -231,8 +231,7 @@
             "type": "object",
             "required": [
                 "callbackType",
-                "callbackUrl",
-                "id"
+                "callbackUrl"
             ],
             "properties": {
                 "callbackType": {
@@ -271,11 +270,13 @@
                 },
                 "id": {
                     "description": "The id of the subscription.",
-                    "type": "string"
+                    "type": "string",
+                    "readOnly": true
                 },
                 "info": {
                     "description": "Information of the subscription. An information message can be for example about why the subscription is suspended.",
-                    "type": "string"
+                    "type": "string",
+                    "readOnly": true
                 },
                 "status": {
                     "description": "Status of subscription. Normally a subscription is active. When events fail to be delivered the subscription will be suspended. The subscription can become active again by updating the subscription. When the subscription is suspended, the error information is set in the info field.",
@@ -284,6 +285,7 @@
                         "ACTIVE",
                         "SUSPENDED"
                     ],
+                    "readOnly": true,
                     "example": "ACTIVE"
                 }
             }
