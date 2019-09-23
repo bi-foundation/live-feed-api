@@ -7,6 +7,7 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
+// Filter an event with the given GraphQl filtering
 func Filter(filtering string, event *eventmessages.FactomEvent) ([]byte, error) {
 	// generate graphql scheme for event
 	schema, err := queryScheme(event)
@@ -21,23 +22,23 @@ func Filter(filtering string, event *eventmessages.FactomEvent) ([]byte, error) 
 			return nil, fmt.Errorf("failed to marshal result: %v", err)
 		}
 		return resultJSON, nil
-	} else {
-		// inject filtering in query
-		query := fmt.Sprintf(`{ event %s }`, filtering)
-		params := graphql.Params{Schema: schema, RequestString: query}
-		result := graphql.Do(params)
-
-		if len(result.Errors) > 0 {
-			return nil, fmt.Errorf("failed to execute graphql operation: %v", result.Errors)
-		}
-
-		resultJSON, err := json.Marshal(result.Data)
-		if err != nil {
-			return nil, fmt.Errorf("failed to marshal result: %v", err)
-		}
-
-		return resultJSON, nil
 	}
+
+	// inject filtering in query
+	query := fmt.Sprintf(`{ event %s }`, filtering)
+	params := graphql.Params{Schema: schema, RequestString: query}
+	result := graphql.Do(params)
+
+	if len(result.Errors) > 0 {
+		return nil, fmt.Errorf("failed to execute graphql operation: %v", result.Errors)
+	}
+
+	resultJSON, err := json.Marshal(result.Data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal result: %v", err)
+	}
+
+	return resultJSON, nil
 }
 
 func queryScheme(event interface{}) (graphql.Schema, error) {

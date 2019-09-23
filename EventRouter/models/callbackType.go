@@ -1,12 +1,11 @@
 package models
 
-// CallbackType
-//
-// swagger:enum CallbackType
+// CallbackType the type of callback url is used in the subscription
 type CallbackType string
 
+// Different callback types
 const (
-	HTTP         CallbackType = "HTTP"
-	BEARER_TOKEN CallbackType = "BEARER_TOKEN"
-	BASIC_AUTH   CallbackType = "BASIC_AUTH"
+	HTTP        CallbackType = "HTTP"
+	BearerToken CallbackType = "BEARER_TOKEN"
+	BasicAuth   CallbackType = "BASIC_AUTH"
 )

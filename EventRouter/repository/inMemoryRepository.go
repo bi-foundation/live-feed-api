@@ -1,4 +1,4 @@
-package inmemory
+package repository
 
 import (
 	"fmt"
@@ -15,23 +15,26 @@ type inMemoryRepository struct {
 	db []*models.SubscriptionContext
 }
 
-func New() *inMemoryRepository {
+// NewInMemoryRepository create a new in memory repository
+func NewInMemoryRepository() Repository {
 	return &inMemoryRepository{
 		id: 0,
 	}
 }
 
+// CreateSubscription create a subscription
 func (repository *inMemoryRepository) CreateSubscription(subscriptionContext *models.SubscriptionContext) (*models.SubscriptionContext, error) {
 	repository.Lock()
 	defer repository.Unlock()
 
-	subscriptionContext.Subscription.Id = strconv.Itoa(repository.id)
+	subscriptionContext.Subscription.ID = strconv.Itoa(repository.id)
 	repository.db = append(repository.db, subscriptionContext)
 	repository.id++
 	log.Debug("stored subscription: %v", subscriptionContext)
 	return subscriptionContext, nil
 }
 
+// ReadSubscription read a subscription
 func (repository *inMemoryRepository) ReadSubscription(id string) (*models.SubscriptionContext, error) {
 	_, subscriptionContext, err := repository.findSubscription(id)
 	if err != nil {
@@ -42,8 +45,9 @@ func (repository *inMemoryRepository) ReadSubscription(id string) (*models.Subsc
 	return subscriptionContext, nil
 }
 
+// UpdateSubscription update a subscription
 func (repository *inMemoryRepository) UpdateSubscription(substituteSubscriptionContext *models.SubscriptionContext) (*models.SubscriptionContext, error) {
-	index, subscriptionContext, err := repository.findSubscription(substituteSubscriptionContext.Subscription.Id)
+	index, subscriptionContext, err := repository.findSubscription(substituteSubscriptionContext.Subscription.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +55,7 @@ func (repository *inMemoryRepository) UpdateSubscription(substituteSubscriptionC
 	repository.Lock()
 	defer repository.Unlock()
 	log.Debug("update subscription: %v with: %v", subscriptionContext, substituteSubscriptionContext.Subscription)
-	repository.db[index].Subscription.CallbackUrl = substituteSubscriptionContext.Subscription.CallbackUrl
+	repository.db[index].Subscription.CallbackURL = substituteSubscriptionContext.Subscription.CallbackURL
 	repository.db[index].Subscription.CallbackType = substituteSubscriptionContext.Subscription.CallbackType
 	repository.db[index].Subscription.SubscriptionStatus = substituteSubscriptionContext.Subscription.SubscriptionStatus
 	repository.db[index].Subscription.SubscriptionInfo = substituteSubscriptionContext.Subscription.SubscriptionInfo
@@ -67,7 +71,7 @@ func (repository *inMemoryRepository) findSubscription(id string) (int, *models.
 	defer repository.RUnlock()
 
 	for i, subscriptionContext := range repository.db {
-		if subscriptionContext.Subscription.Id == id {
+		if subscriptionContext.Subscription.ID == id {
 			return i, subscriptionContext, nil
 		}
 	}
@@ -75,6 +79,7 @@ func (repository *inMemoryRepository) findSubscription(id string) (int, *models.
 	return -1, nil, errors.NewSubscriptionNotFound(id)
 }
 
+// DeleteSubscription delete a subscription
 func (repository *inMemoryRepository) DeleteSubscription(id string) error {
 	index, _, err := repository.findSubscription(id)
 	if err != nil {
@@ -88,13 +93,14 @@ func (repository *inMemoryRepository) DeleteSubscription(id string) error {
 	return nil
 }
 
+// GetActiveSubscriptions retrieve all active subscriptions
 func (repository *inMemoryRepository) GetActiveSubscriptions(eventType models.EventType) ([]*models.SubscriptionContext, error) {
 	repository.RLock()
 	defer repository.RUnlock()
 
 	subscriptionContexts := repository.db[:0]
 	for _, subscriptionContext := range repository.db {
-		if _, ok := subscriptionContext.Subscription.Filters[eventType]; ok && subscriptionContext.Subscription.SubscriptionStatus == models.ACTIVE {
+		if _, ok := subscriptionContext.Subscription.Filters[eventType]; ok && subscriptionContext.Subscription.SubscriptionStatus == models.Active {
 			subscriptionContexts = append(subscriptionContexts, subscriptionContext)
 		}
 	}

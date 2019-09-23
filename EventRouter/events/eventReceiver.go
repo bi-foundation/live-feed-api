@@ -14,9 +14,10 @@ import (
 )
 
 var (
-	StandardChannelSize = 5000
+	defaultStandardChannelSize = 5000
 )
 
+// EventReceiver responsible to receive events from factomd
 type EventReceiver interface {
 	Start()
 	Stop()
@@ -25,7 +26,7 @@ type EventReceiver interface {
 	GetAddress() string
 }
 
-type Receiver struct {
+type receiver struct {
 	eventQueue chan *eventmessages.FactomEvent
 	state      models.RunState
 	listener   net.Listener
@@ -33,21 +34,24 @@ type Receiver struct {
 	address    string
 }
 
+// NewReceiver creates a new receiver
 func NewReceiver(eventListenerConfig *config.ReceiverConfig) EventReceiver {
-	return &Receiver{
-		eventQueue: make(chan *eventmessages.FactomEvent, StandardChannelSize),
+	return &receiver{
+		eventQueue: make(chan *eventmessages.FactomEvent, defaultStandardChannelSize),
 		state:      models.New,
 		protocol:   eventListenerConfig.Protocol,
 		address:    fmt.Sprintf("%s:%d", eventListenerConfig.BindAddress, eventListenerConfig.Port),
 	}
 }
 
-func (receiver *Receiver) Start() {
+// Start the receiver with listening
+func (receiver *receiver) Start() {
 	go receiver.listenIncomingConnections()
 	receiver.state = models.Running
 }
 
-func (receiver *Receiver) Stop() {
+// Stop the receiver
+func (receiver *receiver) Stop() {
 	receiver.state = models.Stopping
 	err := receiver.listener.Close()
 	if err != nil {
@@ -56,9 +60,9 @@ func (receiver *Receiver) Stop() {
 	receiver.state = models.Stopped
 }
 
-func (receiver *Receiver) listenIncomingConnections() {
+func (receiver *receiver) listenIncomingConnections() {
 	listener, err := net.Listen(receiver.protocol, receiver.address)
-	log.Info(" event receiver listening: '%s' at %s", receiver.protocol, receiver.address)
+	log.Info("start event receiver at: '%s' at %s", receiver.protocol, receiver.address)
 	if err != nil {
 		log.Error("failed to listen to %s on %s: %v", receiver.protocol, receiver.address, err)
 		return
@@ -76,14 +80,14 @@ func (receiver *Receiver) listenIncomingConnections() {
 	}
 }
 
-func (receiver *Receiver) handleConnection(conn net.Conn) {
+func (receiver *receiver) handleConnection(conn net.Conn) {
 	defer finalizeConnection(conn)
 	if err := receiver.readEvents(conn); err != nil {
 		log.Error("failed to read events: %v", err)
 	}
 }
 
-func (receiver *Receiver) readEvents(conn net.Conn) (err error) {
+func (receiver *receiver) readEvents(conn net.Conn) (err error) {
 	log.Debug("read events from: %s", getRemoteAddress(conn))
 
 	var dataSize int32
@@ -97,9 +101,8 @@ func (receiver *Receiver) readEvents(conn net.Conn) (err error) {
 			if err == io.EOF {
 				log.Warn("the client at %s disconnected", getRemoteAddress(conn))
 				return nil
-			} else {
-				return fmt.Errorf("failed to data size from %s:, %v", getRemoteAddress(conn), err)
 			}
+			return fmt.Errorf("failed to data size from %s:, %v", getRemoteAddress(conn), err)
 		}
 
 		// read the factom event
@@ -109,9 +112,8 @@ func (receiver *Receiver) readEvents(conn net.Conn) (err error) {
 			if err == io.EOF {
 				log.Warn("the client at %s disconnected", getRemoteAddress(conn))
 				return nil
-			} else {
-				return fmt.Errorf("failed to data from %s:, %v", getRemoteAddress(conn), err)
 			}
+			return fmt.Errorf("failed to data from %s:, %v", getRemoteAddress(conn), err)
 		}
 
 		factomEvent := &eventmessages.FactomEvent{}
@@ -122,14 +124,6 @@ func (receiver *Receiver) readEvents(conn net.Conn) (err error) {
 		log.Debug("read factom event... %v", factomEvent)
 		receiver.eventQueue <- factomEvent
 	}
-}
-
-func handleReadErrors(err error, element string, conn net.Conn) error {
-	if err != io.EOF {
-		return fmt.Errorf("failed to read %s from %s:, %v", element, getRemoteAddress(conn), err)
-	}
-	log.Warn("the client at %s disconnected", getRemoteAddress(conn))
-	return nil
 }
 
 func finalizeConnection(conn net.Conn) {
@@ -151,17 +145,20 @@ func getRemoteAddress(conn net.Conn) string {
 	return addrString
 }
 
-func (receiver *Receiver) GetState() models.RunState {
+// GetState to get the state of the receiver
+func (receiver *receiver) GetState() models.RunState {
 	return receiver.state
 }
 
-func (receiver *Receiver) GetAddress() string {
+// GetAddress to get the address where the receiver is listening to
+func (receiver *receiver) GetAddress() string {
 	if receiver.listener == nil {
 		return receiver.address
 	}
 	return receiver.listener.Addr().String()
 }
 
-func (receiver *Receiver) GetEventQueue() chan *eventmessages.FactomEvent {
+// GetEventQueue to get queue of new events
+func (receiver *receiver) GetEventQueue() chan *eventmessages.FactomEvent {
 	return receiver.eventQueue
 }

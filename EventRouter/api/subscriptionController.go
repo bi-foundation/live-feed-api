@@ -11,20 +11,15 @@ import (
 	"net/url"
 )
 
+// @Summary subscribe an application
+// @Description Subscribe an application to receive events.
+// @Accept  json
+// @Produce  json
+// @Param subscription body models.Subscription true "subscription to be created"
+// @Success 201 {object} models.Subscription "subscription created"
+// @Failure 400 {object} models.APIError
+// @Router /subscriptions [post]
 func subscribe(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route POST /subscriptions subscription CreateSubscriptionRequest
-	//
-	// Subscribe an application to receive events.
-	//
-	// Consumes:
-	//   - application/json
-	//
-	// Produces:
-	//   - application/json
-	//
-	// Responses:
-	//        201: CreateSubscriptionResponse
-	//        400: ApiError
 	subscription := &models.Subscription{}
 	if decode(writer, request, subscription) {
 		return
@@ -33,7 +28,7 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 	// ignore user input info message
 	subscription.SubscriptionInfo = ""
 	if subscription.SubscriptionStatus == "" {
-		subscription.SubscriptionStatus = models.ACTIVE
+		subscription.SubscriptionStatus = models.Active
 	}
 
 	if err := validateSubscription(subscription); err != nil {
@@ -55,21 +50,17 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 	respondCode(writer, http.StatusCreated, subscriptionContext.Subscription)
 }
 
+// @Summary update a subscription
+// @Description Update a subscription for receiving events. Updating the subscription can be used to change the endpoint url, adjust the filtering, add of remove the subscription for event types. When the subscription failed to deliver and got SUSPENDED, the endpoint can used to re-ACTIVATE the subscription.
+// @Accept  json
+// @Produce  json
+// @Param id path int true "subscription id"
+// @Param subscription body models.Subscription true "subscription to be updated"
+// @Success 200 {object} models.Subscription "subscription updated"
+// @Failure 400 {object} models.APIError
+// @Failure 404 {object} models.APIError
+// @Router /subscriptions/{id} [put]
 func updateSubscription(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route PUT /subscriptions/{id} subscription UpdateSubscriptionRequest
-	//
-	// Update a subscription for receiving events.
-	//
-	// Consumes:
-	//   - application/json
-	//
-	// Produces:
-	//   - application/json
-	//
-	// Responses:
-	//        200: UpdateSubscriptionResponse
-	//        400: ApiError
-	//        404: SubscriptionNotFoundError
 	vars := mux.Vars(request)
 
 	subscription := &models.Subscription{}
@@ -78,16 +69,16 @@ func updateSubscription(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	id := vars["subscriptionId"]
-	if subscription.Id != "" && subscription.Id != id {
+	if subscription.ID != "" && subscription.ID != id {
 		responseError(writer, http.StatusBadRequest, errors.NewInvalidRequestDetailed("subscription id doesn't match"))
 		return
 	}
-	subscription.Id = id
+	subscription.ID = id
 
 	// ignore user input message
 	subscription.SubscriptionInfo = ""
 	if subscription.SubscriptionStatus == "" {
-		subscription.SubscriptionStatus = models.ACTIVE
+		subscription.SubscriptionStatus = models.Active
 	}
 
 	if err := validateSubscription(subscription); err != nil {
@@ -113,21 +104,16 @@ func updateSubscription(writer http.ResponseWriter, request *http.Request) {
 	respond(writer, subscriptionContext.Subscription)
 }
 
+// @Summary get a subscription
+// @Description Return a subscription with the given id.
+// @Accept  json
+// @Produce  json
+// @Param id path int true "subscription id"
+// @Success 200 {object} models.Subscription "subscription"
+// @Failure 400 {object} models.APIError
+// @Failure 404 {object} models.APIError
+// @Router /subscriptions/{id} [get]
 func getSubscription(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route GET /subscriptions/{id} subscription GetSubscriptionRequest
-	//
-	// Return a subscription with the given id.
-	//
-	// Consumes:
-	//   - application/json
-	//
-	// Produces:
-	//   - application/json
-	//
-	// Responses:
-	//        200: GetSubscriptionResponse
-	//        400: ApiError
-	//        404: SubscriptionNotFoundError
 	vars := mux.Vars(request)
 
 	id := vars["subscriptionId"]
@@ -141,20 +127,16 @@ func getSubscription(writer http.ResponseWriter, request *http.Request) {
 	respond(writer, subscriptionContext.Subscription)
 }
 
+// @Summary delete a subscription
+// @Description Unsubscribe an application from receiving events.
+// @Accept  json
+// @Produce  json
+// @Param id path int true "subscription id"
+// @Success 200 "subscription deleted"
+// @Failure 400 {object} models.APIError
+// @Failure 404 {object} models.APIError
+// @Router /subscriptions/{id} [delete]
 func unsubscribe(writer http.ResponseWriter, request *http.Request) {
-	// swagger:route DELETE /subscriptions/{id} subscription DeleteSubscriptionRequest
-	//
-	// Unsubscribe a subscription from receiving events.
-	//
-	// Consumes:
-	//   - application/json
-	//
-	// Produces:
-	//   - application/json
-	//
-	// Responses:
-	//        200: DeleteSubscriptionResponse
-	//        400: ApiError
 	vars := mux.Vars(request)
 
 	id := vars["subscriptionId"]
@@ -166,7 +148,7 @@ func unsubscribe(writer http.ResponseWriter, request *http.Request) {
 }
 
 func validateSubscription(subscription *models.Subscription) error {
-	u, err := url.ParseRequestURI(subscription.CallbackUrl)
+	u, err := url.ParseRequestURI(subscription.CallbackURL)
 	if err != nil || u.Scheme == "" || u.Host == "" {
 		return fmt.Errorf("invalid callback url: %v", err)
 	}
@@ -176,36 +158,36 @@ func validateSubscription(subscription *models.Subscription) error {
 		if subscription.Credentials.AccessToken != "" || subscription.Credentials.BasicAuthUsername != "" || subscription.Credentials.BasicAuthPassword != "" {
 			return fmt.Errorf("credentials are set but will not be used")
 		}
-	case models.BEARER_TOKEN:
+	case models.BearerToken:
 		if subscription.Credentials.AccessToken == "" {
 			return fmt.Errorf("access token required")
 		}
-	case models.BASIC_AUTH:
+	case models.BasicAuth:
 		if subscription.Credentials.BasicAuthUsername == "" || subscription.Credentials.BasicAuthPassword == "" {
 			return fmt.Errorf("username and password are required")
 		}
 	default:
-		return fmt.Errorf("unknown callback type: should be one of [%s,%s,%s]", models.HTTP, models.BASIC_AUTH, models.BEARER_TOKEN)
+		return fmt.Errorf("unknown callback type: should be one of [%s,%s,%s]", models.HTTP, models.BasicAuth, models.BearerToken)
 	}
 
 	for eventType := range subscription.Filters {
 		switch eventType {
-		case models.BLOCK_COMMIT:
-		case models.ENTRY_REGISTRATION:
-		case models.CHAIN_REGISTRATION:
-		case models.PROCESS_MESSAGE:
-		case models.NODE_MESSAGE:
-		case models.ENTRY_CONTENT_REGISTRATION:
+		case models.BlockCommit:
+		case models.EntryRegistration:
+		case models.ChainRegistration:
+		case models.ProcessMessage:
+		case models.NodeMessage:
+		case models.EntryContentRegistration:
 		default:
 			return fmt.Errorf("invalid event type: %s", eventType)
 		}
 	}
 
 	switch subscription.SubscriptionStatus {
-	case models.ACTIVE:
-	case models.SUSPENDED:
+	case models.Active:
+	case models.Suspended:
 	default:
-		return fmt.Errorf("unknown subscription status: should be one of [%s, %s]", models.ACTIVE, models.SUSPENDED)
+		return fmt.Errorf("unknown subscription status: should be one of [%s, %s]", models.Active, models.Suspended)
 	}
 
 	return nil

@@ -59,7 +59,7 @@ func testSpecificConfigFile(t *testing.T) {
 }
 
 func testConfigFileInConfigHome(t *testing.T) {
-	configFilename := "$HOME/.factom/live-feed.conf"
+	configFilename := "$HOME/.factom/factom-live-feed.conf"
 	cleanup := createConfigFile(t, configFilename)
 	defer cleanup()
 
@@ -69,7 +69,7 @@ func testConfigFileInConfigHome(t *testing.T) {
 }
 
 func testEnvVarOverrides(t *testing.T) {
-	configFilename := "$HOME/.factom/live-feed/live-feed.conf"
+	configFilename := "$HOME/.factom/live-feed/factom-live-feed.conf"
 	cleanup := createConfigFile(t, configFilename)
 	defer cleanup()
 
@@ -102,7 +102,7 @@ func testEnvVarOverrides(t *testing.T) {
 	assert.NotNil(t, subscriptionConfig, "SubscriptionConfig shouldn't be nil")
 	assert.EqualValues(t, "0.0.0.0", subscriptionConfig.BindAddress, "SubscriptionConfig.BindAddress mismatch %s != %s", "127.0.0.1", subscriptionConfig.BindAddress)
 	assert.EqualValues(t, "8777", strconv.Itoa(int(subscriptionConfig.Port)), "SubscriptionConfig.Port mismatch %s != %d", 8777, subscriptionConfig.Port)
-	assert.EqualValues(t, []string{"HTTPS"}, subscriptionConfig.Schemes, "SubscriptionConfig.Schemes mismatch %v != %v", []string{"HTTPS"}, subscriptionConfig.Schemes)
+	assert.EqualValues(t, "HTTP", subscriptionConfig.Scheme, "SubscriptionConfig.Schemes mismatch %v != %v", []string{"HTTPS"}, subscriptionConfig.Scheme)
 }
 
 func testDefaultConfig(t *testing.T) {
@@ -125,9 +125,9 @@ func testDefaultConfig(t *testing.T) {
 
 	subscriptionConfig := config.Subscription
 	assert.NotNil(t, subscriptionConfig, "SubscriptionConfig shouldn't be nil")
-	assert.EqualValues(t, defaultSubscriptionApiAddress, subscriptionConfig.BindAddress, "SubscriptionConfig.BindAddress mismatch %s != %s", defaultSubscriptionApiAddress, subscriptionConfig.BindAddress)
-	assert.EqualValues(t, defaultSubscriptionApiPort, subscriptionConfig.Port, "SubscriptionConfig.Port mismatch %s != %d", defaultSubscriptionApiPort, subscriptionConfig.Port)
-	assert.EqualValues(t, defaultSubscriptionApiSchemes, subscriptionConfig.Schemes, "SubscriptionConfig.Schemes mismatch %v != %v", defaultSubscriptionApiSchemes, subscriptionConfig.Schemes)
+	assert.EqualValues(t, defaultSubscriptionAPIAddress, subscriptionConfig.BindAddress, "SubscriptionConfig.BindAddress mismatch %s != %s", defaultSubscriptionAPIAddress, subscriptionConfig.BindAddress)
+	assert.EqualValues(t, defaultSubscriptionAPIPort, subscriptionConfig.Port, "SubscriptionConfig.Port mismatch %s != %d", defaultSubscriptionAPIPort, subscriptionConfig.Port)
+	assert.EqualValues(t, defaultSubscriptionAPISchemes, subscriptionConfig.Scheme, "SubscriptionConfig.Schemes mismatch %v != %v", defaultSubscriptionAPISchemes, subscriptionConfig.Scheme)
 }
 
 func testNoConfigFound(t *testing.T) {
@@ -162,7 +162,7 @@ func assertConfiguration(t *testing.T, config *Config, err error) {
 	}
 	assert.EqualValues(t, "0.0.0.0", subscriptionConfig.BindAddress, "SubscriptionConfig.BindAddress mismatch %s != %s", "127.0.0.1", subscriptionConfig.BindAddress)
 	assert.EqualValues(t, "8777", strconv.Itoa(int(subscriptionConfig.Port)), "SubscriptionConfig.Port mismatch %s != %d", 8777, subscriptionConfig.Port)
-	assert.EqualValues(t, []string{"HTTP", "HTTPS"}, subscriptionConfig.Schemes, "SubscriptionConfig.Schemes mismatch %v != %v", []string{"HTTP", "HTTPS"}, subscriptionConfig.Schemes)
+	assert.EqualValues(t, "HTTP", subscriptionConfig.Scheme, "SubscriptionConfig.Schemes mismatch %v != %v", []string{"HTTP", "HTTPS"}, subscriptionConfig.Scheme)
 }
 
 func createTempConfigFile(t *testing.T) (string, func()) {
@@ -283,8 +283,4 @@ func moveFile(sourcePath, destPath string) error {
 		return fmt.Errorf("failed removing original file: %s", err)
 	}
 	return nil
-}
-
-func NewTestConfiguration() *Config {
-	return defaultConfig()
 }

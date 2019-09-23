@@ -1,17 +1,15 @@
-// Live Feed API
-//
-// The live feed API is a service for receiving events from the factom blockchain. The API is connected to a factomd
-// node. The received events will be emitted to the subscriptions in the API. Users can subscribe a callback url where
-// able to receive different types of events.
-//
-//     Schemes: http, https
-//     Host: localhost:8700
-//     BasePath: /live/feed/v0.1/
-//     Version: 0.1.0
-//     License: MIT http://opensource.org/licenses/MIT
-//
-// swagger:meta
 package api
+
+// @title Live Feed API
+// @version 0.1
+// @description The live feed API is a service for receiving events from the factom blockchain. The API is connected to a factomd node. The received events will be emitted to the subscriptions in the API. Users can subscribe a callback url where able to receive different types of events.
+
+// @license.name MIT
+// @license.url http://opensource.org/licenses/MIT
+//
+// @host localhost:8700
+// @BasePath /live/feed/v0.1
+// @schemes http https
 
 import (
 	"encoding/json"
@@ -20,12 +18,14 @@ import (
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
 	"github.com/gorilla/mux"
+	"github.com/swaggo/swag"
 	"net/http"
 	"strings"
 	"time"
 )
 
-type SubscriptionApi interface {
+// SubscriptionAPI is API endpoint that users allow to register an callback to receive events
+type SubscriptionAPI interface {
 	Start()
 }
 
@@ -33,7 +33,8 @@ type api struct {
 	apiConfig *config.SubscriptionConfig
 }
 
-func NewSubscriptionApi(apiConfig *config.SubscriptionConfig) SubscriptionApi {
+// NewSubscriptionAPI create a new SubscriptionAPI with a configuration
+func NewSubscriptionAPI(apiConfig *config.SubscriptionConfig) SubscriptionAPI {
 	return &api{
 		apiConfig: apiConfig,
 	}
@@ -50,7 +51,7 @@ func logInterceptor(f http.Handler) http.Handler {
 func (api *api) Start() {
 	router := mux.NewRouter()
 	router.Use(logInterceptor)
-	router.Schemes(api.apiConfig.Schemes...)
+	router.Schemes(api.apiConfig.Scheme)
 
 	subscriptionRouter := router.PathPrefix(api.apiConfig.BasePath).Subrouter()
 	subscriptionRouter.HandleFunc("/subscriptions", subscribe).Methods(http.MethodPost)
@@ -61,17 +62,38 @@ func (api *api) Start() {
 
 	go func() {
 		address := fmt.Sprintf("%s:%d", api.apiConfig.BindAddress, api.apiConfig.Port)
-		log.Info("start subscription api at: [%s]://%s%s", strings.Join(api.apiConfig.Schemes, ", "), address, api.apiConfig.BasePath)
-		err := http.ListenAndServe(address, router)
+		log.Info("start subscription api at: %s://%s%s", api.apiConfig.Scheme, address, api.apiConfig.BasePath)
+
+		var err error
+		if strings.ToUpper(api.apiConfig.Scheme) == "HTTPS" {
+			err = http.ListenAndServeTLS(address, api.apiConfig.CertificateFile, api.apiConfig.PrivateKeyFile, router)
+		} else {
+			err = http.ListenAndServe(address, router)
+		}
+
 		if err != nil {
 			log.Error("failed to start subscription api: %v", err)
 		}
 	}()
 }
 
-func swagger(writer http.ResponseWriter, request *http.Request) {
+func swagger(writer http.ResponseWriter, _ *http.Request) {
+	swagger, err := swag.ReadDoc()
+	if err != nil {
+		log.Error("failed to read swagger: %v", err)
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to read swagger"))
+		return
+	}
+
 	writer.Header().Set("Content-Type", "application/json")
-	http.ServeFile(writer, request, "swagger.json")
+	writer.WriteHeader(http.StatusOK)
+
+	_, err = fmt.Fprint(writer, swagger)
+	if err != nil {
+		log.Error("failed to write swagger: %v", err)
+		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to write swagger"))
+		return
+	}
 }
 
 func decode(writer http.ResponseWriter, request *http.Request, v interface{}) bool {
@@ -89,7 +111,8 @@ func responseError(writer http.ResponseWriter, statusCode int, error interface{}
 	err := json.NewEncoder(writer).Encode(error)
 	if err != nil {
 		log.Error("failed to write error '%v': %v", error, err)
-		responseError(writer, http.StatusInternalServerError, errors.NewInternalError("failed to write error"))
+		writer.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprint(writer, errors.NewInternalError("failed to write error"))
 	}
 }
 
