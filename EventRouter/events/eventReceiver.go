@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	defaultStandardChannelSize = 5000
+	defaultStandardChannelSize = 65535
 )
 
 // EventReceiver responsible to receive events from factomd

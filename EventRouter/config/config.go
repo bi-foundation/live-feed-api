@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 const (
@@ -32,6 +33,7 @@ var defaultSubscriptionAPISchemes = []string{"HTTP", "HTTPS"}
 type Config struct {
 	Log          *LogConfig
 	Receiver     *ReceiverConfig
+	Sender       *SenderConfig
 	Subscription *SubscriptionConfig
 }
 
@@ -45,6 +47,13 @@ type ReceiverConfig struct {
 	Protocol    string
 	BindAddress string
 	Port        uint16
+}
+
+// SenderConfig configuration for the sender
+type SenderConfig struct {
+	MaxEventRetries          uint16
+	MaxReconnectRetries      uint16
+	ReconnectHoldOffDuration time.Duration
 }
 
 // SubscriptionConfig configuration for the subcription api
@@ -127,6 +136,11 @@ func defaultConfig() *Config {
 			Protocol:    defaultReceiverProtocol,
 			BindAddress: defaultReceiverBindAddress,
 			Port:        defaultReceiverPort,
+		},
+		Sender: &SenderConfig{
+			MaxEventRetries:          3,
+			MaxReconnectRetries:      4,
+			ReconnectHoldOffDuration: 15 * time.Minute,
 		},
 		Subscription: &SubscriptionConfig{
 			Schemes:     defaultSubscriptionAPISchemes,
