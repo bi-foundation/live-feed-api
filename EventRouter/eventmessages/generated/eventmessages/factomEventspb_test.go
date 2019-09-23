@@ -469,15 +469,15 @@ func TestDirectoryBlockHeaderMarshalTo(t *testing.T) {
 	}
 }
 
-func TestEntryProto(t *testing.T) {
+func TestDirectoryBlockEntryProto(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntry(popr, false)
+	p := NewPopulatedDirectoryBlockEntry(popr, false)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &Entry{}
+	msg := &DirectoryBlockEntry{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -500,10 +500,10 @@ func TestEntryProto(t *testing.T) {
 	}
 }
 
-func TestEntryMarshalTo(t *testing.T) {
+func TestDirectoryBlockEntryMarshalTo(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntry(popr, false)
+	p := NewPopulatedDirectoryBlockEntry(popr, false)
 	size := p.Size()
 	dAtA := make([]byte, size)
 	for i := range dAtA {
@@ -513,7 +513,7 @@ func TestEntryMarshalTo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &Entry{}
+	msg := &DirectoryBlockEntry{}
 	if err := github_com_gogo_protobuf_proto.Unmarshal(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -1285,16 +1285,16 @@ func TestDirectoryBlockHeaderJSON(t *testing.T) {
 		t.Fatalf("seed = %d, %#v !Json Equal %#v", seed, msg, p)
 	}
 }
-func TestEntryJSON(t *testing.T) {
+func TestDirectoryBlockEntryJSON(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntry(popr, true)
+	p := NewPopulatedDirectoryBlockEntry(popr, true)
 	marshaler := github_com_gogo_protobuf_jsonpb.Marshaler{}
 	jsondata, err := marshaler.MarshalToString(p)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
-	msg := &Entry{}
+	msg := &DirectoryBlockEntry{}
 	err = github_com_gogo_protobuf_jsonpb.UnmarshalString(jsondata, msg)
 	if err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
@@ -1725,12 +1725,12 @@ func TestDirectoryBlockHeaderProtoCompactText(t *testing.T) {
 	}
 }
 
-func TestEntryProtoText(t *testing.T) {
+func TestDirectoryBlockEntryProtoText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntry(popr, true)
+	p := NewPopulatedDirectoryBlockEntry(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.MarshalTextString(p)
-	msg := &Entry{}
+	msg := &DirectoryBlockEntry{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -1739,12 +1739,12 @@ func TestEntryProtoText(t *testing.T) {
 	}
 }
 
-func TestEntryProtoCompactText(t *testing.T) {
+func TestDirectoryBlockEntryProtoCompactText(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntry(popr, true)
+	p := NewPopulatedDirectoryBlockEntry(popr, true)
 	dAtA := github_com_gogo_protobuf_proto.CompactTextString(p)
-	msg := &Entry{}
+	msg := &DirectoryBlockEntry{}
 	if err := github_com_gogo_protobuf_proto.UnmarshalText(dAtA, msg); err != nil {
 		t.Fatalf("seed = %d, err = %v", seed, err)
 	}
@@ -2133,11 +2133,11 @@ func TestDirectoryBlockHeaderGraphQL(t *testing.T) {
 		t.Fatalf("String want %v got %v", objdesc, pdesc)
 	}
 }
-func TestEntryGraphQL(t *testing.T) {
+func TestDirectoryBlockEntryGraphQL(t *testing.T) {
 	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
-	_ = NewPopulatedEntry(popr, false)
+	_ = NewPopulatedDirectoryBlockEntry(popr, false)
 	objdesc := ""
-	pdesc := GraphQLEntryType.PrivateDescription
+	pdesc := GraphQLDirectoryBlockEntryType.PrivateDescription
 	if pdesc != objdesc {
 		t.Fatalf("String want %v got %v", objdesc, pdesc)
 	}
@@ -2417,10 +2417,10 @@ func TestDirectoryBlockHeaderSize(t *testing.T) {
 	}
 }
 
-func TestEntrySize(t *testing.T) {
+func TestDirectoryBlockEntrySize(t *testing.T) {
 	seed := time.Now().UnixNano()
 	popr := math_rand.New(math_rand.NewSource(seed))
-	p := NewPopulatedEntry(popr, true)
+	p := NewPopulatedDirectoryBlockEntry(popr, true)
 	size2 := github_com_gogo_protobuf_proto.Size(p)
 	dAtA, err := github_com_gogo_protobuf_proto.Marshal(p)
 	if err != nil {
