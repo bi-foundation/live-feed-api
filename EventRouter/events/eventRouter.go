@@ -63,13 +63,13 @@ func (evr *eventRouter) handleEvents() {
 
 func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, error) {
 	switch factomEvent.Value.(type) {
-	case *eventmessages.FactomEvent_BlockCommit:
+	case *eventmessages.FactomEvent_DirectoryBlockCommit:
 		return models.BlockCommit, nil
-	case *eventmessages.FactomEvent_ChainRegistration:
+	case *eventmessages.FactomEvent_ChainCommit:
 		return models.ChainRegistration, nil
-	case *eventmessages.FactomEvent_EntryRegistration:
+	case *eventmessages.FactomEvent_EntryCommit:
 		return models.EntryRegistration, nil
-	case *eventmessages.FactomEvent_EntryContentRegistration:
+	case *eventmessages.FactomEvent_EntryReveal:
 		return models.EntryContentRegistration, nil
 	case *eventmessages.FactomEvent_ProcessMessage:
 		return models.ProcessMessage, nil

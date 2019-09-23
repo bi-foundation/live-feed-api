@@ -3,37 +3,70 @@ package eventmessages;
 option go_package = "eventmessages";
 option java_package = "com.factom.factomd.eventmessages";
 
-import "github.com/opsee/protobuf/opseeproto/opsee.proto";
-import "github.com/opsee/protobuf/opseeproto/types/timestamp.proto";
-import "eventmessages/generalTypes.proto";
+import "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/graphql.proto";
+import "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types/timestamp.proto";
+import "eventmessages/sharedTypes.proto";
 import "eventmessages/adminBlock.proto";
 import "eventmessages/factoidBlock.proto";
-import "eventmessages/entryCredit.proto";
 
-option (opseeproto.graphql) = true;
+option (graphqlproto.graphql) = true;
 
-enum StreamSource {
-    LIVE = 0;
-    REPLAY = 1;
-}
-
-
+// ====  ROOT EVENT =====
 message FactomEvent {
-    StreamSource streamSource = 1;
-    Hash identityChainID = 2;
+    EventSource eventSource = 1;
+    string factomNodeName = 2;
+    Hash identityChainID = 3;
     oneof value {
-        ChainRegistration chainRegistration = 3;
-        EntryRegistration entryRegistration = 4;
-        EntryContentRegistration entryContentRegistration = 5;
-        StateChange stateChange = 6;
-        BlockCommit blockCommit = 7;
-        ProcessMessage processMessage = 8;
-        NodeMessage nodeMessage = 9;
+        ChainCommit chainCommit = 4;
+        EntryCommit entryCommit = 5;
+        EntryReveal entryReveal = 6;
+        StateChange stateChange = 7;
+        DirectoryBlockCommit directoryBlockCommit = 8;
+        ProcessMessage processMessage = 9;
+        NodeMessage nodeMessage = 10;
     }
 }
 
+// ====  FACTOM EVENT VALUES =====
+message ChainCommit {
+    EntityState entityState = 1;
+    Hash chainIDHash = 2;
+    Hash entryHash = 3;
+    Hash weld = 4;
+    graphqlproto.types.Timestamp timestamp = 5;
+    uint32 credits = 6;
+    bytes entryCreditPublicKey = 7;
+    bytes signature = 8;
+    uint32 version = 9;
+}
 
-message BlockCommit {
+
+message EntryCommit {
+    EntityState entityState = 1;
+    Hash entryHash = 2;
+    graphqlproto.types.Timestamp timestamp = 3;
+    uint32 credits = 4;
+    bytes entryCreditPublicKey = 5;
+    bytes signature = 6;
+    uint32 version = 7;
+}
+
+
+message EntryReveal {
+    EntityState entityState = 1;
+    EntryBlockEntry entry = 2;
+    graphqlproto.types.Timestamp timestamp = 3;
+}
+
+
+message StateChange {
+    Hash entityHash = 1;
+    EntityState entityState = 2;
+    uint32 blockHeight = 3;
+}
+
+
+message DirectoryBlockCommit {
     DirectoryBlock directoryBlock = 1;
     AdminBlock adminBlock = 2;
     FactoidBlock factoidBlock = 3;
@@ -42,53 +75,30 @@ message BlockCommit {
     repeated EntryBlockEntry entryBlockEntries = 6;
 }
 
-message ChainRegistration {
-    EntityState entityState = 1;
-    Hash chainIDHash = 2;
-    Hash entryHash = 3;
-    Hash weld = 4;
-    opsee.types.Timestamp timestamp = 5;
-    uint32 credits = 6;
-    bytes ecPubKey = 7;
-    bytes sig = 8;
-}
-
-message EntryRegistration {
-    EntityState entityState = 1;
-    Hash entryHash = 2;
-    opsee.types.Timestamp timestamp = 3;
-    uint32 credits = 4;
-    bytes ecPubKey = 5;
-    bytes sig = 6;
-}
-
-message EntryContentRegistration {
-    EntityState entityState = 1;
-    EntryBlockEntry entry = 2;
-    opsee.types.Timestamp timestamp = 3;
-}
-
-message StateChange {
-    Hash entityHash = 1;
-    EntityState entityState = 2;
-}
-
+// ====  DIRECTORY BLOCK DETAILS =====
 message DirectoryBlock {
     DirectoryBlockHeader header = 1;
-    repeated Entry entries = 2;
+    repeated DirectoryBlockEntry entries = 2;
 }
 
 message DirectoryBlockHeader {
     Hash bodyMerkleRoot = 1;
     Hash previousKeyMerkleRoot = 2;
     Hash previousFullHash = 3;
-    opsee.types.Timestamp timestamp = 4;
+    graphqlproto.types.Timestamp timestamp = 4;
     uint32 blockHeight = 5;
     uint32 blockCount = 6;
+    uint32 version = 7;
+    uint32 networkID = 8;
+}
+
+message DirectoryBlockEntry {
+    Hash chainID = 1;
+    Hash keyMerkleRoot = 2;
 }
 
 message EntryBlock {
-    EntryBlockHeader entryBlockHeader = 1;
+    EntryBlockHeader header = 1;
     repeated Hash entryHashes = 2;
 }
 
@@ -102,21 +112,54 @@ message EntryBlockHeader {
     uint32 entryCount = 7;
 }
 
-
-enum Level {
-    INFO = 0;
-    WARNING = 1;
-    ERROR = 2;
+message EntryBlockEntry {
+    Hash hash = 1;
+    repeated ExternalId externalIDs = 2;
+    Content content = 3;
+    uint32 version = 4;
 }
 
-
-enum ProcessMessageCode {
-    OTHER_P = 0;
-    NEW_BLOCK = 1;
-    NEW_MINUTE = 2;
+message EntryCreditBlock {
+    EntryCreditBlockHeader header = 1;
+    repeated EntryCreditBlockEntry entries = 2;
 }
 
+message EntryCreditBlockHeader {
+    Hash bodyHash = 1;
+    Hash previousHeaderHash = 2;
+    Hash previousFullHash = 3;
+    uint32 blockHeight = 4;
+    bytes headerExpansionArea = 5;
+    uint64 objectCount = 6;
+    uint64 bodySize = 7;
+}
 
+message EntryCreditBlockEntry {
+    oneof value {
+        ChainCommit chainCommit = 1;
+        EntryCommit entryCommit = 2;
+        IncreaseBalance increaseBalance = 3;
+        MinuteNumber minuteNumber = 4;
+        ServerIndexNumber serverIndexNumber = 5;
+    }
+}
+
+message IncreaseBalance {
+    bytes entryCreditPublicKey = 1;
+    Hash transactionID = 2;
+    uint64 index = 3;
+    uint64 amount = 4;
+}
+
+message MinuteNumber {
+    uint32 minuteNumber = 1;
+}
+
+message ServerIndexNumber {
+    uint32 serverIndexNumber = 1;
+}
+
+// ====  MESSAGE EVENTS =====
 message ProcessMessage {
     ProcessMessageCode messageCode = 1;
     Level level = 2;
@@ -124,15 +167,40 @@ message ProcessMessage {
 }
 
 
-enum NodeMessageCode {
-    OTHER_N = 0;
-    STARTED = 1;
-    SYNC_COMPLETE = 2;
-    SHUTDOWN = 3;
-}
-
 message NodeMessage {
     NodeMessageCode messageCode = 1;
     Level level = 2;
     string messageText = 3;
+}
+
+// ====  ENUMS =====
+enum EventSource {
+    LIVE = 0;
+    REPLAY_BOOT = 1;
+}
+
+enum EntityState {
+    REQUESTED = 0;
+    HOLDING_QUEUE = 1;
+    ACCEPTED = 2;
+    REJECTED = 3;
+    COMMITTED_TO_DIRECTORY_BLOCK = 4;
+}
+
+enum Level {
+    INFO = 0;
+    WARNING = 1;
+    ERROR = 2;
+}
+
+enum ProcessMessageCode {
+    NEW_BLOCK = 0;
+    NEW_MINUTE = 1;
+}
+
+enum NodeMessageCode {
+    GENERAL = 0;
+    STARTED = 1;
+    SYNCED = 2;
+    SHUTDOWN = 3;
 }

@@ -16,14 +16,14 @@ GOFILES:=$(shell find . -path ./vendor -prune -o -name "*.go" -type f)
 
 GOBIN:=$(GOPATH)/bin
 export PATH := $(GOBIN):$(PATH)
-export GO111MODULE := on
+export GO111MODULEENV := on
 
 all: clean build test
 
 .PHONY: clean
 clean:
 	$(GOCLEAN)
-	rm -f $(BINARY_NAME)
+	rm $(BINARY_NAME) || true
 
 .PHONY: deps
 deps:
@@ -44,10 +44,10 @@ test:
 		$(GOCMD) test -v -covermode=count -coverprofile=profile.out $$PKG > tmp.out; \
 		cat tmp.out; \
 		if grep -q "^--- FAIL" tmp.out; then \
-			rm tmp.out; \
+			rm tmp.out || true; \
 			exit 1; \
 		elif grep -q "build failed" tmp.out; then \
-			rm tmp.out; \
+			rm tmp.out || true; \
 			exit; \
 		fi; \
 		if [ -f profile.out ]; then \
@@ -67,7 +67,7 @@ generate:
 
 .PHONY: dev-deps
 dev-deps:
-	GO11MODULE=off $(GOGET) -v ${u} \
+	GO111MODULE=off $(GOGET) -v ${u} \
 		golang.org/x/lint/golint \
 		github.com/swaggo/swag/cmd/swag	\
 		github.com/swaggo/swag/gen	\

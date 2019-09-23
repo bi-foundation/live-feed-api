@@ -3,13 +3,13 @@ package eventmessages;
 option go_package = "eventmessages";
 option java_package = "com.factom.factomd.eventmessages";
 
-import "eventmessages/generalTypes.proto";
-import "eventmessages/factoidBlock.proto";
-import "github.com/opsee/protobuf/opseeproto/opsee.proto";
-import "github.com/opsee/protobuf/opseeproto/types/timestamp.proto";
+import "eventmessages/sharedTypes.proto";
+import "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/graphql.proto";
+import "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types/timestamp.proto";
 
-option (opseeproto.graphql) = true;
+option (graphqlproto.graphql) = true;
 
+// ====  ADMIN BLOCK STRUCTURES =====
 message AdminBlock {
     AdminBlockHeader header = 1;
     repeated AdminBlockEntry entries = 2;
@@ -32,7 +32,7 @@ message AdminBlockEntry {
         AddReplaceMatryoshkaHash addReplaceMatryoshkaHash = 7;
         CancelCoinbaseDescriptor cancelCoinbaseDescriptor = 8;
         CoinbaseDescriptor coinbaseDescriptor = 9;
-        DirectoryBlockSignatureEntry dbSignatureEntry = 10;
+        DirectoryBlockSignatureEntry directoryBlockSignatureEntry = 10;
         EndOfMinuteEntry endOfMinuteEntry = 11;
         ForwardCompatibleEntry forwardCompatibleEntry = 12;
         IncreaseServerCount increaseServerCount = 13;
@@ -79,7 +79,7 @@ message AddFederatedServerSigningKey {
 message AddReplaceMatryoshkaHash {
     Hash identityChainID = 1;
     Hash matryoshkaHash = 2;
-    repeated TransactionAddress outputs = 3;
+    repeated TransactionAddress factoidOutputs = 3;
 
 }
 
@@ -89,12 +89,12 @@ message CancelCoinbaseDescriptor {
 }
 
 message CoinbaseDescriptor {
-    repeated TransAddress outputs = 1;
+    repeated TransactionAddress factoidOutputs = 1;
 }
 
 message DirectoryBlockSignatureEntry {
     Hash identityAdminChainID = 1;
-    Signature PrevDBSig = 2;
+    Signature previousDirectoryBlockSignature = 2;
 }
 
 message EndOfMinuteEntry {
@@ -121,11 +121,11 @@ message RevealMatryoshkaHash {
 }
 
 message ServerFault {
-    opsee.types.Timestamp timestamp = 1;
-    Hash serverId = 2;
-    Hash auditServerId = 3;
+    graphqlproto.types.Timestamp timestamp = 1;
+    Hash serverID = 2;
+    Hash auditServerID = 3;
     uint32 vmIndex = 4;
     uint32 blockHeight = 5;
-    uint32 height = 6;
+    uint32 messageEntryHeight = 6;
     repeated Signature signatureList = 7;
 }

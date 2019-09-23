@@ -32,7 +32,7 @@ func TestQueryNodeMessage(t *testing.T) {
 			},
 			"value": {
 				"messageText": "New minute [6]",
-				"messageCode": "SYNC_COMPLETE"
+				"messageCode": "SYNCED"
 			}
 		}
 	}`

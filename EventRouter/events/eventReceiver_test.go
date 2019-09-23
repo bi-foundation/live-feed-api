@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
+	"github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
 	"github.com/gogo/protobuf/proto"
-	"github.com/opsee/protobuf/opseeproto/types"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"net"
@@ -43,7 +43,11 @@ func TestWriteEvents(t *testing.T) {
 	defer conn.Close()
 
 	for i := 1; i <= n; i++ {
-		err := binary.Write(conn, binary.LittleEndian, dataSize)
+		err := binary.Write(conn, binary.LittleEndian, supportedProtocolVersion)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = binary.Write(conn, binary.LittleEndian, dataSize)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -77,6 +81,7 @@ func TestEOFConnection(t *testing.T) {
 			defer conn.Close()
 
 			// send one event correctly
+			binary.Write(conn, binary.LittleEndian, supportedProtocolVersion)
 			err := binary.Write(conn, binary.LittleEndian, dataSize)
 			if err != nil {
 				t.Fatal(err)
@@ -141,8 +146,8 @@ func mockAnchorEvent() *eventmessages.FactomEvent {
 		IdentityChainID: &eventmessages.Hash{
 			HashValue: []byte("value"),
 		},
-		Value: &eventmessages.FactomEvent_BlockCommit{
-			BlockCommit: &eventmessages.BlockCommit{
+		Value: &eventmessages.FactomEvent_DirectoryBlockCommit{
+			DirectoryBlockCommit: &eventmessages.DirectoryBlockCommit{
 				DirectoryBlock: &eventmessages.DirectoryBlock{
 					Header: &eventmessages.DirectoryBlockHeader{
 						BodyMerkleRoot: &eventmessages.Hash{
@@ -157,7 +162,7 @@ func mockAnchorEvent() *eventmessages.FactomEvent {
 						Timestamp:  &types.Timestamp{Seconds: int64(now.Second()), Nanos: int32(now.Nanosecond())},
 						BlockCount: 456,
 					},
-					Entries: []*eventmessages.Entry{
+					Entries: []*eventmessages.DirectoryBlockEntry{
 						{
 							ChainID: &eventmessages.Hash{
 								HashValue: testHash,

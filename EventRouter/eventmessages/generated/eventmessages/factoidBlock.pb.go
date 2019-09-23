@@ -6,13 +6,14 @@ package eventmessages
 import (
 	bytes "bytes"
 	fmt "fmt"
+	_ "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto"
+	types "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
+	github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars "github.com/bi-foundation/protobuf-graphql-extension/plugin/graphql/scalars"
 	proto "github.com/gogo/protobuf/proto"
 	github_com_graphql_go_graphql "github.com/graphql-go/graphql"
-	_ "github.com/opsee/protobuf/opseeproto"
-	types "github.com/opsee/protobuf/opseeproto/types"
-	github_com_opsee_protobuf_plugin_graphql_scalars "github.com/opsee/protobuf/plugin/graphql/scalars"
 	io "io"
 	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -24,13 +25,14 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// ====  FACTOID BLOCK STRUCTURES =====
 type FactoidBlock struct {
 	BodyMerkleRoot              *Hash          `protobuf:"bytes,1,opt,name=bodyMerkleRoot,proto3" json:"bodyMerkleRoot,omitempty"`
 	PreviousKeyMerkleRoot       *Hash          `protobuf:"bytes,2,opt,name=previousKeyMerkleRoot,proto3" json:"previousKeyMerkleRoot,omitempty"`
 	PreviousLedgerKeyMerkleRoot *Hash          `protobuf:"bytes,3,opt,name=previousLedgerKeyMerkleRoot,proto3" json:"previousLedgerKeyMerkleRoot,omitempty"`
-	ExchRate                    uint64         `protobuf:"varint,4,opt,name=exchRate,proto3" json:"exchRate,omitempty"`
+	ExchangeRate                uint64         `protobuf:"varint,4,opt,name=exchangeRate,proto3" json:"exchangeRate,omitempty"`
 	BlockHeight                 uint32         `protobuf:"varint,5,opt,name=blockHeight,proto3" json:"blockHeight,omitempty"`
 	Transactions                []*Transaction `protobuf:"bytes,6,rep,name=transactions,proto3" json:"transactions,omitempty"`
 	XXX_NoUnkeyedLiteral        struct{}       `json:"-"`
@@ -52,7 +54,7 @@ func (m *FactoidBlock) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return xxx_messageInfo_FactoidBlock.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -92,9 +94,9 @@ func (m *FactoidBlock) GetPreviousLedgerKeyMerkleRoot() *Hash {
 	return nil
 }
 
-func (m *FactoidBlock) GetExchRate() uint64 {
+func (m *FactoidBlock) GetExchangeRate() uint64 {
 	if m != nil {
-		return m.ExchRate
+		return m.ExchangeRate
 	}
 	return 0
 }
@@ -114,17 +116,17 @@ func (m *FactoidBlock) GetTransactions() []*Transaction {
 }
 
 type Transaction struct {
-	TransactionId        *Hash                    `protobuf:"bytes,1,opt,name=transactionId,proto3" json:"transactionId,omitempty"`
-	BlockHeight          uint32                   `protobuf:"varint,2,opt,name=blockHeight,proto3" json:"blockHeight,omitempty"`
-	Timestamp            *types.Timestamp         `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Inputs               []*TransactionAddress    `protobuf:"bytes,4,rep,name=inputs,proto3" json:"inputs,omitempty"`
-	Outputs              []*TransactionAddress    `protobuf:"bytes,5,rep,name=outputs,proto3" json:"outputs,omitempty"`
-	OutputEntryCredits   []*TransactionAddress    `protobuf:"bytes,6,rep,name=outputEntryCredits,proto3" json:"outputEntryCredits,omitempty"`
-	Rcds                 []*RCD                   `protobuf:"bytes,7,rep,name=rcds,proto3" json:"rcds,omitempty"`
-	SignatureBlocks      []*FactoidSignatureBlock `protobuf:"bytes,8,rep,name=signatureBlocks,proto3" json:"signatureBlocks,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
-	XXX_unrecognized     []byte                   `json:"-"`
-	XXX_sizecache        int32                    `json:"-"`
+	TransactionID                 *Hash                    `protobuf:"bytes,1,opt,name=transactionID,proto3" json:"transactionID,omitempty"`
+	BlockHeight                   uint32                   `protobuf:"varint,2,opt,name=blockHeight,proto3" json:"blockHeight,omitempty"`
+	Timestamp                     *types.Timestamp         `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	FactoidInputs                 []*TransactionAddress    `protobuf:"bytes,4,rep,name=factoidInputs,proto3" json:"factoidInputs,omitempty"`
+	FactoidOutputs                []*TransactionAddress    `protobuf:"bytes,5,rep,name=factoidOutputs,proto3" json:"factoidOutputs,omitempty"`
+	EntryCreditOutputs            []*TransactionAddress    `protobuf:"bytes,6,rep,name=entryCreditOutputs,proto3" json:"entryCreditOutputs,omitempty"`
+	RedeemConditionDataStructures []*RCD                   `protobuf:"bytes,7,rep,name=redeemConditionDataStructures,proto3" json:"redeemConditionDataStructures,omitempty"`
+	SignatureBlocks               []*FactoidSignatureBlock `protobuf:"bytes,8,rep,name=signatureBlocks,proto3" json:"signatureBlocks,omitempty"`
+	XXX_NoUnkeyedLiteral          struct{}                 `json:"-"`
+	XXX_unrecognized              []byte                   `json:"-"`
+	XXX_sizecache                 int32                    `json:"-"`
 }
 
 func (m *Transaction) Reset()         { *m = Transaction{} }
@@ -141,7 +143,7 @@ func (m *Transaction) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return xxx_messageInfo_Transaction.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -160,9 +162,9 @@ func (m *Transaction) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Transaction proto.InternalMessageInfo
 
-func (m *Transaction) GetTransactionId() *Hash {
+func (m *Transaction) GetTransactionID() *Hash {
 	if m != nil {
-		return m.TransactionId
+		return m.TransactionID
 	}
 	return nil
 }
@@ -181,30 +183,30 @@ func (m *Transaction) GetTimestamp() *types.Timestamp {
 	return nil
 }
 
-func (m *Transaction) GetInputs() []*TransactionAddress {
+func (m *Transaction) GetFactoidInputs() []*TransactionAddress {
 	if m != nil {
-		return m.Inputs
+		return m.FactoidInputs
 	}
 	return nil
 }
 
-func (m *Transaction) GetOutputs() []*TransactionAddress {
+func (m *Transaction) GetFactoidOutputs() []*TransactionAddress {
 	if m != nil {
-		return m.Outputs
+		return m.FactoidOutputs
 	}
 	return nil
 }
 
-func (m *Transaction) GetOutputEntryCredits() []*TransactionAddress {
+func (m *Transaction) GetEntryCreditOutputs() []*TransactionAddress {
 	if m != nil {
-		return m.OutputEntryCredits
+		return m.EntryCreditOutputs
 	}
 	return nil
 }
 
-func (m *Transaction) GetRcds() []*RCD {
+func (m *Transaction) GetRedeemConditionDataStructures() []*RCD {
 	if m != nil {
-		return m.Rcds
+		return m.RedeemConditionDataStructures
 	}
 	return nil
 }
@@ -216,65 +218,9 @@ func (m *Transaction) GetSignatureBlocks() []*FactoidSignatureBlock {
 	return nil
 }
 
-type TransactionAddress struct {
-	Amount               uint64   `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
-	Address              *Hash    `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *TransactionAddress) Reset()         { *m = TransactionAddress{} }
-func (m *TransactionAddress) String() string { return proto.CompactTextString(m) }
-func (*TransactionAddress) ProtoMessage()    {}
-func (*TransactionAddress) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1291991795dfbb48, []int{2}
-}
-func (m *TransactionAddress) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *TransactionAddress) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_TransactionAddress.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *TransactionAddress) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TransactionAddress.Merge(m, src)
-}
-func (m *TransactionAddress) XXX_Size() int {
-	return m.Size()
-}
-func (m *TransactionAddress) XXX_DiscardUnknown() {
-	xxx_messageInfo_TransactionAddress.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TransactionAddress proto.InternalMessageInfo
-
-func (m *TransactionAddress) GetAmount() uint64 {
-	if m != nil {
-		return m.Amount
-	}
-	return 0
-}
-
-func (m *TransactionAddress) GetAddress() *Hash {
-	if m != nil {
-		return m.Address
-	}
-	return nil
-}
-
 type RCD struct {
 	// Types that are valid to be assigned to Value:
 	//	*RCD_Rcd1
-	//	*RCD_Rcd2
 	Value                isRCD_Value `protobuf_oneof:"value"`
 	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
 	XXX_unrecognized     []byte      `json:"-"`
@@ -285,7 +231,7 @@ func (m *RCD) Reset()         { *m = RCD{} }
 func (m *RCD) String() string { return proto.CompactTextString(m) }
 func (*RCD) ProtoMessage()    {}
 func (*RCD) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1291991795dfbb48, []int{3}
+	return fileDescriptor_1291991795dfbb48, []int{2}
 }
 func (m *RCD) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -295,7 +241,7 @@ func (m *RCD) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_RCD.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -324,12 +270,8 @@ type isRCD_Value interface {
 type RCD_Rcd1 struct {
 	Rcd1 *RCD1 `protobuf:"bytes,1,opt,name=rcd1,proto3,oneof"`
 }
-type RCD_Rcd2 struct {
-	Rcd2 *RCD2 `protobuf:"bytes,2,opt,name=rcd2,proto3,oneof"`
-}
 
 func (*RCD_Rcd1) isRCD_Value() {}
-func (*RCD_Rcd2) isRCD_Value() {}
 
 func (m *RCD) GetValue() isRCD_Value {
 	if m != nil {
@@ -345,85 +287,11 @@ func (m *RCD) GetRcd1() *RCD1 {
 	return nil
 }
 
-func (m *RCD) GetRcd2() *RCD2 {
-	if x, ok := m.GetValue().(*RCD_Rcd2); ok {
-		return x.Rcd2
-	}
-	return nil
-}
-
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*RCD) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _RCD_OneofMarshaler, _RCD_OneofUnmarshaler, _RCD_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*RCD) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*RCD_Rcd1)(nil),
-		(*RCD_Rcd2)(nil),
 	}
-}
-
-func _RCD_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*RCD)
-	// value
-	switch x := m.Value.(type) {
-	case *RCD_Rcd1:
-		_ = b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Rcd1); err != nil {
-			return err
-		}
-	case *RCD_Rcd2:
-		_ = b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Rcd2); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("RCD.Value has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _RCD_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*RCD)
-	switch tag {
-	case 1: // value.rcd1
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(RCD1)
-		err := b.DecodeMessage(msg)
-		m.Value = &RCD_Rcd1{msg}
-		return true, err
-	case 2: // value.rcd2
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(RCD2)
-		err := b.DecodeMessage(msg)
-		m.Value = &RCD_Rcd2{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _RCD_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*RCD)
-	// value
-	switch x := m.Value.(type) {
-	case *RCD_Rcd1:
-		s := proto.Size(x.Rcd1)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *RCD_Rcd2:
-		s := proto.Size(x.Rcd2)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 type RCD1 struct {
@@ -437,7 +305,7 @@ func (m *RCD1) Reset()         { *m = RCD1{} }
 func (m *RCD1) String() string { return proto.CompactTextString(m) }
 func (*RCD1) ProtoMessage()    {}
 func (*RCD1) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1291991795dfbb48, []int{4}
+	return fileDescriptor_1291991795dfbb48, []int{3}
 }
 func (m *RCD1) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -447,7 +315,7 @@ func (m *RCD1) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return xxx_messageInfo_RCD1.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -473,69 +341,6 @@ func (m *RCD1) GetPublicKey() []byte {
 	return nil
 }
 
-type RCD2 struct {
-	M                    int32    `protobuf:"varint,1,opt,name=m,proto3" json:"m,omitempty"`
-	N                    int32    `protobuf:"varint,2,opt,name=n,proto3" json:"n,omitempty"`
-	NAddresses           []*Hash  `protobuf:"bytes,3,rep,name=nAddresses,proto3" json:"nAddresses,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *RCD2) Reset()         { *m = RCD2{} }
-func (m *RCD2) String() string { return proto.CompactTextString(m) }
-func (*RCD2) ProtoMessage()    {}
-func (*RCD2) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1291991795dfbb48, []int{5}
-}
-func (m *RCD2) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *RCD2) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_RCD2.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *RCD2) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RCD2.Merge(m, src)
-}
-func (m *RCD2) XXX_Size() int {
-	return m.Size()
-}
-func (m *RCD2) XXX_DiscardUnknown() {
-	xxx_messageInfo_RCD2.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_RCD2 proto.InternalMessageInfo
-
-func (m *RCD2) GetM() int32 {
-	if m != nil {
-		return m.M
-	}
-	return 0
-}
-
-func (m *RCD2) GetN() int32 {
-	if m != nil {
-		return m.N
-	}
-	return 0
-}
-
-func (m *RCD2) GetNAddresses() []*Hash {
-	if m != nil {
-		return m.NAddresses
-	}
-	return nil
-}
-
 type FactoidSignatureBlock struct {
 	Signature            []*FactoidSignature `protobuf:"bytes,1,rep,name=signature,proto3" json:"signature,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
@@ -547,7 +352,7 @@ func (m *FactoidSignatureBlock) Reset()         { *m = FactoidSignatureBlock{} }
 func (m *FactoidSignatureBlock) String() string { return proto.CompactTextString(m) }
 func (*FactoidSignatureBlock) ProtoMessage()    {}
 func (*FactoidSignatureBlock) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1291991795dfbb48, []int{6}
+	return fileDescriptor_1291991795dfbb48, []int{4}
 }
 func (m *FactoidSignatureBlock) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -557,7 +362,7 @@ func (m *FactoidSignatureBlock) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return xxx_messageInfo_FactoidSignatureBlock.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -594,7 +399,7 @@ func (m *FactoidSignature) Reset()         { *m = FactoidSignature{} }
 func (m *FactoidSignature) String() string { return proto.CompactTextString(m) }
 func (*FactoidSignature) ProtoMessage()    {}
 func (*FactoidSignature) Descriptor() ([]byte, []int) {
-	return fileDescriptor_1291991795dfbb48, []int{7}
+	return fileDescriptor_1291991795dfbb48, []int{5}
 }
 func (m *FactoidSignature) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -604,7 +409,7 @@ func (m *FactoidSignature) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return xxx_messageInfo_FactoidSignature.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -633,10 +438,8 @@ func (m *FactoidSignature) GetSignatureValue() []byte {
 func init() {
 	proto.RegisterType((*FactoidBlock)(nil), "eventmessages.FactoidBlock")
 	proto.RegisterType((*Transaction)(nil), "eventmessages.Transaction")
-	proto.RegisterType((*TransactionAddress)(nil), "eventmessages.TransactionAddress")
 	proto.RegisterType((*RCD)(nil), "eventmessages.RCD")
 	proto.RegisterType((*RCD1)(nil), "eventmessages.RCD1")
-	proto.RegisterType((*RCD2)(nil), "eventmessages.RCD2")
 	proto.RegisterType((*FactoidSignatureBlock)(nil), "eventmessages.FactoidSignatureBlock")
 	proto.RegisterType((*FactoidSignature)(nil), "eventmessages.FactoidSignature")
 }
@@ -644,48 +447,47 @@ func init() {
 func init() { proto.RegisterFile("eventmessages/factoidBlock.proto", fileDescriptor_1291991795dfbb48) }
 
 var fileDescriptor_1291991795dfbb48 = []byte{
-	// 655 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x95, 0xcf, 0x6e, 0xd3, 0x40,
-	0x10, 0xc6, 0xd9, 0xe6, 0x5f, 0x3b, 0x49, 0x0b, 0x5a, 0xd4, 0xca, 0x0a, 0x28, 0x35, 0x56, 0x55,
-	0x85, 0x03, 0x0e, 0x4d, 0xb9, 0xb4, 0x15, 0x48, 0x34, 0x01, 0xb5, 0x2a, 0x45, 0x62, 0x29, 0x45,
-	0x82, 0xd3, 0xc6, 0xde, 0x26, 0x56, 0x63, 0xaf, 0xe5, 0x5d, 0x57, 0xe4, 0x75, 0x38, 0xf1, 0x08,
-	0x1c, 0x39, 0x72, 0xe4, 0x11, 0x20, 0x1c, 0x79, 0x01, 0x8e, 0x28, 0x6b, 0x3b, 0x89, 0xdd, 0xa4,
-	0xe4, 0x14, 0xcf, 0xce, 0xf7, 0xfb, 0x76, 0x66, 0xbc, 0xeb, 0x80, 0xce, 0xae, 0x98, 0x27, 0x5d,
-	0x26, 0x04, 0xed, 0x32, 0xd1, 0xb8, 0xa0, 0x96, 0xe4, 0x8e, 0x7d, 0xd8, 0xe7, 0xd6, 0xa5, 0xe9,
-	0x07, 0x5c, 0x72, 0xbc, 0x9a, 0x52, 0x54, 0x33, 0x40, 0x97, 0x79, 0x2c, 0xa0, 0xfd, 0xb3, 0x81,
-	0xcf, 0x44, 0x04, 0x54, 0x1f, 0x77, 0x1d, 0xd9, 0x0b, 0x3b, 0xa6, 0xc5, 0xdd, 0x06, 0xf7, 0x05,
-	0x63, 0x0d, 0xb5, 0xde, 0x09, 0x2f, 0xa2, 0x50, 0x45, 0xd1, 0x63, 0x4c, 0xec, 0x2f, 0x44, 0xc8,
-	0xd1, 0x1e, 0x0d, 0xe9, 0xb8, 0x4c, 0x48, 0xea, 0xfa, 0x11, 0x6b, 0xfc, 0x59, 0x82, 0xca, 0xcb,
-	0xa9, 0xaa, 0xf1, 0x01, 0xac, 0x75, 0xb8, 0x3d, 0x38, 0x65, 0xc1, 0x65, 0x9f, 0x11, 0xce, 0xa5,
-	0x86, 0x74, 0x54, 0x2f, 0x37, 0xef, 0x9a, 0xa9, 0xca, 0xcd, 0x23, 0x2a, 0x7a, 0x24, 0x23, 0xc5,
-	0xc7, 0xb0, 0xee, 0x07, 0xec, 0xca, 0xe1, 0xa1, 0x38, 0x61, 0xd3, 0x1e, 0x4b, 0xf3, 0x3d, 0x66,
-	0x13, 0xf8, 0x1d, 0xdc, 0x4b, 0x12, 0xaf, 0x98, 0xdd, 0x65, 0x41, 0xda, 0x30, 0x37, 0xdf, 0xf0,
-	0x26, 0x0e, 0x57, 0x61, 0x99, 0x7d, 0xb2, 0x7a, 0x84, 0x4a, 0xa6, 0xe5, 0x75, 0x54, 0xcf, 0x93,
-	0x71, 0x8c, 0x75, 0x28, 0x77, 0x46, 0x33, 0x38, 0x62, 0x4e, 0xb7, 0x27, 0xb5, 0x82, 0x8e, 0xea,
-	0xab, 0x64, 0x7a, 0x09, 0x3f, 0x83, 0x8a, 0x0c, 0xa8, 0x27, 0xa8, 0x25, 0x1d, 0xee, 0x09, 0xad,
-	0xa8, 0xe7, 0xea, 0xe5, 0x66, 0x35, 0x53, 0xc5, 0xd9, 0x44, 0x42, 0x52, 0x7a, 0xe3, 0x77, 0x0e,
-	0xca, 0x53, 0x59, 0xbc, 0x07, 0xab, 0x53, 0xf9, 0x63, 0xfb, 0xa6, 0x59, 0xa7, 0x95, 0xd9, 0x62,
-	0x97, 0xae, 0x17, 0xfb, 0x04, 0x56, 0xc6, 0x6f, 0x3b, 0x9e, 0xd7, 0x86, 0x19, 0x9d, 0x1b, 0x75,
-	0x16, 0xcc, 0xb3, 0x24, 0x4b, 0x26, 0x42, 0xbc, 0x07, 0x45, 0xc7, 0xf3, 0x43, 0x29, 0xb4, 0xbc,
-	0x6a, 0xee, 0xc1, 0xfc, 0xe6, 0x9e, 0xdb, 0x76, 0xc0, 0x84, 0x20, 0x31, 0x80, 0x0f, 0xa0, 0xc4,
-	0x43, 0xa9, 0xd8, 0xc2, 0xa2, 0x6c, 0x42, 0xe0, 0x37, 0x80, 0xa3, 0xc7, 0x17, 0x9e, 0x0c, 0x06,
-	0xad, 0x80, 0xd9, 0x8e, 0x4c, 0x06, 0xbc, 0x80, 0xcf, 0x0c, 0x18, 0x6f, 0x43, 0x3e, 0xb0, 0x6c,
-	0xa1, 0x95, 0x94, 0x09, 0xce, 0x98, 0x90, 0x56, 0x9b, 0xa8, 0x3c, 0x7e, 0x0d, 0xb7, 0x85, 0xd3,
-	0xf5, 0xa8, 0x0c, 0x03, 0xa6, 0x2e, 0x81, 0xd0, 0x96, 0x15, 0xb2, 0x95, 0x41, 0xe2, 0x8b, 0xf2,
-	0x36, 0x25, 0x26, 0x59, 0xd8, 0xf8, 0x08, 0xf8, 0x7a, 0x85, 0x78, 0x03, 0x8a, 0xd4, 0xe5, 0xa1,
-	0x17, 0x5d, 0xa8, 0x3c, 0x89, 0x23, 0xfc, 0x08, 0x4a, 0x34, 0x92, 0xdc, 0x74, 0x4b, 0x12, 0x8d,
-	0x61, 0x43, 0x8e, 0xb4, 0xda, 0xf8, 0xa1, 0xea, 0x6d, 0x67, 0xce, 0x81, 0x21, 0xad, 0xf6, 0xce,
-	0xd1, 0x2d, 0xd5, 0xde, 0x4e, 0x2c, 0x6d, 0xce, 0x71, 0x27, 0xad, 0x76, 0x33, 0x96, 0x36, 0x0f,
-	0x4b, 0x50, 0xb8, 0xa2, 0xfd, 0x90, 0x19, 0x5b, 0x90, 0x1f, 0x79, 0xe0, 0xfb, 0xb0, 0xe2, 0x87,
-	0x9d, 0xbe, 0x63, 0x9d, 0xb0, 0x81, 0xda, 0xab, 0x42, 0x26, 0x0b, 0xc6, 0x7b, 0xa5, 0x6a, 0xe2,
-	0x0a, 0x20, 0x57, 0x65, 0x0b, 0x04, 0xb9, 0xa3, 0xc8, 0x53, 0x9b, 0x15, 0x08, 0xf2, 0xf0, 0x2e,
-	0x40, 0x32, 0x02, 0x26, 0xb4, 0x9c, 0x9a, 0xeb, 0xcc, 0x0e, 0xa7, 0x64, 0xc6, 0x39, 0xac, 0xcf,
-	0x9c, 0x35, 0x7e, 0x0a, 0x2b, 0xe3, 0x69, 0x6b, 0x48, 0x99, 0x6d, 0xfe, 0xe7, 0x25, 0x91, 0x09,
-	0x61, 0xec, 0xc3, 0x9d, 0x6c, 0x1a, 0x6f, 0xc3, 0xda, 0x58, 0x70, 0x3e, 0x6a, 0x3e, 0xee, 0x33,
-	0xb3, 0x7a, 0x78, 0xfa, 0xf7, 0x57, 0x0d, 0x7d, 0x19, 0xd6, 0xd0, 0xd7, 0x61, 0x0d, 0x7d, 0x1f,
-	0xd6, 0xd0, 0x8f, 0x61, 0x0d, 0xfd, 0x1c, 0xd6, 0xd0, 0xb7, 0xcf, 0x9b, 0x08, 0x74, 0x8b, 0xbb,
-	0xa6, 0xfa, 0xfc, 0x27, 0x3f, 0x76, 0xba, 0xae, 0x0f, 0xe9, 0x3f, 0x82, 0x4e, 0x51, 0x7d, 0x7f,
-	0x77, 0xff, 0x05, 0x00, 0x00, 0xff, 0xff, 0xb5, 0x75, 0x62, 0x2e, 0x42, 0x06, 0x00, 0x00,
+	// 627 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x94, 0x41, 0x4f, 0x13, 0x4f,
+	0x18, 0xc6, 0xff, 0x0b, 0x05, 0xfe, 0xbc, 0x6d, 0xd1, 0x8c, 0x21, 0xd9, 0xa0, 0x94, 0x75, 0x43,
+	0x4c, 0x3d, 0xb0, 0x0d, 0x78, 0x42, 0xa2, 0x89, 0xb4, 0x51, 0x1a, 0x04, 0xe3, 0x80, 0xc4, 0x78,
+	0x9b, 0xdd, 0x7d, 0xd9, 0x6e, 0x68, 0x77, 0xd6, 0x99, 0x59, 0x42, 0xbf, 0x8e, 0x27, 0x3f, 0x02,
+	0x47, 0x8f, 0x1e, 0xfd, 0x08, 0xda, 0xaf, 0xe0, 0xc5, 0xa3, 0xd9, 0x61, 0x4b, 0xbb, 0x2b, 0xad,
+	0x24, 0x9e, 0x9a, 0x7d, 0xdf, 0xe7, 0xf9, 0xe5, 0x79, 0x67, 0xde, 0x29, 0x58, 0x78, 0x8e, 0x91,
+	0xea, 0xa1, 0x94, 0x2c, 0x40, 0xd9, 0x38, 0x65, 0x9e, 0xe2, 0xa1, 0xbf, 0xdb, 0xe5, 0xde, 0x99,
+	0x13, 0x0b, 0xae, 0x38, 0xa9, 0xe6, 0x14, 0x2b, 0x6b, 0x79, 0x83, 0xec, 0x30, 0x81, 0xfe, 0x71,
+	0x3f, 0x46, 0x79, 0xa5, 0x5f, 0x39, 0x0c, 0x42, 0xd5, 0x49, 0x5c, 0xc7, 0xe3, 0xbd, 0x86, 0x1b,
+	0x6e, 0x9c, 0xf2, 0x24, 0xf2, 0x99, 0x0a, 0x79, 0xd4, 0xd0, 0x7d, 0x37, 0x39, 0xdd, 0x08, 0x04,
+	0x8b, 0x3b, 0x1f, 0xbb, 0x1b, 0x78, 0xa1, 0x30, 0x92, 0x69, 0x2b, 0xab, 0x68, 0xc5, 0xf0, 0x23,
+	0xe3, 0x9d, 0xfc, 0x33, 0x4f, 0xa5, 0xe9, 0x1a, 0x2a, 0xec, 0xa1, 0x54, 0xac, 0x17, 0x5f, 0x71,
+	0xed, 0x9f, 0x33, 0x50, 0x79, 0x39, 0x36, 0x2e, 0xd9, 0x81, 0x25, 0x97, 0xfb, 0xfd, 0x03, 0x14,
+	0x67, 0x5d, 0xa4, 0x9c, 0x2b, 0xd3, 0xb0, 0x8c, 0x7a, 0x79, 0xeb, 0x9e, 0x93, 0x1b, 0xd9, 0xd9,
+	0x63, 0xb2, 0x43, 0x0b, 0x52, 0xd2, 0x86, 0xe5, 0x58, 0xe0, 0x79, 0xc8, 0x13, 0xb9, 0x8f, 0xe3,
+	0x8c, 0x99, 0xc9, 0x8c, 0x9b, 0x1d, 0xe4, 0x1d, 0xdc, 0x1f, 0x36, 0x5e, 0xa3, 0x1f, 0xa0, 0xc8,
+	0x03, 0x67, 0x27, 0x03, 0xa7, 0xf9, 0x88, 0x0d, 0x15, 0xbc, 0xf0, 0x3a, 0x2c, 0x0a, 0x90, 0x32,
+	0x85, 0x66, 0xc9, 0x32, 0xea, 0x25, 0x9a, 0xab, 0x11, 0x0b, 0xca, 0x6e, 0x7a, 0x16, 0x7b, 0x18,
+	0x06, 0x1d, 0x65, 0xce, 0x59, 0x46, 0xbd, 0x4a, 0xc7, 0x4b, 0xe4, 0x39, 0x54, 0x94, 0x60, 0x91,
+	0x64, 0x5e, 0x7a, 0x05, 0xd2, 0x9c, 0xb7, 0x66, 0xeb, 0xe5, 0xad, 0x95, 0x42, 0x9a, 0xe3, 0x91,
+	0x84, 0xe6, 0xf4, 0xf6, 0x65, 0x09, 0xca, 0x63, 0x5d, 0xb2, 0x0d, 0xd5, 0xb1, 0x7e, 0xbb, 0x35,
+	0xed, 0xcc, 0xf3, 0xca, 0x62, 0xd8, 0x99, 0x3f, 0xc3, 0xee, 0xc0, 0xe2, 0xf5, 0xad, 0x67, 0xe7,
+	0xb6, 0xea, 0x8c, 0xaf, 0x86, 0xa3, 0x57, 0xc3, 0x39, 0x1e, 0x8a, 0xe8, 0x48, 0x4f, 0x5e, 0x41,
+	0x35, 0x7b, 0x0d, 0xed, 0x28, 0x4e, 0x94, 0x34, 0x4b, 0x7a, 0xd4, 0x87, 0x93, 0x47, 0x7d, 0xe1,
+	0xfb, 0x02, 0xa5, 0xa4, 0x79, 0x1f, 0x69, 0xc3, 0x52, 0x56, 0x78, 0x93, 0x28, 0x4d, 0x9a, 0xbb,
+	0x2d, 0xa9, 0x60, 0x24, 0x6f, 0x81, 0x60, 0xa4, 0x44, 0xbf, 0x29, 0xd0, 0x0f, 0xd5, 0x10, 0x37,
+	0x7f, 0x5b, 0xdc, 0x0d, 0x66, 0xf2, 0x1e, 0x56, 0x05, 0xfa, 0x88, 0xbd, 0x26, 0x8f, 0xfc, 0x30,
+	0x55, 0xb7, 0x98, 0x62, 0x47, 0x4a, 0x24, 0x9e, 0x4a, 0x04, 0x4a, 0x73, 0x41, 0xd3, 0x49, 0x81,
+	0x4e, 0x9b, 0x2d, 0x3a, 0xdd, 0x48, 0x0e, 0xe1, 0x8e, 0x0c, 0x83, 0x88, 0xa5, 0x5f, 0xfa, 0x85,
+	0x49, 0xf3, 0x7f, 0xcd, 0x5a, 0x2f, 0xb0, 0xb2, 0x57, 0x78, 0x94, 0x13, 0xd3, 0xa2, 0xd9, 0xde,
+	0x86, 0x59, 0xda, 0x6c, 0x91, 0xc7, 0x50, 0x12, 0x9e, 0xbf, 0x39, 0x61, 0x51, 0x68, 0xb3, 0xb5,
+	0xb9, 0xf7, 0x1f, 0xd5, 0x92, 0xdd, 0x05, 0x98, 0x3b, 0x67, 0xdd, 0x04, 0xed, 0x75, 0x28, 0xa5,
+	0x0d, 0xf2, 0x00, 0x16, 0xe3, 0xc4, 0xed, 0x86, 0xde, 0x3e, 0xf6, 0x35, 0xa0, 0x42, 0x47, 0x05,
+	0xfb, 0x04, 0x96, 0x6f, 0x8c, 0x42, 0x9e, 0xc1, 0xe2, 0x75, 0x18, 0xd3, 0xd0, 0x33, 0xac, 0xfd,
+	0x65, 0x06, 0x3a, 0x72, 0xd8, 0x4f, 0xe1, 0x6e, 0xb1, 0x4d, 0x1e, 0xc1, 0xd2, 0xb5, 0xe0, 0x24,
+	0xcd, 0x98, 0xc5, 0x29, 0x54, 0x77, 0x0f, 0x7e, 0xfd, 0xa8, 0x19, 0x9f, 0x07, 0x35, 0xe3, 0x72,
+	0x50, 0x33, 0xbe, 0x0e, 0x6a, 0xc6, 0xb7, 0x41, 0xcd, 0xf8, 0x3e, 0xa8, 0x19, 0x5f, 0x3e, 0xad,
+	0x19, 0x60, 0x79, 0xbc, 0xe7, 0xe8, 0x1d, 0x19, 0xfe, 0xf8, 0xf9, 0x5c, 0x1f, 0xf2, 0xff, 0xde,
+	0xee, 0xbc, 0x5e, 0xfb, 0x27, 0xbf, 0x03, 0x00, 0x00, 0xff, 0xff, 0xf4, 0xf7, 0x35, 0x39, 0xf7,
+	0x05, 0x00, 0x00,
 }
 
 func (this *FactoidBlock) Equal(that interface{}) bool {
@@ -716,7 +518,7 @@ func (this *FactoidBlock) Equal(that interface{}) bool {
 	if !this.PreviousLedgerKeyMerkleRoot.Equal(that1.PreviousLedgerKeyMerkleRoot) {
 		return false
 	}
-	if this.ExchRate != that1.ExchRate {
+	if this.ExchangeRate != that1.ExchangeRate {
 		return false
 	}
 	if this.BlockHeight != that1.BlockHeight {
@@ -754,7 +556,7 @@ func (this *Transaction) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.TransactionId.Equal(that1.TransactionId) {
+	if !this.TransactionID.Equal(that1.TransactionID) {
 		return false
 	}
 	if this.BlockHeight != that1.BlockHeight {
@@ -763,35 +565,35 @@ func (this *Transaction) Equal(that interface{}) bool {
 	if !this.Timestamp.Equal(that1.Timestamp) {
 		return false
 	}
-	if len(this.Inputs) != len(that1.Inputs) {
+	if len(this.FactoidInputs) != len(that1.FactoidInputs) {
 		return false
 	}
-	for i := range this.Inputs {
-		if !this.Inputs[i].Equal(that1.Inputs[i]) {
+	for i := range this.FactoidInputs {
+		if !this.FactoidInputs[i].Equal(that1.FactoidInputs[i]) {
 			return false
 		}
 	}
-	if len(this.Outputs) != len(that1.Outputs) {
+	if len(this.FactoidOutputs) != len(that1.FactoidOutputs) {
 		return false
 	}
-	for i := range this.Outputs {
-		if !this.Outputs[i].Equal(that1.Outputs[i]) {
+	for i := range this.FactoidOutputs {
+		if !this.FactoidOutputs[i].Equal(that1.FactoidOutputs[i]) {
 			return false
 		}
 	}
-	if len(this.OutputEntryCredits) != len(that1.OutputEntryCredits) {
+	if len(this.EntryCreditOutputs) != len(that1.EntryCreditOutputs) {
 		return false
 	}
-	for i := range this.OutputEntryCredits {
-		if !this.OutputEntryCredits[i].Equal(that1.OutputEntryCredits[i]) {
+	for i := range this.EntryCreditOutputs {
+		if !this.EntryCreditOutputs[i].Equal(that1.EntryCreditOutputs[i]) {
 			return false
 		}
 	}
-	if len(this.Rcds) != len(that1.Rcds) {
+	if len(this.RedeemConditionDataStructures) != len(that1.RedeemConditionDataStructures) {
 		return false
 	}
-	for i := range this.Rcds {
-		if !this.Rcds[i].Equal(that1.Rcds[i]) {
+	for i := range this.RedeemConditionDataStructures {
+		if !this.RedeemConditionDataStructures[i].Equal(that1.RedeemConditionDataStructures[i]) {
 			return false
 		}
 	}
@@ -802,36 +604,6 @@ func (this *Transaction) Equal(that interface{}) bool {
 		if !this.SignatureBlocks[i].Equal(that1.SignatureBlocks[i]) {
 			return false
 		}
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *TransactionAddress) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*TransactionAddress)
-	if !ok {
-		that2, ok := that.(TransactionAddress)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Amount != that1.Amount {
-		return false
-	}
-	if !this.Address.Equal(that1.Address) {
-		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
 		return false
@@ -895,30 +667,6 @@ func (this *RCD_Rcd1) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *RCD_Rcd2) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*RCD_Rcd2)
-	if !ok {
-		that2, ok := that.(RCD_Rcd2)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Rcd2.Equal(that1.Rcd2) {
-		return false
-	}
-	return true
-}
 func (this *RCD1) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
@@ -940,44 +688,6 @@ func (this *RCD1) Equal(that interface{}) bool {
 	}
 	if !bytes.Equal(this.PublicKey, that1.PublicKey) {
 		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *RCD2) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*RCD2)
-	if !ok {
-		that2, ok := that.(RCD2)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.M != that1.M {
-		return false
-	}
-	if this.N != that1.N {
-		return false
-	}
-	if len(this.NAddresses) != len(that1.NAddresses) {
-		return false
-	}
-	for i := range this.NAddresses {
-		if !this.NAddresses[i].Equal(that1.NAddresses[i]) {
-			return false
-		}
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
 		return false
@@ -1056,12 +766,6 @@ type TransactionGetter interface {
 
 var GraphQLTransactionType *github_com_graphql_go_graphql.Object
 
-type TransactionAddressGetter interface {
-	GetTransactionAddress() *TransactionAddress
-}
-
-var GraphQLTransactionAddressType *github_com_graphql_go_graphql.Object
-
 type RCDGetter interface {
 	GetRCD() *RCD
 }
@@ -1074,12 +778,6 @@ type RCD1Getter interface {
 }
 
 var GraphQLRCD1Type *github_com_graphql_go_graphql.Object
-
-type RCD2Getter interface {
-	GetRCD2() *RCD2
-}
-
-var GraphQLRCD2Type *github_com_graphql_go_graphql.Object
 
 type FactoidSignatureBlockGetter interface {
 	GetFactoidSignatureBlock() *FactoidSignatureBlock
@@ -1096,14 +794,11 @@ var GraphQLFactoidSignatureType *github_com_graphql_go_graphql.Object
 func (g *RCD_Rcd1) GetRCD1() *RCD1 {
 	return g.Rcd1
 }
-func (g *RCD_Rcd2) GetRCD2() *RCD2 {
-	return g.Rcd2
-}
 
 func init() {
 	GraphQLFactoidBlockType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
 		Name:        "FactoidBlock",
-		Description: "",
+		Description: "====  FACTOID BLOCK STRUCTURES =====",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"bodyMerkleRoot": &github_com_graphql_go_graphql.Field{
@@ -1181,13 +876,13 @@ func init() {
 						return nil, fmt.Errorf("field previousLedgerKeyMerkleRoot not resolved")
 					},
 				},
-				"exchRate": &github_com_graphql_go_graphql.Field{
+				"exchangeRate": &github_com_graphql_go_graphql.Field{
 					Type:        github_com_graphql_go_graphql.Int,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*FactoidBlock)
 						if ok {
-							return obj.ExchRate, nil
+							return obj.ExchangeRate, nil
 						}
 						inter, ok := p.Source.(FactoidBlockGetter)
 						if ok {
@@ -1195,9 +890,9 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							return face.ExchRate, nil
+							return face.ExchangeRate, nil
 						}
-						return nil, fmt.Errorf("field exchRate not resolved")
+						return nil, fmt.Errorf("field exchangeRate not resolved")
 					},
 				},
 				"blockHeight": &github_com_graphql_go_graphql.Field{
@@ -1246,16 +941,16 @@ func init() {
 		Description: "",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
-				"transactionId": &github_com_graphql_go_graphql.Field{
+				"transactionID": &github_com_graphql_go_graphql.Field{
 					Type:        GraphQLHashType,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Transaction)
 						if ok {
-							if obj.TransactionId == nil {
+							if obj.TransactionID == nil {
 								return nil, nil
 							}
-							return obj.GetTransactionId(), nil
+							return obj.GetTransactionID(), nil
 						}
 						inter, ok := p.Source.(TransactionGetter)
 						if ok {
@@ -1263,12 +958,12 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.TransactionId == nil {
+							if face.TransactionID == nil {
 								return nil, nil
 							}
-							return face.GetTransactionId(), nil
+							return face.GetTransactionID(), nil
 						}
-						return nil, fmt.Errorf("field transactionId not resolved")
+						return nil, fmt.Errorf("field transactionID not resolved")
 					},
 				},
 				"blockHeight": &github_com_graphql_go_graphql.Field{
@@ -1291,7 +986,7 @@ func init() {
 					},
 				},
 				"timestamp": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.Timestamp,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.Timestamp,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Transaction)
@@ -1315,13 +1010,13 @@ func init() {
 						return nil, fmt.Errorf("field timestamp not resolved")
 					},
 				},
-				"inputs": &github_com_graphql_go_graphql.Field{
+				"factoidInputs": &github_com_graphql_go_graphql.Field{
 					Type:        github_com_graphql_go_graphql.NewList(GraphQLTransactionAddressType),
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Transaction)
 						if ok {
-							return obj.Inputs, nil
+							return obj.FactoidInputs, nil
 						}
 						inter, ok := p.Source.(TransactionGetter)
 						if ok {
@@ -1329,18 +1024,18 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							return face.Inputs, nil
+							return face.FactoidInputs, nil
 						}
-						return nil, fmt.Errorf("field inputs not resolved")
+						return nil, fmt.Errorf("field factoidInputs not resolved")
 					},
 				},
-				"outputs": &github_com_graphql_go_graphql.Field{
+				"factoidOutputs": &github_com_graphql_go_graphql.Field{
 					Type:        github_com_graphql_go_graphql.NewList(GraphQLTransactionAddressType),
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Transaction)
 						if ok {
-							return obj.Outputs, nil
+							return obj.FactoidOutputs, nil
 						}
 						inter, ok := p.Source.(TransactionGetter)
 						if ok {
@@ -1348,18 +1043,18 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							return face.Outputs, nil
+							return face.FactoidOutputs, nil
 						}
-						return nil, fmt.Errorf("field outputs not resolved")
+						return nil, fmt.Errorf("field factoidOutputs not resolved")
 					},
 				},
-				"outputEntryCredits": &github_com_graphql_go_graphql.Field{
+				"entryCreditOutputs": &github_com_graphql_go_graphql.Field{
 					Type:        github_com_graphql_go_graphql.NewList(GraphQLTransactionAddressType),
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Transaction)
 						if ok {
-							return obj.OutputEntryCredits, nil
+							return obj.EntryCreditOutputs, nil
 						}
 						inter, ok := p.Source.(TransactionGetter)
 						if ok {
@@ -1367,18 +1062,18 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							return face.OutputEntryCredits, nil
+							return face.EntryCreditOutputs, nil
 						}
-						return nil, fmt.Errorf("field outputEntryCredits not resolved")
+						return nil, fmt.Errorf("field entryCreditOutputs not resolved")
 					},
 				},
-				"rcds": &github_com_graphql_go_graphql.Field{
+				"redeemConditionDataStructures": &github_com_graphql_go_graphql.Field{
 					Type:        github_com_graphql_go_graphql.NewList(GraphQLRCDType),
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*Transaction)
 						if ok {
-							return obj.Rcds, nil
+							return obj.RedeemConditionDataStructures, nil
 						}
 						inter, ok := p.Source.(TransactionGetter)
 						if ok {
@@ -1386,9 +1081,9 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							return face.Rcds, nil
+							return face.RedeemConditionDataStructures, nil
 						}
-						return nil, fmt.Errorf("field rcds not resolved")
+						return nil, fmt.Errorf("field redeemConditionDataStructures not resolved")
 					},
 				},
 				"signatureBlocks": &github_com_graphql_go_graphql.Field{
@@ -1408,58 +1103,6 @@ func init() {
 							return face.SignatureBlocks, nil
 						}
 						return nil, fmt.Errorf("field signatureBlocks not resolved")
-					},
-				},
-			}
-		}),
-	})
-	GraphQLTransactionAddressType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "TransactionAddress",
-		Description: "",
-		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
-			return github_com_graphql_go_graphql.Fields{
-				"amount": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*TransactionAddress)
-						if ok {
-							return obj.Amount, nil
-						}
-						inter, ok := p.Source.(TransactionAddressGetter)
-						if ok {
-							face := inter.GetTransactionAddress()
-							if face == nil {
-								return nil, nil
-							}
-							return face.Amount, nil
-						}
-						return nil, fmt.Errorf("field amount not resolved")
-					},
-				},
-				"address": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*TransactionAddress)
-						if ok {
-							if obj.Address == nil {
-								return nil, nil
-							}
-							return obj.GetAddress(), nil
-						}
-						inter, ok := p.Source.(TransactionAddressGetter)
-						if ok {
-							face := inter.GetTransactionAddress()
-							if face == nil {
-								return nil, nil
-							}
-							if face.Address == nil {
-								return nil, nil
-							}
-							return face.GetAddress(), nil
-						}
-						return nil, fmt.Errorf("field address not resolved")
 					},
 				},
 			}
@@ -1490,7 +1133,7 @@ func init() {
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"publicKey": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.ByteString,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*RCD1)
@@ -1506,71 +1149,6 @@ func init() {
 							return face.PublicKey, nil
 						}
 						return nil, fmt.Errorf("field publicKey not resolved")
-					},
-				},
-			}
-		}),
-	})
-	GraphQLRCD2Type = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "RCD2",
-		Description: "",
-		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
-			return github_com_graphql_go_graphql.Fields{
-				"m": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*RCD2)
-						if ok {
-							return obj.M, nil
-						}
-						inter, ok := p.Source.(RCD2Getter)
-						if ok {
-							face := inter.GetRCD2()
-							if face == nil {
-								return nil, nil
-							}
-							return face.M, nil
-						}
-						return nil, fmt.Errorf("field m not resolved")
-					},
-				},
-				"n": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*RCD2)
-						if ok {
-							return obj.N, nil
-						}
-						inter, ok := p.Source.(RCD2Getter)
-						if ok {
-							face := inter.GetRCD2()
-							if face == nil {
-								return nil, nil
-							}
-							return face.N, nil
-						}
-						return nil, fmt.Errorf("field n not resolved")
-					},
-				},
-				"nAddresses": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.NewList(GraphQLHashType),
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*RCD2)
-						if ok {
-							return obj.NAddresses, nil
-						}
-						inter, ok := p.Source.(RCD2Getter)
-						if ok {
-							face := inter.GetRCD2()
-							if face == nil {
-								return nil, nil
-							}
-							return face.NAddresses, nil
-						}
-						return nil, fmt.Errorf("field nAddresses not resolved")
 					},
 				},
 			}
@@ -1609,7 +1187,7 @@ func init() {
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"signatureValue": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_opsee_protobuf_plugin_graphql_scalars.ByteString,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*FactoidSignature)
@@ -1635,14 +1213,10 @@ func init() {
 		Description: "",
 		Types: []*github_com_graphql_go_graphql.Object{
 			GraphQLRCD1Type,
-			GraphQLRCD2Type,
 		},
 		ResolveType: func(p github_com_graphql_go_graphql.ResolveTypeParams) *github_com_graphql_go_graphql.Object {
 			if _, ok := p.Value.(*RCD_Rcd1); ok {
 				return GraphQLRCD1Type
-			}
-			if _, ok := p.Value.(*RCD_Rcd2); ok {
-				return GraphQLRCD2Type
 			}
 			return nil
 		},
@@ -1651,7 +1225,7 @@ func init() {
 func (m *FactoidBlock) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1659,72 +1233,86 @@ func (m *FactoidBlock) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *FactoidBlock) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *FactoidBlock) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.BodyMerkleRoot != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.BodyMerkleRoot.Size()))
-		n1, err := m.BodyMerkleRoot.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n1
-	}
-	if m.PreviousKeyMerkleRoot != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.PreviousKeyMerkleRoot.Size()))
-		n2, err := m.PreviousKeyMerkleRoot.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n2
-	}
-	if m.PreviousLedgerKeyMerkleRoot != nil {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.PreviousLedgerKeyMerkleRoot.Size()))
-		n3, err := m.PreviousLedgerKeyMerkleRoot.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n3
-	}
-	if m.ExchRate != 0 {
-		dAtA[i] = 0x20
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.ExchRate))
-	}
-	if m.BlockHeight != 0 {
-		dAtA[i] = 0x28
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.BlockHeight))
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.Transactions) > 0 {
-		for _, msg := range m.Transactions {
+		for iNdEx := len(m.Transactions) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Transactions[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
+			}
+			i--
 			dAtA[i] = 0x32
-			i++
-			i = encodeVarintFactoidBlock(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
+		}
+	}
+	if m.BlockHeight != 0 {
+		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x28
+	}
+	if m.ExchangeRate != 0 {
+		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.ExchangeRate))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.PreviousLedgerKeyMerkleRoot != nil {
+		{
+			size, err := m.PreviousLedgerKeyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
-			i += n
+			i -= size
+			i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
 		}
+		i--
+		dAtA[i] = 0x1a
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.PreviousKeyMerkleRoot != nil {
+		{
+			size, err := m.PreviousKeyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
 	}
-	return i, nil
+	if m.BodyMerkleRoot != nil {
+		{
+			size, err := m.BodyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *Transaction) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1732,141 +1320,125 @@ func (m *Transaction) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *Transaction) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Transaction) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.TransactionId != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.TransactionId.Size()))
-		n4, err := m.TransactionId.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n4
-	}
-	if m.BlockHeight != 0 {
-		dAtA[i] = 0x10
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.BlockHeight))
-	}
-	if m.Timestamp != nil {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.Timestamp.Size()))
-		n5, err := m.Timestamp.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n5
-	}
-	if len(m.Inputs) > 0 {
-		for _, msg := range m.Inputs {
-			dAtA[i] = 0x22
-			i++
-			i = encodeVarintFactoidBlock(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
-	}
-	if len(m.Outputs) > 0 {
-		for _, msg := range m.Outputs {
-			dAtA[i] = 0x2a
-			i++
-			i = encodeVarintFactoidBlock(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
-	}
-	if len(m.OutputEntryCredits) > 0 {
-		for _, msg := range m.OutputEntryCredits {
-			dAtA[i] = 0x32
-			i++
-			i = encodeVarintFactoidBlock(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
-	}
-	if len(m.Rcds) > 0 {
-		for _, msg := range m.Rcds {
-			dAtA[i] = 0x3a
-			i++
-			i = encodeVarintFactoidBlock(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if len(m.SignatureBlocks) > 0 {
-		for _, msg := range m.SignatureBlocks {
+		for iNdEx := len(m.SignatureBlocks) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.SignatureBlocks[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
+			}
+			i--
 			dAtA[i] = 0x42
-			i++
-			i = encodeVarintFactoidBlock(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
+		}
+	}
+	if len(m.RedeemConditionDataStructures) > 0 {
+		for iNdEx := len(m.RedeemConditionDataStructures) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.RedeemConditionDataStructures[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	if len(m.EntryCreditOutputs) > 0 {
+		for iNdEx := len(m.EntryCreditOutputs) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.EntryCreditOutputs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x32
+		}
+	}
+	if len(m.FactoidOutputs) > 0 {
+		for iNdEx := len(m.FactoidOutputs) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.FactoidOutputs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if len(m.FactoidInputs) > 0 {
+		for iNdEx := len(m.FactoidInputs) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.FactoidInputs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if m.Timestamp != nil {
+		{
+			size, err := m.Timestamp.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
-			i += n
+			i -= size
+			i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
 		}
+		i--
+		dAtA[i] = 0x1a
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.BlockHeight != 0 {
+		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x10
 	}
-	return i, nil
-}
-
-func (m *TransactionAddress) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *TransactionAddress) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	if m.Amount != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.Amount))
-	}
-	if m.Address != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.Address.Size()))
-		n6, err := m.Address.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+	if m.TransactionID != nil {
+		{
+			size, err := m.TransactionID.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
 		}
-		i += n6
+		i--
+		dAtA[i] = 0xa
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *RCD) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1874,55 +1446,55 @@ func (m *RCD) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *RCD) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RCD) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.Value != nil {
-		nn7, err := m.Value.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += nn7
-	}
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	if m.Value != nil {
+		{
+			size := m.Value.Size()
+			i -= size
+			if _, err := m.Value.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *RCD_Rcd1) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.Rcd1 != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.Rcd1.Size()))
-		n8, err := m.Rcd1.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n8
-	}
-	return i, nil
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
-func (m *RCD_Rcd2) MarshalTo(dAtA []byte) (int, error) {
-	i := 0
-	if m.Rcd2 != nil {
-		dAtA[i] = 0x12
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.Rcd2.Size()))
-		n9, err := m.Rcd2.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
+
+func (m *RCD_Rcd1) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Rcd1 != nil {
+		{
+			size, err := m.Rcd1.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
 		}
-		i += n9
+		i--
+		dAtA[i] = 0xa
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 func (m *RCD1) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -1930,69 +1502,33 @@ func (m *RCD1) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *RCD1) MarshalTo(dAtA []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	if len(m.PublicKey) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(len(m.PublicKey)))
-		i += copy(dAtA[i:], m.PublicKey)
-	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
-}
-
-func (m *RCD2) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *RCD2) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+func (m *RCD1) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.M != 0 {
-		dAtA[i] = 0x8
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.M))
-	}
-	if m.N != 0 {
-		dAtA[i] = 0x10
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(m.N))
-	}
-	if len(m.NAddresses) > 0 {
-		for _, msg := range m.NAddresses {
-			dAtA[i] = 0x1a
-			i++
-			i = encodeVarintFactoidBlock(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
-	}
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	if len(m.PublicKey) > 0 {
+		i -= len(m.PublicKey)
+		copy(dAtA[i:], m.PublicKey)
+		i = encodeVarintFactoidBlock(dAtA, i, uint64(len(m.PublicKey)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *FactoidSignatureBlock) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2000,32 +1536,40 @@ func (m *FactoidSignatureBlock) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *FactoidSignatureBlock) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *FactoidSignatureBlock) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
 	if len(m.Signature) > 0 {
-		for _, msg := range m.Signature {
-			dAtA[i] = 0xa
-			i++
-			i = encodeVarintFactoidBlock(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
+		for iNdEx := len(m.Signature) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Signature[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintFactoidBlock(dAtA, i, uint64(size))
 			}
-			i += n
+			i--
+			dAtA[i] = 0xa
 		}
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *FactoidSignature) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -2033,45 +1577,54 @@ func (m *FactoidSignature) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *FactoidSignature) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *FactoidSignature) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.SignatureValue) > 0 {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintFactoidBlock(dAtA, i, uint64(len(m.SignatureValue)))
-		i += copy(dAtA[i:], m.SignatureValue)
-	}
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	if len(m.SignatureValue) > 0 {
+		i -= len(m.SignatureValue)
+		copy(dAtA[i:], m.SignatureValue)
+		i = encodeVarintFactoidBlock(dAtA, i, uint64(len(m.SignatureValue)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func encodeVarintFactoidBlock(dAtA []byte, offset int, v uint64) int {
+	offset -= sovFactoidBlock(v)
+	base := offset
 	for v >= 1<<7 {
 		dAtA[offset] = uint8(v&0x7f | 0x80)
 		v >>= 7
 		offset++
 	}
 	dAtA[offset] = uint8(v)
-	return offset + 1
+	return base
 }
 func NewPopulatedFactoidBlock(r randyFactoidBlock, easy bool) *FactoidBlock {
 	this := &FactoidBlock{}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.BodyMerkleRoot = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.PreviousKeyMerkleRoot = NewPopulatedHash(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.PreviousLedgerKeyMerkleRoot = NewPopulatedHash(r, easy)
 	}
-	this.ExchRate = uint64(uint64(r.Uint32()))
+	this.ExchangeRate = uint64(uint64(r.Uint32()))
 	this.BlockHeight = uint32(r.Uint32())
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		v1 := r.Intn(5)
 		this.Transactions = make([]*Transaction, v1)
 		for i := 0; i < v1; i++ {
@@ -2086,42 +1639,42 @@ func NewPopulatedFactoidBlock(r randyFactoidBlock, easy bool) *FactoidBlock {
 
 func NewPopulatedTransaction(r randyFactoidBlock, easy bool) *Transaction {
 	this := &Transaction{}
-	if r.Intn(10) != 0 {
-		this.TransactionId = NewPopulatedHash(r, easy)
+	if r.Intn(5) != 0 {
+		this.TransactionID = NewPopulatedHash(r, easy)
 	}
 	this.BlockHeight = uint32(r.Uint32())
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		this.Timestamp = types.NewPopulatedTimestamp(r, easy)
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		v2 := r.Intn(5)
-		this.Inputs = make([]*TransactionAddress, v2)
+		this.FactoidInputs = make([]*TransactionAddress, v2)
 		for i := 0; i < v2; i++ {
-			this.Inputs[i] = NewPopulatedTransactionAddress(r, easy)
+			this.FactoidInputs[i] = NewPopulatedTransactionAddress(r, easy)
 		}
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		v3 := r.Intn(5)
-		this.Outputs = make([]*TransactionAddress, v3)
+		this.FactoidOutputs = make([]*TransactionAddress, v3)
 		for i := 0; i < v3; i++ {
-			this.Outputs[i] = NewPopulatedTransactionAddress(r, easy)
+			this.FactoidOutputs[i] = NewPopulatedTransactionAddress(r, easy)
 		}
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		v4 := r.Intn(5)
-		this.OutputEntryCredits = make([]*TransactionAddress, v4)
+		this.EntryCreditOutputs = make([]*TransactionAddress, v4)
 		for i := 0; i < v4; i++ {
-			this.OutputEntryCredits[i] = NewPopulatedTransactionAddress(r, easy)
+			this.EntryCreditOutputs[i] = NewPopulatedTransactionAddress(r, easy)
 		}
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		v5 := r.Intn(5)
-		this.Rcds = make([]*RCD, v5)
+		this.RedeemConditionDataStructures = make([]*RCD, v5)
 		for i := 0; i < v5; i++ {
-			this.Rcds[i] = NewPopulatedRCD(r, easy)
+			this.RedeemConditionDataStructures[i] = NewPopulatedRCD(r, easy)
 		}
 	}
-	if r.Intn(10) != 0 {
+	if r.Intn(5) != 0 {
 		v6 := r.Intn(5)
 		this.SignatureBlocks = make([]*FactoidSignatureBlock, v6)
 		for i := 0; i < v6; i++ {
@@ -2134,29 +1687,15 @@ func NewPopulatedTransaction(r randyFactoidBlock, easy bool) *Transaction {
 	return this
 }
 
-func NewPopulatedTransactionAddress(r randyFactoidBlock, easy bool) *TransactionAddress {
-	this := &TransactionAddress{}
-	this.Amount = uint64(uint64(r.Uint32()))
-	if r.Intn(10) != 0 {
-		this.Address = NewPopulatedHash(r, easy)
-	}
-	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactoidBlock(r, 3)
-	}
-	return this
-}
-
 func NewPopulatedRCD(r randyFactoidBlock, easy bool) *RCD {
 	this := &RCD{}
-	oneofNumber_Value := []int32{1, 2}[r.Intn(2)]
+	oneofNumber_Value := []int32{1}[r.Intn(1)]
 	switch oneofNumber_Value {
 	case 1:
 		this.Value = NewPopulatedRCD_Rcd1(r, easy)
-	case 2:
-		this.Value = NewPopulatedRCD_Rcd2(r, easy)
 	}
 	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactoidBlock(r, 3)
+		this.XXX_unrecognized = randUnrecognizedFactoidBlock(r, 2)
 	}
 	return this
 }
@@ -2164,11 +1703,6 @@ func NewPopulatedRCD(r randyFactoidBlock, easy bool) *RCD {
 func NewPopulatedRCD_Rcd1(r randyFactoidBlock, easy bool) *RCD_Rcd1 {
 	this := &RCD_Rcd1{}
 	this.Rcd1 = NewPopulatedRCD1(r, easy)
-	return this
-}
-func NewPopulatedRCD_Rcd2(r randyFactoidBlock, easy bool) *RCD_Rcd2 {
-	this := &RCD_Rcd2{}
-	this.Rcd2 = NewPopulatedRCD2(r, easy)
 	return this
 }
 func NewPopulatedRCD1(r randyFactoidBlock, easy bool) *RCD1 {
@@ -2184,35 +1718,12 @@ func NewPopulatedRCD1(r randyFactoidBlock, easy bool) *RCD1 {
 	return this
 }
 
-func NewPopulatedRCD2(r randyFactoidBlock, easy bool) *RCD2 {
-	this := &RCD2{}
-	this.M = int32(r.Int31())
-	if r.Intn(2) == 0 {
-		this.M *= -1
-	}
-	this.N = int32(r.Int31())
-	if r.Intn(2) == 0 {
-		this.N *= -1
-	}
-	if r.Intn(10) != 0 {
-		v8 := r.Intn(5)
-		this.NAddresses = make([]*Hash, v8)
-		for i := 0; i < v8; i++ {
-			this.NAddresses[i] = NewPopulatedHash(r, easy)
-		}
-	}
-	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactoidBlock(r, 4)
-	}
-	return this
-}
-
 func NewPopulatedFactoidSignatureBlock(r randyFactoidBlock, easy bool) *FactoidSignatureBlock {
 	this := &FactoidSignatureBlock{}
-	if r.Intn(10) != 0 {
-		v9 := r.Intn(5)
-		this.Signature = make([]*FactoidSignature, v9)
-		for i := 0; i < v9; i++ {
+	if r.Intn(5) != 0 {
+		v8 := r.Intn(5)
+		this.Signature = make([]*FactoidSignature, v8)
+		for i := 0; i < v8; i++ {
 			this.Signature[i] = NewPopulatedFactoidSignature(r, easy)
 		}
 	}
@@ -2224,9 +1735,9 @@ func NewPopulatedFactoidSignatureBlock(r randyFactoidBlock, easy bool) *FactoidS
 
 func NewPopulatedFactoidSignature(r randyFactoidBlock, easy bool) *FactoidSignature {
 	this := &FactoidSignature{}
-	v10 := r.Intn(100)
-	this.SignatureValue = make([]byte, v10)
-	for i := 0; i < v10; i++ {
+	v9 := r.Intn(100)
+	this.SignatureValue = make([]byte, v9)
+	for i := 0; i < v9; i++ {
 		this.SignatureValue[i] = byte(r.Intn(256))
 	}
 	if !easy && r.Intn(10) != 0 {
@@ -2254,9 +1765,9 @@ func randUTF8RuneFactoidBlock(r randyFactoidBlock) rune {
 	return rune(ru + 61)
 }
 func randStringFactoidBlock(r randyFactoidBlock) string {
-	v11 := r.Intn(100)
-	tmps := make([]rune, v11)
-	for i := 0; i < v11; i++ {
+	v10 := r.Intn(100)
+	tmps := make([]rune, v10)
+	for i := 0; i < v10; i++ {
 		tmps[i] = randUTF8RuneFactoidBlock(r)
 	}
 	return string(tmps)
@@ -2278,11 +1789,11 @@ func randFieldFactoidBlock(dAtA []byte, r randyFactoidBlock, fieldNumber int, wi
 	switch wire {
 	case 0:
 		dAtA = encodeVarintPopulateFactoidBlock(dAtA, uint64(key))
-		v12 := r.Int63()
+		v11 := r.Int63()
 		if r.Intn(2) == 0 {
-			v12 *= -1
+			v11 *= -1
 		}
-		dAtA = encodeVarintPopulateFactoidBlock(dAtA, uint64(v12))
+		dAtA = encodeVarintPopulateFactoidBlock(dAtA, uint64(v11))
 	case 1:
 		dAtA = encodeVarintPopulateFactoidBlock(dAtA, uint64(key))
 		dAtA = append(dAtA, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
@@ -2325,8 +1836,8 @@ func (m *FactoidBlock) Size() (n int) {
 		l = m.PreviousLedgerKeyMerkleRoot.Size()
 		n += 1 + l + sovFactoidBlock(uint64(l))
 	}
-	if m.ExchRate != 0 {
-		n += 1 + sovFactoidBlock(uint64(m.ExchRate))
+	if m.ExchangeRate != 0 {
+		n += 1 + sovFactoidBlock(uint64(m.ExchangeRate))
 	}
 	if m.BlockHeight != 0 {
 		n += 1 + sovFactoidBlock(uint64(m.BlockHeight))
@@ -2349,8 +1860,8 @@ func (m *Transaction) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.TransactionId != nil {
-		l = m.TransactionId.Size()
+	if m.TransactionID != nil {
+		l = m.TransactionID.Size()
 		n += 1 + l + sovFactoidBlock(uint64(l))
 	}
 	if m.BlockHeight != 0 {
@@ -2360,26 +1871,26 @@ func (m *Transaction) Size() (n int) {
 		l = m.Timestamp.Size()
 		n += 1 + l + sovFactoidBlock(uint64(l))
 	}
-	if len(m.Inputs) > 0 {
-		for _, e := range m.Inputs {
+	if len(m.FactoidInputs) > 0 {
+		for _, e := range m.FactoidInputs {
 			l = e.Size()
 			n += 1 + l + sovFactoidBlock(uint64(l))
 		}
 	}
-	if len(m.Outputs) > 0 {
-		for _, e := range m.Outputs {
+	if len(m.FactoidOutputs) > 0 {
+		for _, e := range m.FactoidOutputs {
 			l = e.Size()
 			n += 1 + l + sovFactoidBlock(uint64(l))
 		}
 	}
-	if len(m.OutputEntryCredits) > 0 {
-		for _, e := range m.OutputEntryCredits {
+	if len(m.EntryCreditOutputs) > 0 {
+		for _, e := range m.EntryCreditOutputs {
 			l = e.Size()
 			n += 1 + l + sovFactoidBlock(uint64(l))
 		}
 	}
-	if len(m.Rcds) > 0 {
-		for _, e := range m.Rcds {
+	if len(m.RedeemConditionDataStructures) > 0 {
+		for _, e := range m.RedeemConditionDataStructures {
 			l = e.Size()
 			n += 1 + l + sovFactoidBlock(uint64(l))
 		}
@@ -2389,25 +1900,6 @@ func (m *Transaction) Size() (n int) {
 			l = e.Size()
 			n += 1 + l + sovFactoidBlock(uint64(l))
 		}
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *TransactionAddress) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Amount != 0 {
-		n += 1 + sovFactoidBlock(uint64(m.Amount))
-	}
-	if m.Address != nil {
-		l = m.Address.Size()
-		n += 1 + l + sovFactoidBlock(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -2442,18 +1934,6 @@ func (m *RCD_Rcd1) Size() (n int) {
 	}
 	return n
 }
-func (m *RCD_Rcd2) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Rcd2 != nil {
-		l = m.Rcd2.Size()
-		n += 1 + l + sovFactoidBlock(uint64(l))
-	}
-	return n
-}
 func (m *RCD1) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2463,30 +1943,6 @@ func (m *RCD1) Size() (n int) {
 	l = len(m.PublicKey)
 	if l > 0 {
 		n += 1 + l + sovFactoidBlock(uint64(l))
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *RCD2) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.M != 0 {
-		n += 1 + sovFactoidBlock(uint64(m.M))
-	}
-	if m.N != 0 {
-		n += 1 + sovFactoidBlock(uint64(m.N))
-	}
-	if len(m.NAddresses) > 0 {
-		for _, e := range m.NAddresses {
-			l = e.Size()
-			n += 1 + l + sovFactoidBlock(uint64(l))
-		}
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -2529,14 +1985,7 @@ func (m *FactoidSignature) Size() (n int) {
 }
 
 func sovFactoidBlock(x uint64) (n int) {
-	for {
-		n++
-		x >>= 7
-		if x == 0 {
-			break
-		}
-	}
-	return n
+	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozFactoidBlock(x uint64) (n int) {
 	return sovFactoidBlock(uint64((x << 1) ^ uint64((int64(x) >> 63))))
@@ -2680,9 +2129,9 @@ func (m *FactoidBlock) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ExchRate", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ExchangeRate", wireType)
 			}
-			m.ExchRate = 0
+			m.ExchangeRate = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowFactoidBlock
@@ -2692,7 +2141,7 @@ func (m *FactoidBlock) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.ExchRate |= uint64(b&0x7F) << shift
+				m.ExchangeRate |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2806,7 +2255,7 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TransactionId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TransactionID", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2833,10 +2282,10 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.TransactionId == nil {
-				m.TransactionId = &Hash{}
+			if m.TransactionID == nil {
+				m.TransactionID = &Hash{}
 			}
-			if err := m.TransactionId.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.TransactionID.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2897,7 +2346,7 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Inputs", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field FactoidInputs", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2924,14 +2373,14 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Inputs = append(m.Inputs, &TransactionAddress{})
-			if err := m.Inputs[len(m.Inputs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.FactoidInputs = append(m.FactoidInputs, &TransactionAddress{})
+			if err := m.FactoidInputs[len(m.FactoidInputs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Outputs", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field FactoidOutputs", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2958,14 +2407,14 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Outputs = append(m.Outputs, &TransactionAddress{})
-			if err := m.Outputs[len(m.Outputs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.FactoidOutputs = append(m.FactoidOutputs, &TransactionAddress{})
+			if err := m.FactoidOutputs[len(m.FactoidOutputs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OutputEntryCredits", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field EntryCreditOutputs", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2992,14 +2441,14 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OutputEntryCredits = append(m.OutputEntryCredits, &TransactionAddress{})
-			if err := m.OutputEntryCredits[len(m.OutputEntryCredits)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.EntryCreditOutputs = append(m.EntryCreditOutputs, &TransactionAddress{})
+			if err := m.EntryCreditOutputs[len(m.EntryCreditOutputs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 7:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Rcds", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field RedeemConditionDataStructures", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -3026,8 +2475,8 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Rcds = append(m.Rcds, &RCD{})
-			if err := m.Rcds[len(m.Rcds)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.RedeemConditionDataStructures = append(m.RedeemConditionDataStructures, &RCD{})
+			if err := m.RedeemConditionDataStructures[len(m.RedeemConditionDataStructures)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3062,115 +2511,6 @@ func (m *Transaction) Unmarshal(dAtA []byte) error {
 			}
 			m.SignatureBlocks = append(m.SignatureBlocks, &FactoidSignatureBlock{})
 			if err := m.SignatureBlocks[len(m.SignatureBlocks)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipFactoidBlock(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *TransactionAddress) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowFactoidBlock
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: TransactionAddress: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: TransactionAddress: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
-			}
-			m.Amount = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactoidBlock
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Amount |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactoidBlock
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Address == nil {
-				m.Address = &Hash{}
-			}
-			if err := m.Address.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3263,41 +2603,6 @@ func (m *RCD) Unmarshal(dAtA []byte) error {
 			}
 			m.Value = &RCD_Rcd1{v}
 			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Rcd2", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactoidBlock
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			v := &RCD2{}
-			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			m.Value = &RCD_Rcd2{v}
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipFactoidBlock(dAtA[iNdEx:])
@@ -3384,132 +2689,6 @@ func (m *RCD1) Unmarshal(dAtA []byte) error {
 			m.PublicKey = append(m.PublicKey[:0], dAtA[iNdEx:postIndex]...)
 			if m.PublicKey == nil {
 				m.PublicKey = []byte{}
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipFactoidBlock(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *RCD2) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowFactoidBlock
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: RCD2: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: RCD2: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field M", wireType)
-			}
-			m.M = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactoidBlock
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.M |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field N", wireType)
-			}
-			m.N = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactoidBlock
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.N |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NAddresses", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactoidBlock
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactoidBlock
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.NAddresses = append(m.NAddresses, &Hash{})
-			if err := m.NAddresses[len(m.NAddresses)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
 			}
 			iNdEx = postIndex
 		default:
