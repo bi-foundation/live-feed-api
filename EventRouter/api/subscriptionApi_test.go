@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
@@ -15,10 +16,23 @@ import (
 	"time"
 )
 
+const (
+	port = 8700
+	basePath = "/live/feed"
+)
+
 func init() {
 	log.SetLevel(log.D)
 
-	server := NewSubscriptionApi(":8070")
+	configuration := &config.SubscriptionConfig{
+		BindAddress: "",
+		Port:        port,
+		BasePath:    basePath,
+		Schemes:     []string{"HTTP"},
+	}
+
+	// Start the new server at random port
+	server := NewSubscriptionApi(configuration)
 	server.Start()
 	time.Sleep(1 * time.Second)
 }
@@ -228,7 +242,7 @@ func TestSubscriptionApi(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			url := fmt.Sprintf("http://localhost:8070%s", testCase.URL)
+			url := fmt.Sprintf("http://localhost:%d%s%s", port, basePath, testCase.URL)
 			request, err := http.NewRequest(testCase.Method, url, bytes.NewBuffer(testCase.content))
 
 			assert.Nil(t, err, "failed to create request")

@@ -1,6 +1,7 @@
 {
   "schemes": [
-    "http"
+    "http",
+    "https"
   ],
   "swagger": "2.0",
   "info": {
@@ -10,9 +11,10 @@
       "name": "MIT",
       "url": "http://opensource.org/licenses/MIT"
     },
-    "version": "0.0.1"
+    "version": "0.1.0"
   },
   "host": "localhost:8700",
+  "basePath": "/live/feed/v0.1/",
   "paths": {
     "/subscriptions": {
       "post": {
@@ -208,7 +210,7 @@
       "x-go-package": "github.com/FactomProject/live-feed-api/EventRouter/models"
     },
     "EventType": {
-      "description": "A filtering is linked to event type: [COMMIT_CHAIN, COMMIT_ENTRY, ANCHOR_EVENT, REVEAL_ENTRY, NODE_MESSAGE]",
+      "description": "A filtering is linked to event type: [CHAIN_REGISTRATION, ENTRY_REGISTRATION, BLOCK_COMMIT, ENTRY_CONTENT_REGISTRATION, NODE_MESSAGE]",
       "type": "string",
       "title": "EventType",
       "x-go-package": "github.com/FactomProject/live-feed-api/EventRouter/models"
@@ -257,7 +259,7 @@
           },
           "x-go-name": "Filters",
           "example": {
-            "COMMIT_CHAIN": {
+            "CHAIN_REGISTRATION": {
               "filtering": "string"
             },
             "NODE_MESSAGE": {

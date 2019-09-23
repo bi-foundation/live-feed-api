@@ -3,20 +3,38 @@ package log
 import (
 	"log"
 	"os"
+	"strings"
 )
 
 type Level int8
 
 const (
-	D Level = iota + 1
+	D Level = iota
 	I
 	W
 	E
 	F
 )
 
+var toLevel = map[string]Level{
+	"d":       D,
+	"debug":   D,
+	"i":       I,
+	"info":    I,
+	"w":       W,
+	"warning": W,
+	"e":       E,
+	"error":   E,
+	"f":       F,
+	"fatal":   F,
+}
+
 var logger = log.New(os.Stderr, "", log.Ldate|log.Ltime)
 var level = I
+
+func Parse(lvl string) Level {
+	return toLevel[strings.ToLower(lvl)]
+}
 
 func SetLevel(lvl Level) {
 	level = lvl

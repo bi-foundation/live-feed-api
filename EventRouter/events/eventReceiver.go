@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
@@ -14,12 +15,6 @@ import (
 
 var (
 	StandardChannelSize = 5000
-)
-
-const (
-	defaultConnectionHost     = "127.0.0.1"
-	defaultConnectionPort     = "8040"
-	defaultConnectionProtocol = "tcp"
 )
 
 type EventReceiver interface {
@@ -38,17 +33,13 @@ type Receiver struct {
 	address    string
 }
 
-func NewReceiver(protocol string, address string) EventReceiver {
+func NewReceiver(eventListenerConfig *config.ReceiverConfig) EventReceiver {
 	return &Receiver{
 		eventQueue: make(chan *eventmessages.FactomEvent, StandardChannelSize),
 		state:      models.New,
-		protocol:   protocol,
-		address:    address,
+		protocol:   eventListenerConfig.Protocol,
+		address:    fmt.Sprintf("%s:%d", eventListenerConfig.BindAddress, eventListenerConfig.Port),
 	}
-}
-
-func NewDefaultReceiver() EventReceiver {
-	return NewReceiver(defaultConnectionProtocol, fmt.Sprintf("%s:%s", defaultConnectionHost, defaultConnectionPort))
 }
 
 func (receiver *Receiver) Start() {
@@ -78,6 +69,7 @@ func (receiver *Receiver) listenIncomingConnections() {
 		conn, err := receiver.listener.Accept()
 		if err != nil {
 			log.Error("connection from factomd failed: %v", err)
+			continue
 		}
 
 		go receiver.handleConnection(conn)
@@ -102,14 +94,24 @@ func (receiver *Receiver) readEvents(conn net.Conn) (err error) {
 		// read the size of the factom event
 		err = binary.Read(reader, binary.LittleEndian, &dataSize)
 		if err != nil {
-			return fmt.Errorf("failed to data size from %s:, %v", getRemoteAddress(conn), err)
+			if err == io.EOF {
+				log.Warn("the client at %s disconnected", getRemoteAddress(conn))
+				return nil
+			} else {
+				return fmt.Errorf("failed to data size from %s:, %v", getRemoteAddress(conn), err)
+			}
 		}
 
 		// read the factom event
 		data := make([]byte, dataSize)
 		bytesRead, err := io.ReadFull(reader, data)
 		if err != nil {
-			return fmt.Errorf("failed to data from %s:, %v", getRemoteAddress(conn), err)
+			if err == io.EOF {
+				log.Warn("the client at %s disconnected", getRemoteAddress(conn))
+				return nil
+			} else {
+				return fmt.Errorf("failed to data from %s:, %v", getRemoteAddress(conn), err)
+			}
 		}
 
 		factomEvent := &eventmessages.FactomEvent{}
@@ -120,6 +122,14 @@ func (receiver *Receiver) readEvents(conn net.Conn) (err error) {
 		log.Debug("read factom event... %v", factomEvent)
 		receiver.eventQueue <- factomEvent
 	}
+}
+
+func handleReadErrors(err error, element string, conn net.Conn) error {
+	if err != io.EOF {
+		return fmt.Errorf("failed to read %s from %s:, %v", element, getRemoteAddress(conn), err)
+	}
+	log.Warn("the client at %s disconnected", getRemoteAddress(conn))
+	return nil
 }
 
 func finalizeConnection(conn net.Conn) {
