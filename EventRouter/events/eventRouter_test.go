@@ -339,7 +339,7 @@ func mockFactomAnchorEvent() *eventmessages.FactomEvent {
 	now := time.Now()
 	testHash := []byte("12345678901234567890123456789012")
 	return &eventmessages.FactomEvent{
-		StreamSource: 0,
+		EventSource: 0,
 		Value: &eventmessages.FactomEvent_DirectoryBlockCommit{
 			DirectoryBlockCommit: &eventmessages.DirectoryBlockCommit{
 				DirectoryBlock: &eventmessages.DirectoryBlock{
@@ -356,7 +356,7 @@ func mockFactomAnchorEvent() *eventmessages.FactomEvent {
 						Timestamp:  &graphqlproto_types.Timestamp{Seconds: int64(now.Second()), Nanos: int32(now.Nanosecond())},
 						BlockCount: 456,
 					},
-					Entries: []*eventmessages.Entry{
+					Entries: []*eventmessages.DirectoryBlockEntry{
 						{
 							ChainID: &eventmessages.Hash{
 								HashValue: testHash,

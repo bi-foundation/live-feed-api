@@ -2064,7 +2064,7 @@ func TestNodeMessageProtoCompactText(t *testing.T) {
 func TestFactomEventGraphQL(t *testing.T) {
 	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
 	_ = NewPopulatedFactomEvent(popr, false)
-	objdesc := ""
+	objdesc := "====  ROOT EVENT ====="
 	pdesc := GraphQLFactomEventType.PrivateDescription
 	if pdesc != objdesc {
 		t.Fatalf("String want %v got %v", objdesc, pdesc)
@@ -2073,7 +2073,7 @@ func TestFactomEventGraphQL(t *testing.T) {
 func TestChainCommitGraphQL(t *testing.T) {
 	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
 	_ = NewPopulatedChainCommit(popr, false)
-	objdesc := ""
+	objdesc := "====  FACTOM EVENT VALUES ====="
 	pdesc := GraphQLChainCommitType.PrivateDescription
 	if pdesc != objdesc {
 		t.Fatalf("String want %v got %v", objdesc, pdesc)
@@ -2118,7 +2118,7 @@ func TestDirectoryBlockCommitGraphQL(t *testing.T) {
 func TestDirectoryBlockGraphQL(t *testing.T) {
 	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
 	_ = NewPopulatedDirectoryBlock(popr, false)
-	objdesc := ""
+	objdesc := "====  DIRECTORY BLOCK DETAILS ====="
 	pdesc := GraphQLDirectoryBlockType.PrivateDescription
 	if pdesc != objdesc {
 		t.Fatalf("String want %v got %v", objdesc, pdesc)
@@ -2226,7 +2226,7 @@ func TestServerIndexNumberGraphQL(t *testing.T) {
 func TestProcessMessageGraphQL(t *testing.T) {
 	popr := math_rand.New(math_rand.NewSource(time.Now().UnixNano()))
 	_ = NewPopulatedProcessMessage(popr, false)
-	objdesc := ""
+	objdesc := "====  MESSAGE EVENTS ====="
 	pdesc := GraphQLProcessMessageType.PrivateDescription
 	if pdesc != objdesc {
 		t.Fatalf("String want %v got %v", objdesc, pdesc)

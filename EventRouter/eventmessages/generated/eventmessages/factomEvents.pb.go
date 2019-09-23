@@ -171,6 +171,7 @@ func (NodeMessageCode) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_d6566f2e3579336b, []int{4}
 }
 
+// ====  ROOT EVENT =====
 type FactomEvent struct {
 	EventSource     EventSource `protobuf:"varint,1,opt,name=eventSource,proto3,enum=eventmessages.EventSource" json:"eventSource,omitempty"`
 	FactomNodeName  string      `protobuf:"bytes,2,opt,name=factomNodeName,proto3" json:"factomNodeName,omitempty"`
@@ -230,25 +231,25 @@ type isFactomEvent_Value interface {
 }
 
 type FactomEvent_ChainCommit struct {
-	ChainCommit *ChainCommit `protobuf:"bytes,4,opt,name=chainCommit,proto3,oneof"`
+	ChainCommit *ChainCommit `protobuf:"bytes,4,opt,name=chainCommit,proto3,oneof" json:"chainCommit,omitempty"`
 }
 type FactomEvent_EntryCommit struct {
-	EntryCommit *EntryCommit `protobuf:"bytes,5,opt,name=entryCommit,proto3,oneof"`
+	EntryCommit *EntryCommit `protobuf:"bytes,5,opt,name=entryCommit,proto3,oneof" json:"entryCommit,omitempty"`
 }
 type FactomEvent_EntryReveal struct {
-	EntryReveal *EntryReveal `protobuf:"bytes,6,opt,name=entryReveal,proto3,oneof"`
+	EntryReveal *EntryReveal `protobuf:"bytes,6,opt,name=entryReveal,proto3,oneof" json:"entryReveal,omitempty"`
 }
 type FactomEvent_StateChange struct {
-	StateChange *StateChange `protobuf:"bytes,7,opt,name=stateChange,proto3,oneof"`
+	StateChange *StateChange `protobuf:"bytes,7,opt,name=stateChange,proto3,oneof" json:"stateChange,omitempty"`
 }
 type FactomEvent_DirectoryBlockCommit struct {
-	DirectoryBlockCommit *DirectoryBlockCommit `protobuf:"bytes,8,opt,name=directoryBlockCommit,proto3,oneof"`
+	DirectoryBlockCommit *DirectoryBlockCommit `protobuf:"bytes,8,opt,name=directoryBlockCommit,proto3,oneof" json:"directoryBlockCommit,omitempty"`
 }
 type FactomEvent_ProcessMessage struct {
-	ProcessMessage *ProcessMessage `protobuf:"bytes,9,opt,name=processMessage,proto3,oneof"`
+	ProcessMessage *ProcessMessage `protobuf:"bytes,9,opt,name=processMessage,proto3,oneof" json:"processMessage,omitempty"`
 }
 type FactomEvent_NodeMessage struct {
-	NodeMessage *NodeMessage `protobuf:"bytes,10,opt,name=nodeMessage,proto3,oneof"`
+	NodeMessage *NodeMessage `protobuf:"bytes,10,opt,name=nodeMessage,proto3,oneof" json:"nodeMessage,omitempty"`
 }
 
 func (*FactomEvent_ChainCommit) isFactomEvent_Value()          {}
@@ -349,6 +350,7 @@ func (*FactomEvent) XXX_OneofWrappers() []interface{} {
 	}
 }
 
+// ====  FACTOM EVENT VALUES =====
 type ChainCommit struct {
 	EntityState          EntityState      `protobuf:"varint,1,opt,name=entityState,proto3,enum=eventmessages.EntityState" json:"entityState,omitempty"`
 	ChainIDHash          *Hash            `protobuf:"bytes,2,opt,name=chainIDHash,proto3" json:"chainIDHash,omitempty"`
@@ -768,6 +770,7 @@ func (m *DirectoryBlockCommit) GetEntryBlockEntries() []*EntryBlockEntry {
 	return nil
 }
 
+// ====  DIRECTORY BLOCK DETAILS =====
 type DirectoryBlock struct {
 	Header               *DirectoryBlockHeader  `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
 	Entries              []*DirectoryBlockEntry `protobuf:"bytes,2,rep,name=entries,proto3" json:"entries,omitempty"`
@@ -1406,19 +1409,19 @@ type isEntryCreditBlockEntry_Value interface {
 }
 
 type EntryCreditBlockEntry_ChainCommit struct {
-	ChainCommit *ChainCommit `protobuf:"bytes,1,opt,name=chainCommit,proto3,oneof"`
+	ChainCommit *ChainCommit `protobuf:"bytes,1,opt,name=chainCommit,proto3,oneof" json:"chainCommit,omitempty"`
 }
 type EntryCreditBlockEntry_EntryCommit struct {
-	EntryCommit *EntryCommit `protobuf:"bytes,2,opt,name=entryCommit,proto3,oneof"`
+	EntryCommit *EntryCommit `protobuf:"bytes,2,opt,name=entryCommit,proto3,oneof" json:"entryCommit,omitempty"`
 }
 type EntryCreditBlockEntry_IncreaseBalance struct {
-	IncreaseBalance *IncreaseBalance `protobuf:"bytes,3,opt,name=increaseBalance,proto3,oneof"`
+	IncreaseBalance *IncreaseBalance `protobuf:"bytes,3,opt,name=increaseBalance,proto3,oneof" json:"increaseBalance,omitempty"`
 }
 type EntryCreditBlockEntry_MinuteNumber struct {
-	MinuteNumber *MinuteNumber `protobuf:"bytes,4,opt,name=minuteNumber,proto3,oneof"`
+	MinuteNumber *MinuteNumber `protobuf:"bytes,4,opt,name=minuteNumber,proto3,oneof" json:"minuteNumber,omitempty"`
 }
 type EntryCreditBlockEntry_ServerIndexNumber struct {
-	ServerIndexNumber *ServerIndexNumber `protobuf:"bytes,5,opt,name=serverIndexNumber,proto3,oneof"`
+	ServerIndexNumber *ServerIndexNumber `protobuf:"bytes,5,opt,name=serverIndexNumber,proto3,oneof" json:"serverIndexNumber,omitempty"`
 }
 
 func (*EntryCreditBlockEntry_ChainCommit) isEntryCreditBlockEntry_Value()       {}
@@ -1645,6 +1648,7 @@ func (m *ServerIndexNumber) GetServerIndexNumber() uint32 {
 	return 0
 }
 
+// ====  MESSAGE EVENTS =====
 type ProcessMessage struct {
 	MessageCode          ProcessMessageCode `protobuf:"varint,1,opt,name=messageCode,proto3,enum=eventmessages.ProcessMessageCode" json:"messageCode,omitempty"`
 	Level                Level              `protobuf:"varint,2,opt,name=level,proto3,enum=eventmessages.Level" json:"level,omitempty"`
@@ -3090,6 +3094,21 @@ type NodeMessageGetter interface {
 
 var GraphQLNodeMessageType *github_com_graphql_go_graphql.Object
 
+func (g *EntryCreditBlockEntry_ChainCommit) GetChainCommit() *ChainCommit {
+	return g.ChainCommit
+}
+func (g *EntryCreditBlockEntry_EntryCommit) GetEntryCommit() *EntryCommit {
+	return g.EntryCommit
+}
+func (g *EntryCreditBlockEntry_IncreaseBalance) GetIncreaseBalance() *IncreaseBalance {
+	return g.IncreaseBalance
+}
+func (g *EntryCreditBlockEntry_MinuteNumber) GetMinuteNumber() *MinuteNumber {
+	return g.MinuteNumber
+}
+func (g *EntryCreditBlockEntry_ServerIndexNumber) GetServerIndexNumber() *ServerIndexNumber {
+	return g.ServerIndexNumber
+}
 func (g *FactomEvent_ChainCommit) GetChainCommit() *ChainCommit {
 	return g.ChainCommit
 }
@@ -3110,21 +3129,6 @@ func (g *FactomEvent_ProcessMessage) GetProcessMessage() *ProcessMessage {
 }
 func (g *FactomEvent_NodeMessage) GetNodeMessage() *NodeMessage {
 	return g.NodeMessage
-}
-func (g *EntryCreditBlockEntry_ChainCommit) GetChainCommit() *ChainCommit {
-	return g.ChainCommit
-}
-func (g *EntryCreditBlockEntry_EntryCommit) GetEntryCommit() *EntryCommit {
-	return g.EntryCommit
-}
-func (g *EntryCreditBlockEntry_IncreaseBalance) GetIncreaseBalance() *IncreaseBalance {
-	return g.IncreaseBalance
-}
-func (g *EntryCreditBlockEntry_MinuteNumber) GetMinuteNumber() *MinuteNumber {
-	return g.MinuteNumber
-}
-func (g *EntryCreditBlockEntry_ServerIndexNumber) GetServerIndexNumber() *ServerIndexNumber {
-	return g.ServerIndexNumber
 }
 
 func init() {
@@ -3203,7 +3207,7 @@ func init() {
 	})
 	GraphQLFactomEventType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
 		Name:        "FactomEvent",
-		Description: "",
+		Description: "====  ROOT EVENT =====",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"eventSource": &github_com_graphql_go_graphql.Field{
@@ -3285,7 +3289,7 @@ func init() {
 	})
 	GraphQLChainCommitType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
 		Name:        "ChainCommit",
-		Description: "",
+		Description: "====  FACTOM EVENT VALUES =====",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"entityState": &github_com_graphql_go_graphql.Field{
@@ -3935,7 +3939,7 @@ func init() {
 	})
 	GraphQLDirectoryBlockType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
 		Name:        "DirectoryBlock",
-		Description: "",
+		Description: "====  DIRECTORY BLOCK DETAILS =====",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"header": &github_com_graphql_go_graphql.Field{
@@ -4916,7 +4920,7 @@ func init() {
 	})
 	GraphQLProcessMessageType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
 		Name:        "ProcessMessage",
-		Description: "",
+		Description: "====  MESSAGE EVENTS =====",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"messageCode": &github_com_graphql_go_graphql.Field{
@@ -5044,6 +5048,35 @@ func init() {
 			}
 		}),
 	})
+	GraphQLEntryCreditBlockEntryValueUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
+		Name:        "EntryCreditBlockEntryValue",
+		Description: "",
+		Types: []*github_com_graphql_go_graphql.Object{
+			GraphQLChainCommitType,
+			GraphQLEntryCommitType,
+			GraphQLIncreaseBalanceType,
+			GraphQLMinuteNumberType,
+			GraphQLServerIndexNumberType,
+		},
+		ResolveType: func(p github_com_graphql_go_graphql.ResolveTypeParams) *github_com_graphql_go_graphql.Object {
+			if _, ok := p.Value.(*EntryCreditBlockEntry_ChainCommit); ok {
+				return GraphQLChainCommitType
+			}
+			if _, ok := p.Value.(*EntryCreditBlockEntry_EntryCommit); ok {
+				return GraphQLEntryCommitType
+			}
+			if _, ok := p.Value.(*EntryCreditBlockEntry_IncreaseBalance); ok {
+				return GraphQLIncreaseBalanceType
+			}
+			if _, ok := p.Value.(*EntryCreditBlockEntry_MinuteNumber); ok {
+				return GraphQLMinuteNumberType
+			}
+			if _, ok := p.Value.(*EntryCreditBlockEntry_ServerIndexNumber); ok {
+				return GraphQLServerIndexNumberType
+			}
+			return nil
+		},
+	})
 	GraphQLFactomEventValueUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
 		Name:        "FactomEventValue",
 		Description: "",
@@ -5077,35 +5110,6 @@ func init() {
 			}
 			if _, ok := p.Value.(*FactomEvent_NodeMessage); ok {
 				return GraphQLNodeMessageType
-			}
-			return nil
-		},
-	})
-	GraphQLEntryCreditBlockEntryValueUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
-		Name:        "EntryCreditBlockEntryValue",
-		Description: "",
-		Types: []*github_com_graphql_go_graphql.Object{
-			GraphQLChainCommitType,
-			GraphQLEntryCommitType,
-			GraphQLIncreaseBalanceType,
-			GraphQLMinuteNumberType,
-			GraphQLServerIndexNumberType,
-		},
-		ResolveType: func(p github_com_graphql_go_graphql.ResolveTypeParams) *github_com_graphql_go_graphql.Object {
-			if _, ok := p.Value.(*EntryCreditBlockEntry_ChainCommit); ok {
-				return GraphQLChainCommitType
-			}
-			if _, ok := p.Value.(*EntryCreditBlockEntry_EntryCommit); ok {
-				return GraphQLEntryCommitType
-			}
-			if _, ok := p.Value.(*EntryCreditBlockEntry_IncreaseBalance); ok {
-				return GraphQLIncreaseBalanceType
-			}
-			if _, ok := p.Value.(*EntryCreditBlockEntry_MinuteNumber); ok {
-				return GraphQLMinuteNumberType
-			}
-			if _, ok := p.Value.(*EntryCreditBlockEntry_ServerIndexNumber); ok {
-				return GraphQLServerIndexNumberType
 			}
 			return nil
 		},
@@ -5172,7 +5176,8 @@ func (m *FactomEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *FactomEvent_ChainCommit) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *FactomEvent_ChainCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5192,7 +5197,8 @@ func (m *FactomEvent_ChainCommit) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_EntryCommit) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *FactomEvent_EntryCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5212,7 +5218,8 @@ func (m *FactomEvent_EntryCommit) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_EntryReveal) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *FactomEvent_EntryReveal) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5232,7 +5239,8 @@ func (m *FactomEvent_EntryReveal) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_StateChange) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *FactomEvent_StateChange) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5252,7 +5260,8 @@ func (m *FactomEvent_StateChange) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_DirectoryBlockCommit) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *FactomEvent_DirectoryBlockCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5272,7 +5281,8 @@ func (m *FactomEvent_DirectoryBlockCommit) MarshalToSizedBuffer(dAtA []byte) (in
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_ProcessMessage) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *FactomEvent_ProcessMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5292,7 +5302,8 @@ func (m *FactomEvent_ProcessMessage) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_NodeMessage) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *FactomEvent_NodeMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -6290,7 +6301,8 @@ func (m *EntryCreditBlockEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *EntryCreditBlockEntry_ChainCommit) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *EntryCreditBlockEntry_ChainCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -6310,7 +6322,8 @@ func (m *EntryCreditBlockEntry_ChainCommit) MarshalToSizedBuffer(dAtA []byte) (i
 	return len(dAtA) - i, nil
 }
 func (m *EntryCreditBlockEntry_EntryCommit) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *EntryCreditBlockEntry_EntryCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -6330,7 +6343,8 @@ func (m *EntryCreditBlockEntry_EntryCommit) MarshalToSizedBuffer(dAtA []byte) (i
 	return len(dAtA) - i, nil
 }
 func (m *EntryCreditBlockEntry_IncreaseBalance) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *EntryCreditBlockEntry_IncreaseBalance) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -6350,7 +6364,8 @@ func (m *EntryCreditBlockEntry_IncreaseBalance) MarshalToSizedBuffer(dAtA []byte
 	return len(dAtA) - i, nil
 }
 func (m *EntryCreditBlockEntry_MinuteNumber) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *EntryCreditBlockEntry_MinuteNumber) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -6370,7 +6385,8 @@ func (m *EntryCreditBlockEntry_MinuteNumber) MarshalToSizedBuffer(dAtA []byte) (
 	return len(dAtA) - i, nil
 }
 func (m *EntryCreditBlockEntry_ServerIndexNumber) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *EntryCreditBlockEntry_ServerIndexNumber) MarshalToSizedBuffer(dAtA []byte) (int, error) {

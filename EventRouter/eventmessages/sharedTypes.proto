@@ -8,7 +8,7 @@ import "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types/t
 
 option (graphqlproto.graphql) = true;
 
-
+// ====  SHARED STRUCTURES =====
 message Hash {
     bytes hashValue = 1;
 }
@@ -26,8 +26,3 @@ message Signature {
     bytes signature = 2;
 }
 
-
-message TransactionAddress {
-    uint64 amount = 1;
-    Hash address = 2;
-}
