@@ -231,25 +231,25 @@ type isFactomEvent_Value interface {
 }
 
 type FactomEvent_ChainCommit struct {
-	ChainCommit *ChainCommit `protobuf:"bytes,4,opt,name=chainCommit,proto3,oneof" json:"chainCommit,omitempty"`
+	ChainCommit *ChainCommit `protobuf:"bytes,4,opt,name=chainCommit,proto3,oneof"`
 }
 type FactomEvent_EntryCommit struct {
-	EntryCommit *EntryCommit `protobuf:"bytes,5,opt,name=entryCommit,proto3,oneof" json:"entryCommit,omitempty"`
+	EntryCommit *EntryCommit `protobuf:"bytes,5,opt,name=entryCommit,proto3,oneof"`
 }
 type FactomEvent_EntryReveal struct {
-	EntryReveal *EntryReveal `protobuf:"bytes,6,opt,name=entryReveal,proto3,oneof" json:"entryReveal,omitempty"`
+	EntryReveal *EntryReveal `protobuf:"bytes,6,opt,name=entryReveal,proto3,oneof"`
 }
 type FactomEvent_StateChange struct {
-	StateChange *StateChange `protobuf:"bytes,7,opt,name=stateChange,proto3,oneof" json:"stateChange,omitempty"`
+	StateChange *StateChange `protobuf:"bytes,7,opt,name=stateChange,proto3,oneof"`
 }
 type FactomEvent_DirectoryBlockCommit struct {
-	DirectoryBlockCommit *DirectoryBlockCommit `protobuf:"bytes,8,opt,name=directoryBlockCommit,proto3,oneof" json:"directoryBlockCommit,omitempty"`
+	DirectoryBlockCommit *DirectoryBlockCommit `protobuf:"bytes,8,opt,name=directoryBlockCommit,proto3,oneof"`
 }
 type FactomEvent_ProcessMessage struct {
-	ProcessMessage *ProcessMessage `protobuf:"bytes,9,opt,name=processMessage,proto3,oneof" json:"processMessage,omitempty"`
+	ProcessMessage *ProcessMessage `protobuf:"bytes,9,opt,name=processMessage,proto3,oneof"`
 }
 type FactomEvent_NodeMessage struct {
-	NodeMessage *NodeMessage `protobuf:"bytes,10,opt,name=nodeMessage,proto3,oneof" json:"nodeMessage,omitempty"`
+	NodeMessage *NodeMessage `protobuf:"bytes,10,opt,name=nodeMessage,proto3,oneof"`
 }
 
 func (*FactomEvent_ChainCommit) isFactomEvent_Value()          {}
@@ -1409,19 +1409,19 @@ type isEntryCreditBlockEntry_Value interface {
 }
 
 type EntryCreditBlockEntry_ChainCommit struct {
-	ChainCommit *ChainCommit `protobuf:"bytes,1,opt,name=chainCommit,proto3,oneof" json:"chainCommit,omitempty"`
+	ChainCommit *ChainCommit `protobuf:"bytes,1,opt,name=chainCommit,proto3,oneof"`
 }
 type EntryCreditBlockEntry_EntryCommit struct {
-	EntryCommit *EntryCommit `protobuf:"bytes,2,opt,name=entryCommit,proto3,oneof" json:"entryCommit,omitempty"`
+	EntryCommit *EntryCommit `protobuf:"bytes,2,opt,name=entryCommit,proto3,oneof"`
 }
 type EntryCreditBlockEntry_IncreaseBalance struct {
-	IncreaseBalance *IncreaseBalance `protobuf:"bytes,3,opt,name=increaseBalance,proto3,oneof" json:"increaseBalance,omitempty"`
+	IncreaseBalance *IncreaseBalance `protobuf:"bytes,3,opt,name=increaseBalance,proto3,oneof"`
 }
 type EntryCreditBlockEntry_MinuteNumber struct {
-	MinuteNumber *MinuteNumber `protobuf:"bytes,4,opt,name=minuteNumber,proto3,oneof" json:"minuteNumber,omitempty"`
+	MinuteNumber *MinuteNumber `protobuf:"bytes,4,opt,name=minuteNumber,proto3,oneof"`
 }
 type EntryCreditBlockEntry_ServerIndexNumber struct {
-	ServerIndexNumber *ServerIndexNumber `protobuf:"bytes,5,opt,name=serverIndexNumber,proto3,oneof" json:"serverIndexNumber,omitempty"`
+	ServerIndexNumber *ServerIndexNumber `protobuf:"bytes,5,opt,name=serverIndexNumber,proto3,oneof"`
 }
 
 func (*EntryCreditBlockEntry_ChainCommit) isEntryCreditBlockEntry_Value()       {}
@@ -5176,8 +5176,7 @@ func (m *FactomEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *FactomEvent_ChainCommit) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *FactomEvent_ChainCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5197,8 +5196,7 @@ func (m *FactomEvent_ChainCommit) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_EntryCommit) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *FactomEvent_EntryCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5218,8 +5216,7 @@ func (m *FactomEvent_EntryCommit) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_EntryReveal) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *FactomEvent_EntryReveal) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5239,8 +5236,7 @@ func (m *FactomEvent_EntryReveal) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_StateChange) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *FactomEvent_StateChange) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5260,8 +5256,7 @@ func (m *FactomEvent_StateChange) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_DirectoryBlockCommit) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *FactomEvent_DirectoryBlockCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5281,8 +5276,7 @@ func (m *FactomEvent_DirectoryBlockCommit) MarshalToSizedBuffer(dAtA []byte) (in
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_ProcessMessage) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *FactomEvent_ProcessMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -5302,8 +5296,7 @@ func (m *FactomEvent_ProcessMessage) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 func (m *FactomEvent_NodeMessage) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *FactomEvent_NodeMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -6301,8 +6294,7 @@ func (m *EntryCreditBlockEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *EntryCreditBlockEntry_ChainCommit) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *EntryCreditBlockEntry_ChainCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -6322,8 +6314,7 @@ func (m *EntryCreditBlockEntry_ChainCommit) MarshalToSizedBuffer(dAtA []byte) (i
 	return len(dAtA) - i, nil
 }
 func (m *EntryCreditBlockEntry_EntryCommit) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *EntryCreditBlockEntry_EntryCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -6343,8 +6334,7 @@ func (m *EntryCreditBlockEntry_EntryCommit) MarshalToSizedBuffer(dAtA []byte) (i
 	return len(dAtA) - i, nil
 }
 func (m *EntryCreditBlockEntry_IncreaseBalance) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *EntryCreditBlockEntry_IncreaseBalance) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -6364,8 +6354,7 @@ func (m *EntryCreditBlockEntry_IncreaseBalance) MarshalToSizedBuffer(dAtA []byte
 	return len(dAtA) - i, nil
 }
 func (m *EntryCreditBlockEntry_MinuteNumber) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *EntryCreditBlockEntry_MinuteNumber) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -6385,8 +6374,7 @@ func (m *EntryCreditBlockEntry_MinuteNumber) MarshalToSizedBuffer(dAtA []byte) (
 	return len(dAtA) - i, nil
 }
 func (m *EntryCreditBlockEntry_ServerIndexNumber) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *EntryCreditBlockEntry_ServerIndexNumber) MarshalToSizedBuffer(dAtA []byte) (int, error) {

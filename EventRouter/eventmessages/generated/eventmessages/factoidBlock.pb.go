@@ -268,7 +268,7 @@ type isRCD_Value interface {
 }
 
 type RCD_Rcd1 struct {
-	Rcd1 *RCD1 `protobuf:"bytes,1,opt,name=rcd1,proto3,oneof" json:"rcd1,omitempty"`
+	Rcd1 *RCD1 `protobuf:"bytes,1,opt,name=rcd1,proto3,oneof"`
 }
 
 func (*RCD_Rcd1) isRCD_Value() {}
@@ -1472,8 +1472,7 @@ func (m *RCD) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *RCD_Rcd1) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *RCD_Rcd1) MarshalToSizedBuffer(dAtA []byte) (int, error) {
