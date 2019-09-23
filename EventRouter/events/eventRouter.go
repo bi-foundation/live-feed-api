@@ -56,6 +56,7 @@ func (evr *eventRouter) handleEvents() {
 			continue
 		}
 
+		evr.cleanupSuspendedSubscriptions(subscriptionContexts);
 		err = evr.send(subscriptionContexts, factomEvent)
 		if err != nil {
 			log.Error("%v", err)
@@ -95,7 +96,22 @@ func (evr *eventRouter) send(subscriptions []*models.SubscriptionContext, factom
 			sender = NewEventSender(evr.senderConfig, subscription)
 			evr.senders[subscription.Subscription.ID] = sender
 		}
-		sender.QueueEvent(event)
+		sender.QueueEvent(&event)
 	}
 	return nil
+}
+
+func (evr *eventRouter) cleanupSuspendedSubscriptions(subscriptions []*models.SubscriptionContext) {
+	for id, _ := range evr.senders {
+		found := false
+		for _, activeSubscriptionContext := range subscriptions {
+			if activeSubscriptionContext.Subscription.ID == id {
+				found = true
+				break
+			}
+		}
+		if !found {
+			delete(evr.senders, id)
+		}
+	}
 }

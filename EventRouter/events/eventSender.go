@@ -17,14 +17,10 @@ const (
 	retrySleepDuration       = 10 * time.Second
 )
 
-type eventBufferContainer struct {
-	eventBuffer []byte
-}
-
 type eventSender struct {
 	senderConfig         *config.SenderConfig
 	subscriptionContext  *models.SubscriptionContext
-	outputQueue          chan *eventBufferContainer
+	outputQueue          chan *[]byte
 	postponeSendingUntil time.Time
 }
 
@@ -32,15 +28,15 @@ func NewEventSender(senderConfig *config.SenderConfig, subscriptionContext *mode
 	sender := &eventSender{
 		senderConfig:        senderConfig,
 		subscriptionContext: subscriptionContext,
-		outputQueue:         make(chan *eventBufferContainer, defaultOutputChannelSize),
+		outputQueue:         make(chan *[]byte, defaultOutputChannelSize),
 	}
 	go sender.processQueueLoop()
 	return sender
 }
 
-func (sender eventSender) QueueEvent(eventBufferContainer *eventBufferContainer) {
+func (sender eventSender) QueueEvent(eventBuffer *[]byte) {
 	select {
-	case sender.outputQueue < eventBufferContainer:
+	case sender.outputQueue <- eventBuffer:
 	default:
 		// TODO counter?
 	}
