@@ -23,7 +23,7 @@ all: clean build test
 .PHONY: clean
 clean:
 	$(GOCLEAN)
-	rm -f $(BINARY_NAME)
+	rm $(BINARY_NAME) || true
 
 .PHONY: deps
 deps:
@@ -44,10 +44,10 @@ test:
 		$(GOCMD) test -v -covermode=count -coverprofile=profile.out $$PKG > tmp.out; \
 		cat tmp.out; \
 		if grep -q "^--- FAIL" tmp.out; then \
-			rm -f tmp.out; \
+			rm tmp.out || true; \
 			exit 1; \
 		elif grep -q "build failed" tmp.out; then \
-			rm -f tmp.out; \
+			rm tmp.out || true; \
 			exit; \
 		fi; \
 		if [ -f profile.out ]; then \
@@ -55,7 +55,7 @@ test:
 			rm profile.out; \
 		fi; \
 	done; \
-	rm -f tmp.out || true;
+	rm tmp.out || true;
 
 .PHONY: run
 run:
