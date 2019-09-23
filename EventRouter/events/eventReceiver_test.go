@@ -162,7 +162,7 @@ func mockAnchorEvent() *eventmessages.FactomEvent {
 						Timestamp:  &types.Timestamp{Seconds: int64(now.Second()), Nanos: int32(now.Nanosecond())},
 						BlockCount: 456,
 					},
-					Entries: []*eventmessages.Entry{
+					Entries: []*eventmessages.DirectoryBlockEntry{
 						{
 							ChainID: &eventmessages.Hash{
 								HashValue: testHash,
