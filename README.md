@@ -33,6 +33,8 @@ Environment variables can be used to override properties of the configuration. F
 | subscription / schemes         | The protocol schemes                                                                | HTTP or HTTPS | HTTP  
 | subscription / certificatefile | Path to the certificate file to run the subscription api with TLS                   | /path/server.crt 
 | subscription / privatekeyfile  | Path to the private key file corresponding to the certificate file                  | /path/server.key 
+| database / database            | The type of database that will be used                                              | mysql or inmemory                  | mysql
+| database / connectionString    | The connection string to connect to the database                                    | factom-live-api:<password>@tcp(<ip>:<port>)/<database> | 
 | log / loglevel                 | The log level                                                                       | debug, info, warning, error, fatal | info
 
 
@@ -47,7 +49,11 @@ This is what factom-live-feed.conf looks like with the default settings:
 [subscription]
   bindaddress = "0.0.0.0"
   port = "8700"
-  schemes = ["HTTP","HTTPS"]
+  schemes = "HTTPS"
+  
+[database]
+  database = "mysql"
+  connectionString = "factom-live-api:<password>@tcp(<ip>:<port>)/<database>"
   
 [log]
   loglevel = "info"
@@ -59,13 +65,13 @@ The Live Feed API needs to be able to store subscriptions in a database. An in-m
 
 #### MYSQL database
 Configuration for the mysql database.
-```sql
+```
 # drivename: mysql
 # dataSourceName: <user>:<password>>@tcp(host:port)/live_api
 ```
 
 The following sql should be executed to create the tables in the database.
-```sql
+```mysql
 CREATE TABLE IF NOT EXISTS subscriptions (
     id SERIAL PRIMARY KEY,
     failures int NOT NULL,
@@ -88,14 +94,14 @@ CREATE TABLE IF NOT EXISTS filters (
 
 ### Starting Live Feed API
 Use go run to start the live feed API. To provide a custom configuration use the flag: --config-file "custom-configuration.conf".  
-```go
+```shell script
 go run ./live-feed-api.go
 ```
 
 ## Using the Live Feed API
 Users can receive events from factomd by subscribing an application with the Live Feed API. 
 
-A [swagger](EventRouter/docs/swagger.yaml) is provided for the Subscription API. The swagger is also exposed at https://domain/live/feed/v0.1/swagger.json.
+A [swagger](EventRouter/swagger/swagger.yaml) is provided for the Subscription API. The swagger is also exposed at https://domain/live/feed/v0.1/swagger.json.
 
 Users can receive the following event types:
 * chain registration
@@ -106,7 +112,7 @@ Users can receive the following event types:
 * node message
 
 Each of these event types can be filtered to reduce network traffic. Filtering is done with writing a query in [GraphQL](https://graphql.org/learn/).
-```graphql
+```graphql endpoint doc
 { 
     identityChainID
     value { 

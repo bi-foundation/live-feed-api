@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
@@ -28,17 +29,17 @@ var connection *sql.DB
 type sqlRepository struct{}
 
 // NewSQLRepository create a new repository that uses a mysql database
-func NewSQLRepository() (Repository, error) {
+func NewSQLRepository(configuration *config.DatabaseConfig) (Repository, error) {
 	repository := &sqlRepository{}
-	return repository.connect()
+	return repository.connect(configuration)
 }
 
-func (repository *sqlRepository) connect() (Repository, error) {
+func (repository *sqlRepository) connect(configuration *config.DatabaseConfig) (Repository, error) {
 	// open new connection if connection is nil or not open (if there is such a state)
 	// you can also check "once.Do" if that suits your needs better
 	if connection == nil {
 		// TODO make configurable: driverName, user, password, url
-		db, err := sql.Open("mysql", "live-api:jJBAGyB5MBhshzcC@tcp(127.0.0.1:3306)/live_api")
+		db, err := sql.Open("mysql", configuration.ConnectionString)
 		if err != nil {
 			return nil, fmt.Errorf("failed to connect to sql database: %v", err)
 		}
