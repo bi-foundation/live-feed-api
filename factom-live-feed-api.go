@@ -10,6 +10,7 @@ import (
 	"github.com/FactomProject/live-feed-api/EventRouter/events"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
+	"github.com/FactomProject/live-feed-api/EventRouter/repository"
 	docs "github.com/FactomProject/live-feed-api/EventRouter/swagger"
 	"time"
 )
@@ -21,8 +22,8 @@ func main() {
 
 	configuration := loadConfiguration()
 	log.SetLevel(log.Parse(configuration.Log.LogLevel))
+	setupDatabase(configuration.Database)
 
-	log.SetLevel(log.Parse(configuration.Log.LogLevel))
 	eventServer := events.NewReceiver(configuration.Receiver)
 	eventRouter := events.NewEventRouter(eventServer.GetEventQueue())
 
@@ -38,18 +39,36 @@ func main() {
 	eventServer.Stop()
 }
 
-func loadConfiguration() *config.Config {
+func loadConfiguration() (configuration *config.Config) {
 	explicitConfigFile := flag.String("config-file", "", "Override the configuration file")
 	flag.Parse()
-	var configuration *config.Config
+
 	var err error
 	if explicitConfigFile != nil && len(*explicitConfigFile) > 0 {
+		log.Info("load configuration file: %s", *explicitConfigFile)
 		configuration, err = config.LoadConfigurationFrom(*explicitConfigFile)
 	} else {
 		configuration, err = config.LoadConfiguration()
 	}
 	if err != nil {
-		log.Fatal("failed to load configuration: %v", err)
+		log.Fatal("%v", err)
 	}
+
+	log.Info("loaded configuration: { \n\treceiver: %v, \n\tsubscription: %v, \n\tdatabase: %v, \n\tlog: %v\n }", configuration.Receiver, configuration.Subscription, configuration.Database, configuration.Log)
 	return configuration
+}
+
+func setupDatabase(configuration *config.DatabaseConfig) {
+	switch configuration.Database {
+	case "inmemory":
+		repository.SubscriptionRepository = repository.NewInMemoryRepository()
+	case "mysql":
+		repo, err := repository.NewSQLRepository(configuration)
+		if err != nil {
+			log.Fatal("failed to configure database: %v", err)
+		}
+		repository.SubscriptionRepository = repo
+	default:
+		log.Fatal("failed to configure database: %v", configuration.Database)
+	}
 }

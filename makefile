@@ -17,6 +17,7 @@ GOFILES:=$(shell find . -path ./vendor -prune -o -name "*.go" -type f)
 GOBIN:=$(GOPATH)/bin
 export PATH := $(GOBIN):$(PATH)
 export GO111MODULEENV := on
+export GO111MODULE := on
 
 all: clean build test
 
@@ -59,7 +60,7 @@ test:
 
 .PHONY: run
 run:
-	$(GOCMD) run ./live-feed-api.go
+	$(GOCMD) run ./factom-live-feed-api.go
 
 .PHONY: generate
 generate:

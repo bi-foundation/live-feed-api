@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/FactomProject/live-feed-api/EventRouter/models/errors"
@@ -20,7 +21,11 @@ func initTest(t *testing.T) (*sqlRepository, sqlmock.Sqlmock) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection\n", err)
 	}
 
-	repository, _ := NewSQLRepository() // Ignore connection errors when using mocked connection
+	dbConfig := &config.DatabaseConfig{
+		Database:         "",
+		ConnectionString: "",
+	}
+	repository, _ := NewSQLRepository(dbConfig) // Ignore connection errors when using mocked connection
 	repo, _ := repository.(*sqlRepository)
 	connection = db
 	return repo, mock

@@ -24,6 +24,9 @@ const (
 	defaultSubscriptionAPIAddress  = ""
 	defaultSubscriptionAPIPort     = 8700
 	defaultSubscriptionAPIBasePath = "/live/feed/v" + defaultVersion
+
+	defaultDatabase                 = "inmemory"
+	defaultDatabaseConnectionString = ""
 )
 
 var defaultSubscriptionAPISchemes = "HTTP"
@@ -33,6 +36,7 @@ type Config struct {
 	Log          *LogConfig
 	Receiver     *ReceiverConfig
 	Subscription *SubscriptionConfig
+	Database     *DatabaseConfig
 }
 
 // LogConfig configuration for logging
@@ -55,6 +59,12 @@ type SubscriptionConfig struct {
 	BasePath        string
 	CertificateFile string
 	PrivateKeyFile  string
+}
+
+// DatabaseConfig configuration for the database to store subscriptions
+type DatabaseConfig struct {
+	Database         string
+	ConnectionString string
 }
 
 // LoadConfiguration from default paths for factom-live-feed.conf
@@ -108,6 +118,7 @@ func loadConfigurationFrom(configFile string) (*Config, error) {
 	vp.SetDefault("log", buildLogDefaults())
 	vp.SetDefault("receiver", buildReceiverDefaults())
 	vp.SetDefault("subscription", buildSubscriptionDefaults())
+	vp.SetDefault("database", buildDatabaseDefaults())
 
 	// read/build configuration
 	if err := vp.ReadInConfig(); err != nil {
@@ -159,6 +170,13 @@ func buildSubscriptionDefaults() map[string]interface{} {
 func buildLogDefaults() map[string]interface{} {
 	return map[string]interface{}{
 		"loglevel": defaultLogLevel,
+	}
+}
+
+func buildDatabaseDefaults() map[string]interface{} {
+	return map[string]interface{}{
+		"Database":         defaultDatabase,
+		"ConnectionString": defaultDatabaseConnectionString,
 	}
 }
 
