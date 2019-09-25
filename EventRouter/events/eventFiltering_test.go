@@ -479,7 +479,7 @@ func jsonPrettyPrint(in string) string {
 }
 
 func readQuery(t *testing.T, filename string) string {
-	data, err := ioutil.ReadFile("../../examples/" + filename)
+	data, err := ioutil.ReadFile("../../filtering_examples/" + filename)
 	if err != nil {
 		t.Fatalf("failed to open file: %v", err)
 	}
