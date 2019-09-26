@@ -24,7 +24,7 @@ jobs:
     steps:
       - checkout
       - run: mkdir -p $TEST_RESULTS # create the test results directory
-        -
+
       - restore_cache: # restores saved cache if no changes are detected since last run
           # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
           keys:
