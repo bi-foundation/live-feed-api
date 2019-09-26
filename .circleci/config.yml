@@ -6,6 +6,8 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.12
+        environment:
+          GO111MODULE: "on"
 
       - image: circleci/mysql:latest
         environment: # environment variables for primary container
