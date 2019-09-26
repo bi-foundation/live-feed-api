@@ -95,12 +95,10 @@ workflows:
   main:
     jobs:
       - build:
-          filters:
-            tags:
-              only: /^\d+\.\d+\.\d+$/
-      - github-release:
           branches:
             only:
               - master
+              - /rc-.*/
+      - github-release:
           requires:
             - build
