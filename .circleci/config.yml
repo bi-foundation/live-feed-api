@@ -1,0 +1,60 @@
+# Golang CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-go/ for more details
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.12
+
+      - image: circleci/mysql:latest
+        environment: # environment variables for primary container
+          POSTGRES_USER: circleci-go
+          POSTGRES_DB: circle-test
+
+    #### TEMPLATE_NOTE: go expects specific checkout path representing url
+    #### expecting it in the form of
+    ####   /go/src/github.com/circleci/go-tool
+    ####   /go/src/bitbucket.org/circleci/go-tool
+    working_directory: /go/src/github.com/bifoundation/live-feed-api
+
+    environment: # environment variables for the build itself
+      TEST_RESULTS: /tmp/test-results # path to where test results will be saved
+
+    steps:
+      - checkout
+
+      # specify any bash command here prefixed with `run: `
+      - run: make fmt-chek
+      - run: make lint
+      - run: make vet
+      - run: make clean
+      - run: make dev-deps
+      - run: make generate
+      - run: make build
+      - run:
+          name: Run unit tests
+          environment: # environment variables for the build itself
+            FACTOMD_LIVE_FEED_DATABASE_DATABASE: mysql
+            FACTOMD_LIVE_FEED_DATABASE_USERNAME: circleci-go
+            FACTOMD_LIVE_FEED_DATABASE_PASSWORD: circleci-test
+          command: make test
+
+  github-release:
+    docker:
+      - image: circleci/golang:1.12
+    steps:
+      - checkout
+      - run: curl -sL https://git.io/goreleaser | bash
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - github-release:
+          requires:
+            - build
