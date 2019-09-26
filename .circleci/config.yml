@@ -25,7 +25,7 @@ jobs:
       - checkout
 
       # specify any bash command here prefixed with `run: `
-      - run: make fmt-chek
+      - run: make fmt-check
       - run: make lint
       - run: make vet
       - run: make clean
