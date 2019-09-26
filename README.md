@@ -1,4 +1,7 @@
 # Live Feed API
+
+[![CircleCI](https://circleci.com/gh/bi-foundation/live-feed-api/tree/develop.svg?style=shield)](https://circleci.com/gh/bi-foundation/live-feed-api/tree/develop)
+
 The Live Feed API is a second layer application for the [factom](https://github.com/FactomProject/factomd) blockchain. The API emits live events from factomd to subscribers. Users can subscribe on receiving events.
 
 
