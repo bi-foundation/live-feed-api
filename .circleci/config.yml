@@ -34,13 +34,7 @@ jobs:
       - run: make vet
       - run: make clean
       - run: make build
-      - run:
-          name: make test
-          environment: # environment variables for the build itself
-            FACTOMD_LIVE_FEED_DATABASE_DATABASE: mysql
-            FACTOMD_LIVE_FEED_DATABASE_USERNAME: circleci-go
-            FACTOMD_LIVE_FEED_DATABASE_PASSWORD: circleci-test
-          command: make test
+      - run: make test
 
       - save_cache: # Store cache in the /go/pkg directory
           key: v1-pkg-cache
@@ -50,8 +44,8 @@ jobs:
       - run:
           name: make run
           environment:
-            FACTOMD_LIVE_FEED_SUBSCRIPTION_PORT: 8700
-            FACTOMD_LIVE_FEED_DATABASE_DATABASE: inmemory
+            FACTOM_LIVE_FEED_SUBSCRIPTION_PORT: 8700
+            FACTOM_LIVE_FEED_DATABASE_DATABASE: inmemory
           command: make run
           background: true # keep service running and proceed to next step
 
