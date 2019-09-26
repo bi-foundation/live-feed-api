@@ -66,7 +66,7 @@ jobs:
           environment:
             FACTOM_LIVE_FEED_SUBSCRIPTION_PORT: 8700
             FACTOM_LIVE_FEED_DATABASE_DATABASE: mysql
-            FACTOM_LIVE_FEED_DATABASE_CONNECTIONSTRING: circleci-go:circle-test@tcp(127.0.0.1:3306)/factom-live-api
+            FACTOM_LIVE_FEED_DATABASE_CONNECTIONSTRING: ciuser:cipass@tcp(127.0.0.1:3306)/factom_live_feed
           command: make run
           background: true # keep service running and proceed to next step
 
