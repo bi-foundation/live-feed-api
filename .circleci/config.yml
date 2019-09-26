@@ -47,8 +47,8 @@ jobs:
           name: Install MySQL CLI; Import create table; run an example query
           command: |
             sudo apt-get install default-mysql-client
-            mysql -h 127.0.0.1 -u ci-user -p ci-pass factom_live_feed < sql-schema.sql
-            mysql -h 127.0.0.1 -u ci-user -p ci-pass --execute="SELECT * FROM factom_live_feed.subscriptions"
+            mysql -h 127.0.0.1 -u ci-user -pci-pass factom_live_feed < sql-schema.sql
+            mysql -h 127.0.0.1 -u ci-user -pci-pass --execute="SELECT * FROM factom_live_feed.subscriptions"
 
       - run:
           name: make run
