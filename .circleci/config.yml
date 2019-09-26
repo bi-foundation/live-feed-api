@@ -40,12 +40,20 @@ jobs:
           key: v1-pkg-cache
           paths:
             - "/go/pkg"
+            -
+      - run:
+          name: Install MySQL CLI; Import create table; run an example query
+          command: |
+            sudo apt-get install default-mysql-client
+            mysql -h 127.0.0.1 -u circleci-go -p circle-test factom-live-api < sql-schema.sql
+            mysql -h 127.0.0.1 -u circleci-go -p circle-test --execute="SELECT * FROM factom-live-api.Pe
 
       - run:
           name: make run
           environment:
             FACTOM_LIVE_FEED_SUBSCRIPTION_PORT: 8700
-            FACTOM_LIVE_FEED_DATABASE_DATABASE: inmemory
+            FACTOM_LIVE_FEED_DATABASE_DATABASE: mysql
+            FACTOM_LIVE_FEED_DATABASE_CONNECTIONSTRING: circleci-go:circle-test@tcp(127.0.0.1:3306)/factom-live-api
           command: make run
           background: true # keep service running and proceed to next step
 
