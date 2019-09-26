@@ -27,7 +27,6 @@ jobs:
       # specify any bash command here prefixed with `run: `
       - run: make fmt-check
       - run: make lint
-      - run: make vet
       - run: make clean
       - run: make dev-deps
       - run: make generate
