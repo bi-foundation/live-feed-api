@@ -11,8 +11,10 @@ jobs:
 
       - image: circleci/mysql:latest
         environment: # environment variables for primary container
-          POSTGRES_USER: circleci-go
-          POSTGRES_DB: circle-test
+          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_DATABASE: factom_live_feed
+          MYSQL_USER: ci-user
+          MYSQL_PASSWORD: ci-pass
 
     #### TEMPLATE_NOTE: go expects specific checkout path representing url
     #### expecting it in the form of
@@ -45,8 +47,8 @@ jobs:
           name: Install MySQL CLI; Import create table; run an example query
           command: |
             sudo apt-get install default-mysql-client
-            mysql -h 127.0.0.1 -u circleci-go -p circle-test factom-live-api < sql-schema.sql
-            mysql -h 127.0.0.1 -u circleci-go -p circle-test --execute="SELECT * FROM factom-live-api.Pe
+            mysql -h 127.0.0.1 -u ci-user -p ci-pass factom_live_feed < sql-schema.sql
+            mysql -h 127.0.0.1 -u ci-user -p ci-pass --execute="SELECT * FROM factom_live_feed.subscriptions"
 
       - run:
           name: make run
