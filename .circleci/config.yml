@@ -35,6 +35,7 @@ jobs:
       # specify any bash command here prefixed with `run: `
       - run: make fmt-check
       - run: make lint
+      - run: make vet
       - run: make clean
       - run: make build
       - run:
@@ -44,9 +45,7 @@ jobs:
             FACTOMD_LIVE_FEED_DATABASE_USERNAME: circleci-go
             FACTOMD_LIVE_FEED_DATABASE_PASSWORD: circleci-test
           # Store the results of our tests in the $TEST_RESULTS directory
-          command: |
-            trap "go-junit-report <${TEST_RESULTS}/go-test.out > ${TEST_RESULTS}/go-test-report.xml" EXIT
-            make test | tee ${TEST_RESULTS}/go-test.out
+          command: make test
 
       - save_cache: # Store cache in the /go/pkg directory
           key: v1-pkg-cache
