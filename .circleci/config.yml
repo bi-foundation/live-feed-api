@@ -20,12 +20,8 @@ jobs:
     ####   /go/src/bitbucket.org/circleci/go-tool
     working_directory: /go/src/github.com/bi-foundation/live-feed-api
 
-    environment: # environment variables for the build itself
-      TEST_RESULTS: /tmp/test-results # path to where test results will be saved
-
     steps:
       - checkout
-      - run: mkdir -p $TEST_RESULTS # create the test results directory
 
       - restore_cache: # restores saved cache if no changes are detected since last run
           # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
@@ -44,7 +40,6 @@ jobs:
             FACTOMD_LIVE_FEED_DATABASE_DATABASE: mysql
             FACTOMD_LIVE_FEED_DATABASE_USERNAME: circleci-go
             FACTOMD_LIVE_FEED_DATABASE_PASSWORD: circleci-test
-          # Store the results of our tests in the $TEST_RESULTS directory
           command: make test
 
       - save_cache: # Store cache in the /go/pkg directory
@@ -56,9 +51,7 @@ jobs:
           name: make run
           environment:
             FACTOMD_LIVE_FEED_SUBSCRIPTION_PORT: 8700
-            FACTOMD_LIVE_FEED_DATABASE_DATABASE: mysql
-            FACTOMD_LIVE_FEED_DATABASE_USERNAME: circleci-go
-            FACTOMD_LIVE_FEED_DATABASE_PASSWORD: circleci-test
+            FACTOMD_LIVE_FEED_DATABASE_DATABASE: inmemory
           command: make run
           background: true # keep service running and proceed to next step
 
