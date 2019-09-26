@@ -99,5 +99,8 @@ workflows:
             tags:
               only: /^\d+\.\d+\.\d+$/
       - github-release:
+          branches:
+            only:
+              - master
           requires:
             - build
