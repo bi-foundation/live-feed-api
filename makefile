@@ -32,11 +32,11 @@ deps:
 
 .PHONY: build
 build: deps
-	$(GOBUILD) ./live-feed-api.go;
+	$(GOBUILD) ./factom-live-feed-api.go;
 
 .PHONY: install
 install: deps
-	$(GOINSTALL) ./live-feed-api.go;
+	$(GOINSTALL) ./factom-live-feed-api.go;
 
 .PHONY: test
 test:
