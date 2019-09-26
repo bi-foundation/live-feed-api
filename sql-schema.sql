@@ -1,3 +1,6 @@
+DROP TABLE IF EXISTS `filters`;
+DROP TABLE IF EXISTS `subscriptions`;
+
 CREATE TABLE IF NOT EXISTS subscriptions (
 	id SERIAL PRIMARY KEY,
 	failures int NOT NULL,

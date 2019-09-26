@@ -6,39 +6,82 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.12
+        environment:
+          GO111MODULE: "on"
 
-      - image: circleci/mysql:latest
+      - image: circleci/mysql:8.0.3
         environment: # environment variables for primary container
-          POSTGRES_USER: circleci-go
-          POSTGRES_DB: circle-test
+          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_DATABASE: factom_live_feed
+          MYSQL_USER: ciuser
+          MYSQL_PASSWORD: cipass
 
     #### TEMPLATE_NOTE: go expects specific checkout path representing url
     #### expecting it in the form of
     ####   /go/src/github.com/circleci/go-tool
     ####   /go/src/bitbucket.org/circleci/go-tool
-    working_directory: /go/src/github.com/bifoundation/live-feed-api
-
-    environment: # environment variables for the build itself
-      TEST_RESULTS: /tmp/test-results # path to where test results will be saved
+    working_directory: /go/src/github.com/bi-foundation/live-feed-api
 
     steps:
       - checkout
+
+      - restore_cache: # restores saved cache if no changes are detected since last run
+          # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+          keys:
+            - v1-pkg-cache
 
       # specify any bash command here prefixed with `run: `
       - run: make fmt-check
       - run: make lint
       - run: make vet
       - run: make clean
-      - run: make dev-deps
-      - run: make generate
       - run: make build
+      - run: make test
+
+      - save_cache: # Store cache in the /go/pkg directory
+          key: v1-pkg-cache
+          paths:
+            - "/go/pkg"
+
       - run:
-          name: Run unit tests
-          environment: # environment variables for the build itself
-            FACTOMD_LIVE_FEED_DATABASE_DATABASE: mysql
-            FACTOMD_LIVE_FEED_DATABASE_USERNAME: circleci-go
-            FACTOMD_LIVE_FEED_DATABASE_PASSWORD: circleci-test
-          command: make test
+          # Our primary container isn't MYSQL so run a sleep command until it's ready.
+          name: Waiting for MySQL to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z 127.0.0.1 3306 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MySQL && exit 1
+
+      - run:
+          name: Install MySQL CLI; Import create table; run an example query
+          command: |
+            sudo apt-get install default-mysql-client
+            mysql -h 127.0.0.1 -u ciuser -pcipass factom_live_feed < sql-schema.sql
+            mysql -h 127.0.0.1 -u ciuser -pcipass --execute="SELECT * FROM factom_live_feed.subscriptions"
+      - run:
+          name: make run
+          environment:
+            FACTOM_LIVE_FEED_SUBSCRIPTION_PORT: 8700
+            FACTOM_LIVE_FEED_DATABASE_DATABASE: mysql
+            FACTOM_LIVE_FEED_DATABASE_CONNECTIONSTRING: ciuser:cipass@tcp(127.0.0.1:3306)/factom_live_feed
+          command: make run
+          background: true # keep service running and proceed to next step
+
+      - run:
+          name: validate run
+          command: |
+            sleep 5
+            curl --retry 3 --retry-delay 1 -X POST -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"callbackType\": \"HTTP\", \"callbackUrl\": \"https://server.com/events\", \"filters\": { \"NODE_MESSAGE\": { \"filtering\": \"\" } }}" http://localhost:8700/live/feed/v0.1/subscriptions
+
+      - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+          path: /tmp/test-results
+          destination: raw-test-output
+
+      - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+          path: /tmp/test-results
 
   github-release:
     docker:
@@ -56,5 +99,10 @@ workflows:
             tags:
               only: /^\d+\.\d+\.\d+$/
       - github-release:
+          filters:
+            branches:
+              only:
+                - master
+                - /rc-.*/
           requires:
             - build
