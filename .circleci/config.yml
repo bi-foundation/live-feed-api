@@ -9,12 +9,12 @@ jobs:
         environment:
           GO111MODULE: "on"
 
-      - image: circleci/mysql:latest
+      - image: circleci/mysql:8.0.3
         environment: # environment variables for primary container
           MYSQL_ROOT_PASSWORD: rootpw
           MYSQL_DATABASE: factom_live_feed
-          MYSQL_USER: ci-user
-          MYSQL_PASSWORD: ci-pass
+          MYSQL_USER: ciuser
+          MYSQL_PASSWORD: cipass
 
     #### TEMPLATE_NOTE: go expects specific checkout path representing url
     #### expecting it in the form of
@@ -42,14 +42,25 @@ jobs:
           key: v1-pkg-cache
           paths:
             - "/go/pkg"
-            -
+
+      - run:
+          # Our primary container isn't MYSQL so run a sleep command until it's ready.
+          name: Waiting for MySQL to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z 127.0.0.1 3306 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MySQL && exit 1
+
       - run:
           name: Install MySQL CLI; Import create table; run an example query
           command: |
             sudo apt-get install default-mysql-client
-            mysql -h 127.0.0.1 -u ci-user -pci-pass factom_live_feed < sql-schema.sql
-            mysql -h 127.0.0.1 -u ci-user -pci-pass --execute="SELECT * FROM factom_live_feed.subscriptions"
-
+            mysql -h 127.0.0.1 -u ciuser -pcipass factom_live_feed < sql-schema.sql
+            mysql -h 127.0.0.1 -u ciuser -pcipass --execute="SELECT * FROM factom_live_feed.subscriptions"
       - run:
           name: make run
           environment:
