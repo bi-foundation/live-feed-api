@@ -161,7 +161,7 @@ message ServerIndexNumber {
 
 // ====  MESSAGE EVENTS =====
 message ProcessMessage {
-    ProcessMessageCode messageCode = 1;
+    ProcessCode processCode = 1;
     Level level = 2;
     string messageText = 3;
 }
@@ -193,7 +193,7 @@ enum Level {
     ERROR = 2;
 }
 
-enum ProcessMessageCode {
+enum ProcessCode {
     NEW_BLOCK = 0;
     NEW_MINUTE = 1;
 }
