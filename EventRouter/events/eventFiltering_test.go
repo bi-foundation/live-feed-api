@@ -10,10 +10,67 @@ import (
 	"io/ioutil"
 	"log"
 	"regexp"
+	"strings"
 	"testing"
 )
 
 var randomizer = Randomizer{}
+
+func TestQueryNoFiltering(t *testing.T) {
+	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
+	event.Value = eventmessages.NewPopulatedFactomEvent_DirectoryBlockCommit(randomizer, false)
+
+	schema, err := queryScheme(event)
+	if err != nil {
+		log.Fatalf("failed to create new schema, error: %v", err)
+	}
+
+	// build the query
+	query := buildNonFilteringQuery(schema)
+
+	assert.EqualValues(t, query, nonFilteringQuery)
+
+	queryResult, err := Filter(query, event)
+	if err != nil {
+		fmt.Printf("result: %s \n", jsonPrettyPrint(string(queryResult)))
+		t.Fatalf("failed to marshal result: %v - %v", err, queryResult)
+	}
+
+	filterResult, err := Filter("", event)
+	if err != nil {
+		fmt.Printf("result: %s \n", jsonPrettyPrint(string(filterResult)))
+		t.Fatalf("failed to marshal result: %v - %v", err, filterResult)
+	}
+
+	assert.JSONEq(t, string(queryResult), string(filterResult))
+}
+
+func TestQueryOnDifferentEvent(t *testing.T) {
+	query := readQuery(t, "CommitChain.md")
+	expectedJSON := `{
+  		"event": {
+			"factomNodeName": "1",
+			"identityChainID": {
+				"hashValue": "\u0001"
+			},
+			"value": {
+			}
+		}
+	}`
+
+	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
+	chainCommit := eventmessages.NewPopulatedFactomEvent_EntryCommit(randomizer, false)
+	event.Value = chainCommit
+
+	result, err := Filter(query, event)
+	if err != nil {
+		fmt.Printf("query: %s \n", jsonPrettyPrint(query))
+		fmt.Printf("result: %s \n", jsonPrettyPrint(string(result)))
+		t.Fatalf("failed to marshal result: %v - %v", err, result)
+	}
+
+	assert.JSONEq(t, expectedJSON, string(result))
+}
 
 func TestQueryCommitChain(t *testing.T) {
 	query := readQuery(t, "CommitChain.md")
@@ -385,7 +442,7 @@ func TestQueryProcessMessage(t *testing.T) {
 			},
 			"value": {
 			  "messageText": "1",
-			  "messageCode": "NEW_MINUTE",
+			  "processCode": "NEW_MINUTE",
 			  "level": "WARNING"
 			}
 		  }
@@ -515,4 +572,92 @@ func (Randomizer) Uint32() uint32 {
 }
 func (Randomizer) Intn(n int) int {
 	return 1 % n
+}
+
+func buildNonFilteringQuery(schema graphql.Schema) string {
+	query := traverseType(schema, 4, "FactomEvent")
+	return fmt.Sprintf("{\n%s}", query)
+}
+
+func traverseType(schema graphql.Schema, indent int, object string) string {
+	var builder strings.Builder
+	indentation := strings.Repeat(" ", indent)
+	typeSchema := queryInfo(schema, object)
+	if rootSchema, ok := typeSchema.(map[string]interface{}); ok {
+		if tSchema, ok := rootSchema["__type"].(map[string]interface{}); ok {
+			if fSchema, ok := tSchema["fields"].([]interface{}); ok {
+				for _, fields := range fSchema {
+					if field, ok := fields.(map[string]interface{}); ok {
+						// fmt.Printf("%s%v : %v \n", indentation, field["name"], field["type"])
+						if fieldType, ok := field["type"].(map[string]interface{}); ok {
+							if fieldType["kind"] == "OBJECT" || fieldType["kind"] == "UNION" {
+								fmt.Fprintf(&builder, "%s%v {\n", indentation, field["name"])
+								query := traverseType(schema, indent+2, fieldType["name"].(string))
+								fmt.Fprintf(&builder, "%s%s}\n", query, indentation)
+							} else if fieldType["kind"] == "LIST" {
+								if listType, ok := fieldType["ofType"].(map[string]interface{}); ok {
+									fmt.Fprintf(&builder, "%s%v {\n", indentation, field["name"])
+									query := traverseType(schema, indent+2, listType["name"].(string))
+									fmt.Fprintf(&builder, "%s%s}\n", query, indentation)
+								}
+							} else {
+								fmt.Fprintf(&builder, "%s%s\n", indentation, field["name"])
+							}
+						}
+					}
+				}
+			}
+			// handle unions
+			if pSchema, ok := tSchema["possibleTypes"].([]interface{}); ok {
+				for _, unionType := range pSchema {
+					if option, ok := unionType.(map[string]interface{}); ok {
+						// fmt.Printf("%s...on %v: %v \n", indentation, option["name"], option["type"])
+						if option["kind"] == "OBJECT" {
+							fmt.Fprintf(&builder, "%s... on %v {\n", indentation, option["name"])
+							query := traverseType(schema, indent+2, option["name"].(string))
+							fmt.Fprintf(&builder, "%s%s}\n", query, indentation)
+						} else {
+							fmt.Fprintf(&builder, "%s... on %s\n", indentation, option["name"])
+						}
+
+					}
+				}
+			}
+		}
+	}
+	return builder.String()
+}
+
+func queryInfo(schema graphql.Schema, object string) interface{} {
+	query := `{
+	  __type(name: "` + object + `") {
+		name
+		kind
+		description
+		fields {
+		  name
+		  description
+		  type {
+			name
+			kind
+			ofType {
+			  name
+			  kind
+			}
+		  }
+		}
+		possibleTypes {
+		  name
+		  kind
+		  description
+		}
+	  }
+	}`
+	params := graphql.Params{Schema: schema, RequestString: query}
+	r := graphql.Do(params)
+	if len(r.Errors) > 0 {
+		log.Fatalf("failed to execute graphql operation, errors: %+v", r.Errors)
+	}
+
+	return r.Data
 }
