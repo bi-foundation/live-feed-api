@@ -27,9 +27,9 @@ func testCRUD(t *testing.T) {
 			CallbackType:       models.BearerToken,
 			SubscriptionStatus: models.Active,
 			Filters: map[models.EventType]models.Filter{
-				models.BlockCommit:       {Filtering: fmt.Sprintf("filtering 1")},
-				models.EntryRegistration: {Filtering: fmt.Sprintf("filtering 2")},
-				models.ChainRegistration: {Filtering: fmt.Sprintf("filtering 3")},
+				models.DirectoryBlockCommit: {Filtering: fmt.Sprintf("filtering 1")},
+				models.EntryCommit:          {Filtering: fmt.Sprintf("filtering 2")},
+				models.ChainCommit:          {Filtering: fmt.Sprintf("filtering 3")},
 			},
 			Credentials: models.Credentials{
 				AccessToken: "token",
@@ -45,8 +45,8 @@ func testCRUD(t *testing.T) {
 			SubscriptionStatus: models.Suspended,
 			SubscriptionInfo:   "reason",
 			Filters: map[models.EventType]models.Filter{
-				models.BlockCommit:       {Filtering: fmt.Sprintf("filtering update 1")},
-				models.EntryRegistration: {Filtering: fmt.Sprintf("filtering update 2")},
+				models.DirectoryBlockCommit: {Filtering: fmt.Sprintf("filtering update 1")},
+				models.EntryCommit:          {Filtering: fmt.Sprintf("filtering update 2")},
 			},
 			Credentials: models.Credentials{
 				BasicAuthUsername: "username",
@@ -132,7 +132,7 @@ func testConcurrencyAllRepos(t *testing.T) {
 }
 
 func testConcurrency(t *testing.T, repository Repository) {
-	eventType := models.EntryRegistration
+	eventType := models.EntryCommit
 	subscription := models.Subscription{
 		CallbackURL:        "url",
 		SubscriptionStatus: models.Active,

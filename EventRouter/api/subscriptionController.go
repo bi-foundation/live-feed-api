@@ -172,12 +172,12 @@ func validateSubscription(subscription *models.Subscription) error {
 
 	for eventType := range subscription.Filters {
 		switch eventType {
-		case models.BlockCommit:
-		case models.EntryRegistration:
-		case models.ChainRegistration:
+		case models.DirectoryBlockCommit:
+		case models.EntryCommit:
+		case models.ChainCommit:
 		case models.ProcessMessage:
 		case models.NodeMessage:
-		case models.EntryContentRegistration:
+		case models.EntryReveal:
 		default:
 			return fmt.Errorf("invalid event type: %s", eventType)
 		}

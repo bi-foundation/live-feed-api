@@ -26,8 +26,8 @@ func TestValidateSubscription(t *testing.T) {
 				CallbackType:       models.HTTP,
 				SubscriptionStatus: models.Active,
 				Filters: map[models.EventType]models.Filter{
-					models.BlockCommit:       {Filtering: "filtering"},
-					models.EntryRegistration: {Filtering: "filtering"},
+					models.DirectoryBlockCommit: {Filtering: "filtering"},
+					models.EntryCommit:          {Filtering: "filtering"},
 				},
 			},
 			Error: nil,
