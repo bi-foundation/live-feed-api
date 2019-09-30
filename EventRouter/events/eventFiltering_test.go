@@ -20,7 +20,7 @@ import (
 var randomizer = Randomizer{}
 
 func TestQueryNoFiltering(t *testing.T) {
-	eventTypes := []models.EventType{models.ChainRegistration, models.EntryRegistration, models.EntryContentRegistration, models.BlockCommit, models.ProcessMessage, models.NodeMessage}
+	eventTypes := []models.EventType{models.ChainCommit, models.EntryCommit, models.EntryReveal, models.DirectoryBlockCommit, models.ProcessMessage, models.NodeMessage}
 
 	for _, eventType := range eventTypes {
 		t.Run(string(eventType), func(t *testing.T) {
@@ -108,7 +108,7 @@ func TestQueryCommitChain(t *testing.T) {
 		}
 	}`
 
-	event := createNewEvent(models.ChainRegistration)
+	event := createNewEvent(models.ChainCommit)
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -142,7 +142,7 @@ func TestQueryCommitEntry(t *testing.T) {
 		}
 	}`
 
-	event := createNewEvent(models.EntryRegistration)
+	event := createNewEvent(models.EntryCommit)
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -181,7 +181,7 @@ func TestQueryEntryReveal(t *testing.T) {
 		  }
 		}`
 
-	event := createNewEvent(models.EntryContentRegistration)
+	event := createNewEvent(models.EntryReveal)
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -420,7 +420,7 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 	  }
 	}`
 
-	event := createNewEvent(models.BlockCommit)
+	event := createNewEvent(models.DirectoryBlockCommit)
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -663,10 +663,10 @@ func BenchmarkFilter2000(b *testing.B) {
 		EventType models.EventType
 		Filtering string
 	}{
-		{models.BlockCommit, readQuery(b, "DirectoryBlockCommit.md")},
-		{models.ChainRegistration, readQuery(b, "CommitChain.md")},
-		{models.EntryRegistration, readQuery(b, "CommitEntry.md")},
-		{models.EntryContentRegistration, readQuery(b, "EntryReveal.md")},
+		{models.DirectoryBlockCommit, readQuery(b, "DirectoryBlockCommit.md")},
+		{models.ChainCommit, readQuery(b, "CommitChain.md")},
+		{models.EntryCommit, readQuery(b, "CommitEntry.md")},
+		{models.EntryReveal, readQuery(b, "EntryReveal.md")},
 		{models.ProcessMessage, readQuery(b, "ProcessMessage.md")},
 		{models.NodeMessage, readQuery(b, "NodeMessage.md")},
 	}
@@ -695,13 +695,13 @@ func BenchmarkFilter2000(b *testing.B) {
 func createNewEvent(eventType models.EventType) *eventmessages.FactomEvent {
 	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
 	switch eventType {
-	case models.BlockCommit:
+	case models.DirectoryBlockCommit:
 		event.Value = eventmessages.NewPopulatedFactomEvent_DirectoryBlockCommit(randomizer, false)
-	case models.ChainRegistration:
+	case models.ChainCommit:
 		event.Value = eventmessages.NewPopulatedFactomEvent_ChainCommit(randomizer, false)
-	case models.EntryRegistration:
+	case models.EntryCommit:
 		event.Value = eventmessages.NewPopulatedFactomEvent_EntryCommit(randomizer, false)
-	case models.EntryContentRegistration:
+	case models.EntryReveal:
 		event.Value = eventmessages.NewPopulatedFactomEvent_EntryReveal(randomizer, false)
 	case models.ProcessMessage:
 		event.Value = eventmessages.NewPopulatedFactomEvent_ProcessMessage(randomizer, false)
