@@ -21,8 +21,12 @@ func init() {
 func TestCRUD(t *testing.T) {
 	subscriptionContext := &models.SubscriptionContext{
 		Subscription: models.Subscription{
-			ID:          "ID",
-			CallbackURL: "url",
+			ID:                 "ID",
+			CallbackURL:        "url",
+			SubscriptionStatus: models.Active,
+			Filters: map[models.EventType]models.Filter{
+				models.NodeMessage: {Filtering: fmt.Sprintf("filtering 1")},
+			},
 		},
 	}
 	createdSubscription, err := repo.CreateSubscription(subscriptionContext)
@@ -38,12 +42,20 @@ func TestCRUD(t *testing.T) {
 	assert.Equal(t, id, readSubscription.Subscription.ID)
 	assert.Equal(t, subscriptionContext.Subscription.CallbackURL, readSubscription.Subscription.CallbackURL)
 
+	allSubscriptions, err := repo.GetActiveSubscriptions(models.NodeMessage)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(allSubscriptions))
+	assert.Equal(t, id, allSubscriptions[0].Subscription.ID)
+	assert.Equal(t, subscriptionContext.Subscription.CallbackURL, allSubscriptions[0].Subscription.CallbackURL)
+	assert.Equal(t, subscriptionContext.Subscription.Filters[models.NodeMessage].Filtering, allSubscriptions[0].Subscription.Filters[models.NodeMessage].Filtering)
+
 	substituteSubscriptionContext := &models.SubscriptionContext{
 		Subscription: models.Subscription{
 			ID:          createdSubscription.Subscription.ID,
 			CallbackURL: "updated-url",
 		},
 	}
+
 	updatedSubscription, err := repo.UpdateSubscription(substituteSubscriptionContext)
 	assert.Nil(t, err)
 	assert.Equal(t, id, updatedSubscription.Subscription.ID)
@@ -72,7 +84,7 @@ func TestConcurrency(t *testing.T) {
 
 			subscriptionContext, err := repo.CreateSubscription(subscriptionContext)
 			assert.Nil(t, err)
-			t.Logf("%d: created %s", x, subscriptionContext.Subscription.ID)
+			// t.Logf("%d: created %s", x, subscriptionContext.Subscription.ID)
 		}(i)
 	}
 	wait.Wait()

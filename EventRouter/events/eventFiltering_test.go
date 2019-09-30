@@ -522,6 +522,18 @@ func TestQueryFilter(t *testing.T) {
 	assert.JSONEq(t, expectedJSON, string(rJSON))
 }
 
+func TestInvalidQuery(t *testing.T) {
+	event := eventmessages.NewPopulatedFactomEvent(Randomizer{}, true)
+	query := `
+		 {
+			fieldNotExists
+		}`
+
+	_, err := Filter(query, event)
+
+	assert.EqualError(t, err, `failed to execute graphql operation: [Cannot query field "fieldNotExists" on type "FactomEvent".]`)
+}
+
 func jsonPrettyPrint(in string) string {
 	var out bytes.Buffer
 	err := json.Indent(&out, []byte(in), "", "\t")
