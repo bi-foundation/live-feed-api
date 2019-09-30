@@ -5,44 +5,52 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
+	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/graphql-go/graphql"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 var randomizer = Randomizer{}
 
 func TestQueryNoFiltering(t *testing.T) {
-	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
-	event.Value = eventmessages.NewPopulatedFactomEvent_DirectoryBlockCommit(randomizer, false)
+	eventTypes := []models.EventType{models.ChainRegistration, models.EntryRegistration, models.EntryContentRegistration, models.BlockCommit, models.ProcessMessage, models.NodeMessage}
 
-	schema, err := queryScheme(event)
-	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+	for _, eventType := range eventTypes {
+		t.Run(string(eventType), func(t *testing.T) {
+			event := createNewEvent(eventType)
+
+			schema, err := queryScheme(event)
+			if err != nil {
+				log.Fatalf("failed to create new schema, error: %v", err)
+			}
+
+			// build the query
+			query := buildNonFilteringQuery(schema)
+
+			assert.EqualValues(t, query, nonFilteringQuery)
+
+			queryResult, err := Filter(query, event)
+			if err != nil {
+				fmt.Printf("result: %s \n", jsonPrettyPrint(string(queryResult)))
+				t.Fatalf("failed to marshal result: %v - %v", err, queryResult)
+			}
+
+			filterResult, err := Filter("", event)
+			if err != nil {
+				fmt.Printf("result: %s \n", jsonPrettyPrint(string(filterResult)))
+				t.Fatalf("failed to marshal result: %v - %v", err, filterResult)
+			}
+
+			assert.JSONEq(t, string(queryResult), string(filterResult))
+		})
 	}
-
-	// build the query
-	query := buildNonFilteringQuery(schema)
-
-	assert.EqualValues(t, query, nonFilteringQuery)
-
-	queryResult, err := Filter(query, event)
-	if err != nil {
-		fmt.Printf("result: %s \n", jsonPrettyPrint(string(queryResult)))
-		t.Fatalf("failed to marshal result: %v - %v", err, queryResult)
-	}
-
-	filterResult, err := Filter("", event)
-	if err != nil {
-		fmt.Printf("result: %s \n", jsonPrettyPrint(string(filterResult)))
-		t.Fatalf("failed to marshal result: %v - %v", err, filterResult)
-	}
-
-	assert.JSONEq(t, string(queryResult), string(filterResult))
 }
 
 func TestQueryOnDifferentEvent(t *testing.T) {
@@ -100,9 +108,7 @@ func TestQueryCommitChain(t *testing.T) {
 		}
 	}`
 
-	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
-	chainCommit := eventmessages.NewPopulatedFactomEvent_ChainCommit(randomizer, false)
-	event.Value = chainCommit
+	event := createNewEvent(models.ChainRegistration)
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -136,9 +142,7 @@ func TestQueryCommitEntry(t *testing.T) {
 		}
 	}`
 
-	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
-	entryCommit := eventmessages.NewPopulatedFactomEvent_EntryCommit(randomizer, false)
-	event.Value = entryCommit
+	event := createNewEvent(models.EntryRegistration)
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -177,9 +181,7 @@ func TestQueryEntryReveal(t *testing.T) {
 		  }
 		}`
 
-	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
-	entryCommit := eventmessages.NewPopulatedFactomEvent_EntryReveal(randomizer, false)
-	event.Value = entryCommit
+	event := createNewEvent(models.EntryContentRegistration)
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -418,9 +420,7 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 	  }
 	}`
 
-	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
-	directoryBlockCommit := eventmessages.NewPopulatedFactomEvent_DirectoryBlockCommit(randomizer, false)
-	event.Value = directoryBlockCommit
+	event := createNewEvent(models.BlockCommit)
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -448,9 +448,7 @@ func TestQueryProcessMessage(t *testing.T) {
 		  }
 		}`
 
-	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
-	entryCommit := eventmessages.NewPopulatedFactomEvent_ProcessMessage(randomizer, false)
-	event.Value = entryCommit
+	event := createNewEvent(models.ProcessMessage)
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -478,9 +476,7 @@ func TestQueryNodeMessage(t *testing.T) {
 		}
 	}`
 
-	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
-	entryCommit := eventmessages.NewPopulatedFactomEvent_NodeMessage(randomizer, false)
-	event.Value = entryCommit
+	event := createNewEvent(models.NodeMessage)
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -535,7 +531,7 @@ func jsonPrettyPrint(in string) string {
 	return out.String()
 }
 
-func readQuery(t *testing.T, filename string) string {
+func readQuery(t testing.TB, filename string) string {
 	data, err := ioutil.ReadFile("../../filtering_examples/" + filename)
 	if err != nil {
 		t.Fatalf("failed to open file: %v", err)
@@ -660,4 +656,59 @@ func queryInfo(schema graphql.Schema, object string) interface{} {
 	}
 
 	return r.Data
+}
+
+func BenchmarkFilter2000(b *testing.B) {
+	eventTypes := []struct {
+		EventType models.EventType
+		Filtering string
+	}{
+		{models.BlockCommit, readQuery(b, "DirectoryBlockCommit.md")},
+		{models.ChainRegistration, readQuery(b, "CommitChain.md")},
+		{models.EntryRegistration, readQuery(b, "CommitEntry.md")},
+		{models.EntryContentRegistration, readQuery(b, "EntryReveal.md")},
+		{models.ProcessMessage, readQuery(b, "ProcessMessage.md")},
+		{models.NodeMessage, readQuery(b, "NodeMessage.md")},
+	}
+
+	s := rand.NewSource(time.Now().Unix())
+	r := rand.New(s) // initialize local pseudorandom generator
+
+	n := 2000
+
+	var result []byte
+	var err error
+	for i := 0; i < n; i++ {
+		eventType := eventTypes[r.Intn(len(eventTypes))]
+		event := createNewEvent(eventType.EventType)
+
+		filtering := eventType.Filtering
+
+		result, err = Filter(filtering, event)
+		if err != nil {
+			b.Fatalf("failed to marshal result: %v - %v", err, jsonPrettyPrint(string(result)))
+		}
+	}
+
+}
+
+func createNewEvent(eventType models.EventType) *eventmessages.FactomEvent {
+	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
+	switch eventType {
+	case models.BlockCommit:
+		event.Value = eventmessages.NewPopulatedFactomEvent_DirectoryBlockCommit(randomizer, false)
+	case models.ChainRegistration:
+		event.Value = eventmessages.NewPopulatedFactomEvent_ChainCommit(randomizer, false)
+	case models.EntryRegistration:
+		event.Value = eventmessages.NewPopulatedFactomEvent_EntryCommit(randomizer, false)
+	case models.EntryContentRegistration:
+		event.Value = eventmessages.NewPopulatedFactomEvent_EntryReveal(randomizer, false)
+	case models.ProcessMessage:
+		event.Value = eventmessages.NewPopulatedFactomEvent_ProcessMessage(randomizer, false)
+	case models.NodeMessage:
+		event.Value = eventmessages.NewPopulatedFactomEvent_NodeMessage(randomizer, false)
+
+	}
+
+	return event
 }
