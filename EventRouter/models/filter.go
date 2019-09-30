@@ -5,12 +5,12 @@ type EventType string
 
 // Different event types
 const (
-	ChainRegistration        EventType = "CHAIN_REGISTRATION"
-	EntryRegistration        EventType = "ENTRY_REGISTRATION"
-	EntryContentRegistration EventType = "ENTRY_CONTENT_REGISTRATION"
-	BlockCommit              EventType = "BLOCK_COMMIT"
-	ProcessMessage           EventType = "PROCESS_MESSAGE"
-	NodeMessage              EventType = "NODE_MESSAGE"
+	ChainCommit          EventType = "CHAIN_COMMIT"
+	EntryCommit          EventType = "ENTRY_COMMIT"
+	EntryReveal          EventType = "ENTRY_REVEAL"
+	DirectoryBlockCommit EventType = "DIRECTORY_BLOCK_COMMIT"
+	ProcessMessage       EventType = "PROCESS_MESSAGE"
+	NodeMessage          EventType = "NODE_MESSAGE"
 )
 
 // Filter for filtering an event type

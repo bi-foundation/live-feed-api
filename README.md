@@ -107,10 +107,10 @@ Users can receive events from factomd by subscribing an application with the Liv
 A [swagger](EventRouter/swagger/swagger.yaml) is provided for the Subscription API. The swagger is also exposed at https://domain/live/feed/v0.1/swagger.json.
 
 Users can receive the following event types:
-* chain registration
-* entry registration
-* entry content registration
-* block commit
+* chain commit
+* entry commit
+* entry reveal
+* directory block commit
 * process message
 * node message
 
@@ -155,16 +155,16 @@ POST /live/feed/v0.1/subscriptions
     "accessToken": "API_TOKEN_OF_THE_RECEIVING_ENDPOINT"
   }, 
   "filters": {
-    "BLOCK_COMMIT": {
+    "DIRECTORY_BLOCK_COMMIT": {
       "filtering": ""
     }, 
-    "CHAIN_REGISTRATION": {
+    "CHAIN_COMMIT": {
       "filtering": ""
     }, 
-    "ENTRY_CONTENT_REGISTRATION": {
+    "ENTRY_REVEAL": {
       "filtering": ""
     }, 
-    "ENTRY_REGISTRATION": {
+    "ENTRY_COMMIT": {
       "filtering": ""
     }, 
     "NODE_MESSAGE": {
