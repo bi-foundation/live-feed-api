@@ -97,7 +97,7 @@ func TestSendEvent(t *testing.T) {
 					CallbackURL:  fmt.Sprintf("http://localhost:%[1]d/callback%[1]d%s", port, testCase.EndpointPostfix),
 					CallbackType: testCase.CallbackType,
 					Filters: map[models.EventType]models.Filter{
-						models.ChainRegistration: {Filtering: ""},
+						models.ChainCommit: {Filtering: ""},
 					},
 					Credentials: testCase.Credentials,
 				},
@@ -121,7 +121,7 @@ func TestHTTPSEndpoint(t *testing.T) {
 				CallbackURL:  "https://localhost:23232/callback23232",
 				CallbackType: models.BearerToken,
 				Filters: map[models.EventType]models.Filter{
-					models.ChainRegistration: {Filtering: ""},
+					models.ChainCommit: {Filtering: ""},
 				},
 				Credentials: models.Credentials{
 					AccessToken: accessToken,
@@ -161,13 +161,13 @@ func TestHandleEvents(t *testing.T) {
 	subscription1 := models.Subscription{
 		CallbackURL: "http://localhost:23222/callback23222",
 		Filters: map[models.EventType]models.Filter{
-			models.BlockCommit: {Filtering: ""},
+			models.DirectoryBlockCommit: {Filtering: ""},
 		},
 	}
 	subscription2 := models.Subscription{
 		CallbackURL: "http://localhost:23223/callback23223",
 		Filters: map[models.EventType]models.Filter{
-			models.BlockCommit: {Filtering: ""},
+			models.DirectoryBlockCommit: {Filtering: ""},
 		},
 	}
 	subscriptionContexts := []*models.SubscriptionContext{
@@ -180,7 +180,7 @@ func TestHandleEvents(t *testing.T) {
 
 	// init mock repository
 	mockStore := repository.InitMockRepository()
-	mockStore.On("GetActiveSubscriptions", models.BlockCommit).Return(subscriptionContexts, nil).Once()
+	mockStore.On("GetActiveSubscriptions", models.DirectoryBlockCommit).Return(subscriptionContexts, nil).Once()
 
 	var eventsReceived int32 = 0
 	factomEvent := mockFactomAnchorEvent()

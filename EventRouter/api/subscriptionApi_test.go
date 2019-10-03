@@ -33,10 +33,10 @@ var testSubscription = &models.Subscription{
 	CallbackURL:  "http://url/callback",
 	CallbackType: models.HTTP,
 	Filters: map[models.EventType]models.Filter{
-		models.ChainRegistration: {
+		models.ChainCommit: {
 			Filtering: "filtering 1",
 		},
-		models.EntryRegistration: {
+		models.EntryCommit: {
 			Filtering: "filtering 2",
 		},
 	},
@@ -180,10 +180,10 @@ func testSubscriptionAPI(t *testing.T, scheme string, port int) {
 				CallbackURL:  "http://url/callback",
 				CallbackType: models.HTTP,
 				Filters: map[models.EventType]models.Filter{
-					models.ChainRegistration: {
+					models.ChainCommit: {
 						Filtering: "filtering 1",
 					},
-					models.EntryRegistration: {
+					models.EntryCommit: {
 						Filtering: "filtering 2",
 					},
 				},

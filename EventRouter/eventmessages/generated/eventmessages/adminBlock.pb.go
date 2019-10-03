@@ -3918,7 +3918,8 @@ func (m *AdminBlockEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *AdminBlockEntry_AddAuditServer) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_AddAuditServer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -3938,7 +3939,8 @@ func (m *AdminBlockEntry_AddAuditServer) MarshalToSizedBuffer(dAtA []byte) (int,
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddEfficiency) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_AddEfficiency) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -3958,7 +3960,8 @@ func (m *AdminBlockEntry_AddEfficiency) MarshalToSizedBuffer(dAtA []byte) (int, 
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddFactoidAddress) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_AddFactoidAddress) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -3978,7 +3981,8 @@ func (m *AdminBlockEntry_AddFactoidAddress) MarshalToSizedBuffer(dAtA []byte) (i
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddFederatedServer) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_AddFederatedServer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -3998,7 +4002,8 @@ func (m *AdminBlockEntry_AddFederatedServer) MarshalToSizedBuffer(dAtA []byte) (
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddFederatedServerBitcoinAnchorKey) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_AddFederatedServerBitcoinAnchorKey) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4018,7 +4023,8 @@ func (m *AdminBlockEntry_AddFederatedServerBitcoinAnchorKey) MarshalToSizedBuffe
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddFederatedServerSigningKey) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_AddFederatedServerSigningKey) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4038,7 +4044,8 @@ func (m *AdminBlockEntry_AddFederatedServerSigningKey) MarshalToSizedBuffer(dAtA
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddReplaceMatryoshkaHash) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_AddReplaceMatryoshkaHash) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4058,7 +4065,8 @@ func (m *AdminBlockEntry_AddReplaceMatryoshkaHash) MarshalToSizedBuffer(dAtA []b
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_CancelCoinbaseDescriptor) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_CancelCoinbaseDescriptor) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4078,7 +4086,8 @@ func (m *AdminBlockEntry_CancelCoinbaseDescriptor) MarshalToSizedBuffer(dAtA []b
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_CoinbaseDescriptor) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_CoinbaseDescriptor) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4098,7 +4107,8 @@ func (m *AdminBlockEntry_CoinbaseDescriptor) MarshalToSizedBuffer(dAtA []byte) (
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_DirectoryBlockSignatureEntry) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_DirectoryBlockSignatureEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4118,7 +4128,8 @@ func (m *AdminBlockEntry_DirectoryBlockSignatureEntry) MarshalToSizedBuffer(dAtA
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_EndOfMinuteEntry) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_EndOfMinuteEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4138,7 +4149,8 @@ func (m *AdminBlockEntry_EndOfMinuteEntry) MarshalToSizedBuffer(dAtA []byte) (in
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_ForwardCompatibleEntry) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_ForwardCompatibleEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4158,7 +4170,8 @@ func (m *AdminBlockEntry_ForwardCompatibleEntry) MarshalToSizedBuffer(dAtA []byt
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_IncreaseServerCount) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_IncreaseServerCount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4178,7 +4191,8 @@ func (m *AdminBlockEntry_IncreaseServerCount) MarshalToSizedBuffer(dAtA []byte) 
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_RemoveFederatedServer) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_RemoveFederatedServer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4198,7 +4212,8 @@ func (m *AdminBlockEntry_RemoveFederatedServer) MarshalToSizedBuffer(dAtA []byte
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_RevealMatryoshkaHash) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_RevealMatryoshkaHash) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4218,7 +4233,8 @@ func (m *AdminBlockEntry_RevealMatryoshkaHash) MarshalToSizedBuffer(dAtA []byte)
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_ServerFault) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *AdminBlockEntry_ServerFault) MarshalToSizedBuffer(dAtA []byte) (int, error) {

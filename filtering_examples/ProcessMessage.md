@@ -8,7 +8,7 @@ Process Message example
     value {
         ... on ProcessMessage {
             messageText 
-            messageCode 
+            processCode 
             level
         }
     }

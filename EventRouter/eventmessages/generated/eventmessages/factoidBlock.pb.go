@@ -1472,7 +1472,8 @@ func (m *RCD) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *RCD_Rcd1) MarshalTo(dAtA []byte) (int, error) {
-	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
 func (m *RCD_Rcd1) MarshalToSizedBuffer(dAtA []byte) (int, error) {
