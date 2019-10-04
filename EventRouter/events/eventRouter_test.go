@@ -10,7 +10,6 @@ import (
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/FactomProject/live-feed-api/EventRouter/repository"
-	graphqlproto_types "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
 
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -26,114 +25,309 @@ func init() {
 	log.SetLevel(log.D)
 }
 
-func TestSendEvent(t *testing.T) {
-	accessToken := "access-token"
+func TestHandleEvent(t *testing.T) {
+	port := 23221
+	subscriptionContexts := []*models.SubscriptionContext{initSubscription("id", port, 0)}
 
-	// init test cases
-	testCases := map[string]struct {
-		EndpointPostfix          string
-		CallbackType             models.CallbackType
-		Credentials              models.Credentials
-		AuthenticationValidation func(r *http.Request) bool
-	}{
-		"basic http": {
-			CallbackType: models.HTTP,
-		},
-		"bearer token": {
-			CallbackType: models.BearerToken,
-			Credentials: models.Credentials{
-				AccessToken: accessToken,
-			},
-			AuthenticationValidation: validateToken(accessToken),
-		},
-		"invalid bearer token": {
-			CallbackType: models.BearerToken,
-			Credentials: models.Credentials{
-				AccessToken: accessToken,
-			},
-			AuthenticationValidation: validateToken("invalid"),
-		},
-		"basic auth": {
-			CallbackType: models.BasicAuth,
-			Credentials: models.Credentials{
-				BasicAuthUsername: "username",
-				BasicAuthPassword: "password",
-			},
-			AuthenticationValidation: validateUsernamePassword("username", "password"),
-		},
-		"basic invalid auth": {
-			CallbackType: models.BasicAuth,
-			Credentials: models.Credentials{
-				BasicAuthUsername: "username",
-				BasicAuthPassword: "password",
-			},
-			AuthenticationValidation: validateUsernamePassword("incorrect", "password"),
-		},
-		"url not found": {
-			EndpointPostfix: "/not/here",
-			CallbackType:    models.HTTP,
-		},
-	}
-
+	// init mock repository
 	mockStore := repository.InitMockRepository()
-	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Times(3)
+	mockStore.On("GetActiveSubscriptions", models.EntryCommit).Return(subscriptionContexts, nil).Once()
 
-	// init data
-	factomEvent := mockFactomAnchorEvent()
-	event, err := json.Marshal(factomEvent)
-	if err != nil {
-		t.Fatalf("failed to marshal event: %v", err)
+	var eventsReceived int32 = 0
+	factomEvent, expectedEvent := mockFactomEvent(t)
+
+	startMockServer(t, port, &eventsReceived, nil, expectedEvent)
+
+	queue := make(chan *eventmessages.FactomEvent)
+	router := NewEventRouter(queue)
+	router.Start()
+
+	// test send event if an event is send through the channel
+	queue <- factomEvent
+
+	waitOnEventReceived(&eventsReceived, len(subscriptionContexts), 1*time.Minute)
+
+	assert.Equal(t, int32(1), eventsReceived)
+}
+
+func TestHandleEvents(t *testing.T) {
+	// test sending 5 subscriptions to two different endpoints
+	port1 := 23222
+	port2 := 23223
+
+	subscription1 := initSubscription("id1", port1, 0)
+	subscription2 := initSubscription("id2", port2, 0)
+	subscriptionContexts := []*models.SubscriptionContext{
+		subscription1, subscription1, subscription2, subscription2, subscription1,
 	}
 
-	index := 0
-	for name, testCase := range testCases {
-		t.Run(name, func(t *testing.T) {
-			index++
-			port := 23232 + index
-			var eventsReceived int32 = 0
-			subscriptionContext := &models.SubscriptionContext{
-				Subscription: models.Subscription{
-					ID:           "id",
-					CallbackURL:  fmt.Sprintf("http://localhost:%[1]d/callback%[1]d%s", port, testCase.EndpointPostfix),
-					CallbackType: testCase.CallbackType,
-					Filters: map[models.EventType]models.Filter{
-						models.ChainCommit: {Filtering: ""},
-					},
-					Credentials: testCase.Credentials,
-				},
-			}
+	// init mock repository
+	mockStore := repository.InitMockRepository()
+	mockStore.On("GetActiveSubscriptions", models.EntryCommit).Return(subscriptionContexts, nil).Once()
 
-			// start server to receive events
-			startMockServer(t, port, &eventsReceived, testCase.AuthenticationValidation, event)
+	var eventsReceived int32 = 0
+	factomEvent, expectedEvent := mockFactomEvent(t)
 
-			// test send to http oauth2 endpoint
-			sendEvent(subscriptionContext, event)
+	queue := make(chan *eventmessages.FactomEvent)
+	router := NewEventRouter(queue)
+	router.Start()
+
+	// start two mock server on different port
+	startMockServer(t, port1, &eventsReceived, nil, expectedEvent)
+	startMockServer(t, port2, &eventsReceived, nil, expectedEvent)
+
+	// test send event if an event is send through the channel
+	queue <- factomEvent
+
+	waitOnEventReceived(&eventsReceived, len(subscriptionContexts), 1*time.Minute)
+
+	assert.Equal(t, int32(5), eventsReceived, "failed to deliver correct number of events: %d expected != %d received", 5, eventsReceived)
+}
+
+func TestHandleFactomEvents(t *testing.T) {
+	port := 23224
+	subscriptionContexts := []*models.SubscriptionContext{initSubscription("id", port, 0)}
+
+	// init mock repository
+	mockStore := repository.InitMockRepository()
+	mockStore.On("GetActiveSubscriptions", models.EntryCommit).Return(subscriptionContexts, nil).Twice()
+
+	var eventsReceived int32 = 0
+	factomEvent, expectedEvent := mockFactomEvent(t)
+
+	startMockServer(t, port, &eventsReceived, nil, expectedEvent)
+
+	queue := make(chan *eventmessages.FactomEvent)
+	router := NewEventRouter(queue)
+	router.Start()
+
+	// test send event if an event is send through the channel
+	queue <- factomEvent
+	queue <- factomEvent
+
+	waitOnEventReceived(&eventsReceived, len(subscriptionContexts)*2, 1*time.Minute)
+
+	assert.Equal(t, int32(2), eventsReceived)
+
+}
+
+func TestSend(t *testing.T) {
+	port := 26231
+	subscriptionId := "id"
+	subscriptionContexts := []*models.SubscriptionContext{initSubscription(subscriptionId, port, 0)}
+
+	var eventsReceived int32 = 0
+	factomEvent, event := mockFactomEvent(t)
+	startMockServer(t, port, &eventsReceived, nil, event)
+
+	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack)}
+	eventRouter.send(subscriptionContexts, factomEvent)
+
+	waitOnEventReceived(&eventsReceived, 1, 1*time.Minute)
+
+	assert.Equal(t, int32(1), eventsReceived)
+}
+
+func TestSendEvents(t *testing.T) {
+	port := 26232
+	subscriptionId := "id"
+	subscriptionContext := initSubscription(subscriptionId, port, 0)
+
+	n := 3
+	var eventsReceived int32 = 0
+	_, event := mockFactomEvent(t)
+	startMockServer(t, port, &eventsReceived, nil, event)
+
+	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack)}
+
+	// test send events
+	for i := 0; i < n; i++ {
+		eventRouter.sendEvent(subscriptionContext, event)
+	}
+
+	waitOnEventReceived(&eventsReceived, n, 1*time.Minute)
+
+	assert.Equal(t, int32(n), eventsReceived)
+
+}
+
+func TestMapEventType(t *testing.T) {
+	testCases := []models.EventType{models.ChainCommit, models.EntryCommit, models.EntryReveal, models.DirectoryBlockCommit, models.ProcessMessage, models.NodeMessage}
+
+	for _, testCase := range testCases {
+		t.Run(string(testCase), func(t *testing.T) {
+			eventType, err := mapEventType(createNewEvent(testCase))
+
+			assert.Nil(t, err)
+			assert.Equal(t, testCase, eventType)
 		})
 	}
+}
+
+func TestMapEventTypeUnknown(t *testing.T) {
+	event := eventmessages.NewPopulatedFactomEvent(randomizer, true)
+	event.Value = nil
+	_, err := mapEventType(event)
+
+	assert.Error(t, err)
+}
+
+func TestEmitEvent(t *testing.T) {
+	port := 25231
+	subscriptionId := "id"
+	subscriptionContext := initSubscription(subscriptionId, port, 0)
+
+	var eventsReceived int32 = 0
+	_, event := mockFactomEvent(t)
+	startMockServer(t, port, &eventsReceived, nil, event)
+
+	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack)}
+	eventRouter.emitQueue[subscriptionContext.Subscription.ID] = NewSubscriptionStack(subscriptionContext)
+	eventRouter.emitQueue[subscriptionContext.Subscription.ID].Add(event)
+
+	// test emit event
+	eventRouter.emitEvent(subscriptionId)
+
+	assert.Equal(t, int32(1), eventsReceived)
+	assert.Equal(t, 0, subscriptionContext.Failures)
+	assert.Equal(t, models.Active, subscriptionContext.Subscription.SubscriptionStatus)
+	assert.Equal(t, "", subscriptionContext.Subscription.SubscriptionInfo)
+}
+
+func TestEmitEventFailureRecover(t *testing.T) {
+	// send the event to the wrong endpoint and simulate an external update during the timeout
+	retryTimeout = 1 * time.Millisecond // don't delay the test to long
+
+	port := 25232
+	subscriptionId := "id"
+	subscriptionContext := initSubscription(subscriptionId, 999, 0)
+
+	tmp := *subscriptionContext
+	updatedSubscriptionContext := &tmp
+	updatedSubscriptionContext.Failures = 1
+	updatedSubscriptionContext.Subscription.CallbackURL = fmt.Sprintf("http://localhost:%[1]d/callback%[1]d", port)
+
+	// init mock repository
+	mockStore := repository.InitMockRepository()
+	mockStore.On("ReadSubscription", subscriptionId).Return(updatedSubscriptionContext, nil).Once()
+	mockStore.On("UpdateSubscription", subscriptionId).Return(nil, nil).Times(2)
+
+	var eventsReceived int32 = 0
+	_, event := mockFactomEvent(t)
+	startMockServer(t, port, &eventsReceived, nil, event)
+
+	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack)}
+	eventRouter.emitQueue[subscriptionContext.Subscription.ID] = NewSubscriptionStack(subscriptionContext)
+	eventRouter.emitQueue[subscriptionContext.Subscription.ID].Add(event)
+
+	// test emit event retry
+	eventRouter.emitEvent(subscriptionId)
+
+	assert.Equal(t, int32(1), eventsReceived)
+	assert.Equal(t, 1, subscriptionContext.Failures)
+	assert.Equal(t, 0, updatedSubscriptionContext.Failures)
+	assert.Equal(t, models.Active, updatedSubscriptionContext.Subscription.SubscriptionStatus)
+	assert.Equal(t, "", updatedSubscriptionContext.Subscription.SubscriptionInfo)
+
 	mockStore.AssertExpectations(t)
 }
 
-func TestHTTPSEndpoint(t *testing.T) {
+func TestEmitEventFailureRetry(t *testing.T) {
+	retryTimeout = 1 * time.Millisecond // don't delay the test to long
+
+	port := 25233
+	subscriptionId := "id"
+	subscriptionContext := initSubscription(subscriptionId, port, 0)
+
+	// init mock repository
+	mockStore := repository.InitMockRepository()
+	mockStore.On("ReadSubscription", subscriptionId).Return(subscriptionContext, nil).Twice()
+	mockStore.On("UpdateSubscription", subscriptionId).Return(nil, nil).Times(3)
+
+	var eventsReceived int32 = 0
+	_, event := mockFactomEvent(t)
+	authFailure := func(r *http.Request) bool { return false }
+	startMockServer(t, port, &eventsReceived, authFailure, event)
+
+	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack)}
+	eventRouter.emitQueue[subscriptionContext.Subscription.ID] = NewSubscriptionStack(subscriptionContext)
+	eventRouter.emitQueue[subscriptionContext.Subscription.ID].Add(event)
+
+	// test emit event retry
+	eventRouter.emitEvent(subscriptionId)
+
+	assert.Equal(t, int32(3), eventsReceived)
+	assert.Equal(t, maxFailures, subscriptionContext.Failures)
+	assert.Equal(t, models.Suspended, subscriptionContext.Subscription.SubscriptionStatus)
+	assert.NotEqual(t, "", subscriptionContext.Subscription.SubscriptionInfo)
+
+	mockStore.AssertExpectations(t)
+}
+
+func TestEmitEventDBTimeout(t *testing.T) {
+	retryTimeout = 1 * time.Millisecond // don't delay the test to long
+
+	port := 25234
+	subscriptionId := "id"
+	subscriptionContext := initSubscription(subscriptionId, port, 2)
+
+	// init mock repository
+	mockStore := repository.InitMockRepository()
+	mockStore.On("ReadSubscription", subscriptionId).Return(subscriptionContext, fmt.Errorf("db timeout")).Once()
+	mockStore.On("UpdateSubscription", subscriptionId).Return(nil, nil).Times(1)
+
+	_, event := mockFactomEvent(t)
+
+	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack)}
+	eventRouter.emitQueue[subscriptionContext.Subscription.ID] = NewSubscriptionStack(subscriptionContext)
+	eventRouter.emitQueue[subscriptionContext.Subscription.ID].Add(event)
+
+	// test emit event retry
+	eventRouter.emitEvent(subscriptionId)
+
+	assert.Equal(t, maxFailures, subscriptionContext.Failures)
+	assert.Equal(t, models.Suspended, subscriptionContext.Subscription.SubscriptionStatus)
+	assert.Contains(t, subscriptionContext.Subscription.SubscriptionInfo, "db timeout")
+
+	mockStore.AssertExpectations(t)
+}
+
+func TestExecuteSendHTTP(t *testing.T) {
+	port := 24231
+	subscription := initSubscription("id", port, 0)
+
+	_, event := mockFactomEvent(t)
+	var eventsReceived int32 = 0
+
+	// start https server to receive event
+	startMockServer(t, port, &eventsReceived, nil, event)
+
+	// test send to the http endpoint
+	err := executeSend(&subscription.Subscription, event)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+
+	waitOnEventReceived(&eventsReceived, 1, 1*time.Minute)
+
+	assert.Equal(t, int32(1), eventsReceived, "failed to deliver correct number of events: %d expected != %d received", 1, eventsReceived)
+}
+
+func TestExecuteSendHTTPSBearerToken(t *testing.T) {
+	port := 24232
 	accessToken := "access-token"
-	subscriptionContexts := []*models.SubscriptionContext{
-		{
-			Subscription: models.Subscription{
-				CallbackURL:  "https://localhost:23232/callback23232",
-				CallbackType: models.BearerToken,
-				Filters: map[models.EventType]models.Filter{
-					models.ChainCommit: {Filtering: ""},
-				},
-				Credentials: models.Credentials{
-					AccessToken: accessToken,
-				},
-			},
+	subscription := &models.Subscription{
+		CallbackURL:  fmt.Sprintf("https://localhost:%[1]d/callback%[1]d", port),
+		CallbackType: models.BearerToken,
+		Filters: map[models.EventType]models.Filter{
+			models.ChainCommit: {Filtering: ""},
+		},
+		Credentials: models.Credentials{
+			AccessToken: accessToken,
 		},
 	}
-	factomEvent := mockFactomAnchorEvent()
-	expectedEvent, err := json.Marshal(factomEvent)
-	if err != nil {
-		t.Fatalf("failed to marshal event: %v", err)
-	}
+
+	_, event := mockFactomEvent(t)
 
 	certFile, pkFile, cleanup := testSetupCertificateFiles(t)
 	defer cleanup()
@@ -147,65 +341,76 @@ func TestHTTPSEndpoint(t *testing.T) {
 	http.DefaultClient = &http.Client{Transport: transCfg}
 
 	// start https server to receive event
-	startMockTLSServer(t, 23232, certFile, pkFile, &eventsReceived, nil, expectedEvent)
+	startMockTLSServer(t, port, certFile, pkFile, &eventsReceived, validateToken(accessToken), event)
 
-	// test send to http oauth2 endpoint
-	err = send(subscriptionContexts, factomEvent)
-	assert.Nil(t, err)
+	// test send to the http endpoint with oauth2
+	err := executeSend(subscription, event)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
 
-	waitOnEventReceived(&eventsReceived, len(subscriptionContexts), 1*time.Minute)
+	waitOnEventReceived(&eventsReceived, 1, 1*time.Minute)
+
+	assert.Equal(t, int32(1), eventsReceived, "failed to deliver correct number of events: %d expected != %d received", 1, eventsReceived)
 }
 
-// test sending 5 subscriptions to two different endpoints
-func TestHandleEvents(t *testing.T) {
-	subscription1 := models.Subscription{
-		CallbackURL: "http://localhost:23222/callback23222",
+func TestExecuteSendHTTPSBasicAuth(t *testing.T) {
+	port := 24233
+	username := "usern@me"
+	password := "passw0rd"
+	subscription := &models.Subscription{
+		CallbackURL:  fmt.Sprintf("https://localhost:%[1]d/callback%[1]d", port),
+		CallbackType: models.BasicAuth,
 		Filters: map[models.EventType]models.Filter{
-			models.DirectoryBlockCommit: {Filtering: ""},
+			models.ChainCommit: {Filtering: ""},
 		},
-	}
-	subscription2 := models.Subscription{
-		CallbackURL: "http://localhost:23223/callback23223",
-		Filters: map[models.EventType]models.Filter{
-			models.DirectoryBlockCommit: {Filtering: ""},
+		Credentials: models.Credentials{
+			BasicAuthUsername: username,
+			BasicAuthPassword: password,
 		},
-	}
-	subscriptionContexts := []*models.SubscriptionContext{
-		{Subscription: subscription1},
-		{Subscription: subscription2},
-		{Subscription: subscription2},
-		{Subscription: subscription1},
-		{Subscription: subscription1},
 	}
 
-	// init mock repository
-	mockStore := repository.InitMockRepository()
-	mockStore.On("GetActiveSubscriptions", models.DirectoryBlockCommit).Return(subscriptionContexts, nil).Once()
+	_, event := mockFactomEvent(t)
+
+	certFile, pkFile, cleanup := testSetupCertificateFiles(t)
+	defer cleanup()
 
 	var eventsReceived int32 = 0
-	factomEvent := mockFactomAnchorEvent()
-	expectedEvent, err := json.Marshal(factomEvent)
+
+	// as the code makes use of the default client, we allow to ignore expired certificate
+	transCfg := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
+	}
+	http.DefaultClient = &http.Client{Transport: transCfg}
+
+	// start https server to receive event
+	startMockTLSServer(t, port, certFile, pkFile, &eventsReceived, validateUsernamePassword(username, password), event)
+
+	// test send to the http endpoint with oauth2
+	err := executeSend(subscription, event)
 	if err != nil {
-		t.Fatalf("failed to marshal event: %v", err)
+		t.Fatalf("%v", err)
 	}
 
-	queue := make(chan *eventmessages.FactomEvent)
-	router := NewEventRouter(queue)
-	router.Start()
+	waitOnEventReceived(&eventsReceived, 1, 1*time.Minute)
 
-	// start two mock server on different porst
-	startMockServer(t, 23222, &eventsReceived, nil, expectedEvent)
-	startMockServer(t, 23223, &eventsReceived, nil, expectedEvent)
-
-	// test send event if an event is send through the channel
-	queue <- factomEvent
-
-	waitOnEventReceived(&eventsReceived, len(subscriptionContexts), 1*time.Minute)
+	assert.Equal(t, int32(1), eventsReceived, "failed to deliver correct number of events: %d expected != %d received", 1, eventsReceived)
 }
 
-func TestSendEventFailure(t *testing.T) {
+func TestExecuteSendNoEndpoint(t *testing.T) {
+	subscription := &initSubscription("id", 999, 0).Subscription
+
+	_, event := mockFactomEvent(t)
+
+	// test send to http oauth2 endpoint
+	err := executeSend(subscription, event)
+
+	assert.Contains(t, err.Error(), "connect: connection refused")
+}
+
+func TestHandleSendFailure(t *testing.T) {
 	mockStore := repository.InitMockRepository()
-	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Twice()
+	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Times(3)
 	mockStore.On("UpdateSubscription", "error").Return(nil, fmt.Errorf("db failure")).Once()
 
 	testCases := map[string]*models.SubscriptionContext{
@@ -217,15 +422,19 @@ func TestSendEventFailure(t *testing.T) {
 			Subscription: models.Subscription{ID: "id"},
 			Failures:     2,
 		},
-		"failure": {
+		"db-failure": {
 			Subscription: models.Subscription{ID: "error"},
 			Failures:     0,
+		},
+		"max-failure": {
+			Subscription: models.Subscription{ID: "id"},
+			Failures:     maxFailures,
 		},
 	}
 
 	for name, subscriptionContext := range testCases {
 		t.Run(name, func(t *testing.T) {
-			sendEventFailure(subscriptionContext, "failed to deliver event")
+			handleSendFailure(subscriptionContext, "failed to deliver event")
 		})
 
 		mockStore.AssertCalled(t, "UpdateSubscription", subscriptionContext.Subscription.ID)
@@ -233,7 +442,7 @@ func TestSendEventFailure(t *testing.T) {
 	mockStore.AssertExpectations(t)
 }
 
-func TestSendEventSuccessful(t *testing.T) {
+func TestHandleSendSuccessful(t *testing.T) {
 	mockStore := repository.InitMockRepository()
 	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Once()
 	mockStore.On("UpdateSubscription", "error").Return(nil, fmt.Errorf("db failure")).Once()
@@ -255,10 +464,34 @@ func TestSendEventSuccessful(t *testing.T) {
 
 	for name, subscriptionContext := range testCases {
 		t.Run(name, func(t *testing.T) {
-			sendEventSuccessful(subscriptionContext)
+			handleSendSuccessful(subscriptionContext)
 		})
 	}
 	mockStore.AssertExpectations(t)
+}
+
+func initSubscription(subscriptionId string, port int, failures int) *models.SubscriptionContext {
+	return &models.SubscriptionContext{
+		Subscription: models.Subscription{
+			ID:                 subscriptionId,
+			CallbackURL:        fmt.Sprintf("http://localhost:%[1]d/callback%[1]d", port),
+			CallbackType:       models.HTTP,
+			SubscriptionStatus: models.Active,
+			Filters: map[models.EventType]models.Filter{
+				models.ChainCommit: {Filtering: ""},
+			},
+		},
+		Failures: failures,
+	}
+}
+
+func mockFactomEvent(t *testing.T) (*eventmessages.FactomEvent, []byte) {
+	factomEvent := eventmessages.NewPopulatedFactomEvent(randomizer, true)
+	expectedEvent, err := json.Marshal(factomEvent)
+	if err != nil {
+		t.Fatalf("failed to marshal event: %v", err)
+	}
+	return factomEvent, expectedEvent
 }
 
 func startMockServer(t *testing.T, port int, eventsReceived *int32, authenticationValidation func(r *http.Request) bool, expectedEvent []byte) {
@@ -312,6 +545,7 @@ func startMockTLSServer(t *testing.T, port int, certFile string, pkFile string, 
 func waitOnEventReceived(eventsReceived *int32, n int, timeLimit time.Duration) {
 	deadline := time.Now().Add(timeLimit)
 	for int(atomic.LoadInt32(eventsReceived)) != n && time.Now().Before(deadline) {
+		fmt.Print(".")
 		time.Sleep(100 * time.Millisecond)
 	}
 }
@@ -332,50 +566,6 @@ func validateUsernamePassword(username string, password string) func(r *http.Req
 			return false
 		}
 		return true
-	}
-}
-
-func mockFactomAnchorEvent() *eventmessages.FactomEvent {
-	now := time.Now()
-	testHash := []byte("12345678901234567890123456789012")
-	return &eventmessages.FactomEvent{
-		EventSource: 0,
-		Value: &eventmessages.FactomEvent_DirectoryBlockCommit{
-			DirectoryBlockCommit: &eventmessages.DirectoryBlockCommit{
-				DirectoryBlock: &eventmessages.DirectoryBlock{
-					Header: &eventmessages.DirectoryBlockHeader{
-						BodyMerkleRoot: &eventmessages.Hash{
-							HashValue: testHash,
-						},
-						PreviousKeyMerkleRoot: &eventmessages.Hash{
-							HashValue: testHash,
-						},
-						PreviousFullHash: &eventmessages.Hash{
-							HashValue: testHash,
-						},
-						Timestamp:  &graphqlproto_types.Timestamp{Seconds: int64(now.Second()), Nanos: int32(now.Nanosecond())},
-						BlockCount: 456,
-					},
-					Entries: []*eventmessages.DirectoryBlockEntry{
-						{
-							ChainID: &eventmessages.Hash{
-								HashValue: testHash,
-							},
-							KeyMerkleRoot: &eventmessages.Hash{
-								HashValue: testHash,
-							},
-						}, {
-							ChainID: &eventmessages.Hash{
-								HashValue: testHash,
-							},
-							KeyMerkleRoot: &eventmessages.Hash{
-								HashValue: testHash,
-							},
-						},
-					},
-				},
-			},
-		},
 	}
 }
 
