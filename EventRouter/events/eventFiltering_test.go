@@ -10,11 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"regexp"
 	"strings"
 	"testing"
-	"time"
 )
 
 var randomizer = Randomizer{}
@@ -670,7 +668,7 @@ func queryInfo(schema graphql.Schema, object string) interface{} {
 	return r.Data
 }
 
-func BenchmarkFilter1000(b *testing.B) {
+func BenchmarkFilters(b *testing.B) {
 	eventTypes := []struct {
 		EventType models.EventType
 		Filtering string
@@ -683,21 +681,17 @@ func BenchmarkFilter1000(b *testing.B) {
 		{models.NodeMessage, readQuery(b, "NodeMessage.md")},
 	}
 
-	s := rand.NewSource(time.Now().Unix())
-	r := rand.New(s) // initialize local pseudorandom generator
+	for _, benchmark := range eventTypes {
+		b.Run(string(benchmark.EventType), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				event := createNewEvent(benchmark.EventType)
+				result, err := Filter(benchmark.Filtering, event)
 
-	var result []byte
-	var err error
-	for i := 0; i < b.N; i++ {
-		eventType := eventTypes[r.Intn(len(eventTypes))]
-		event := createNewEvent(eventType.EventType)
-
-		filtering := eventType.Filtering
-
-		result, err = Filter(filtering, event)
-		if err != nil {
-			b.Fatalf("failed to marshal result: %v - %v", err, jsonPrettyPrint(string(result)))
-		}
+				if err != nil {
+					b.Fatalf("failed to marshal result: %v - %v", err, jsonPrettyPrint(string(result)))
+				}
+			}
+		})
 	}
 }
 

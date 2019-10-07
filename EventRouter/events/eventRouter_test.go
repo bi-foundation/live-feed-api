@@ -647,9 +647,9 @@ func testTempFile(t *testing.T, prefix string, content string) (string, func()) 
 	return tmpFile.Name(), cleanFile
 }
 
-func BenchmarkHandleEvents100(b *testing.B) {
+func BenchmarkHandleEvents(b *testing.B) {
+	// setup test
 	retryTimeout = 10 * time.Millisecond
-	maxFailures = 1
 	port := 21221
 	subscriptionContext := initSubscription("id", port, 0)
 	subscriptionContexts := []*models.SubscriptionContext{subscriptionContext}
@@ -661,20 +661,29 @@ func BenchmarkHandleEvents100(b *testing.B) {
 	mockStore.On("UpdateSubscription", "id").Return(subscriptionContext, nil)
 
 	var eventsReceived int32 = 0
-	factomEvent, _ := mockFactomEvent(b)
+	factomEvent, expectedEvent := mockFactomEvent(b)
 
-	// startMockServer(b, port, &eventsReceived, nil, expectedEvent)
+	startMockServer(b, port, &eventsReceived, nil, expectedEvent)
 
 	queue := make(chan *eventmessages.FactomEvent)
 	router := NewEventRouter(queue)
 	router.Start()
 
-	// test send event if an event is send through the channel
-	for n := 0; n < b.N; n++ {
-		queue <- factomEvent
+	// benchmark table
+	benchmarks := map[string]struct{ SubscriptionContexts []*models.SubscriptionContext }{
+		"send event": {[]*models.SubscriptionContext{subscriptionContext}},
 	}
 
-	waitOnEventReceived(&eventsReceived, b.N, time.Duration(b.N)*time.Second)
-
-	// assert.Equal(b, int32(b.N), eventsReceived)
+	// run benchmark
+	for name := range benchmarks {
+		b.Run(name, func(b *testing.B) {
+			eventsReceived = 0
+			n := 0
+			for ; n < b.N; n++ {
+				queue <- factomEvent
+			}
+			waitOnEventReceived(&eventsReceived, n, time.Duration(b.N)*time.Second)
+			assert.Equal(b, int32(n), eventsReceived)
+		})
+	}
 }
