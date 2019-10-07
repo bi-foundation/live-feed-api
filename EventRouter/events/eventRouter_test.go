@@ -649,6 +649,7 @@ func testTempFile(t *testing.T, prefix string, content string) (string, func()) 
 
 func BenchmarkHandleEvents100(b *testing.B) {
 	retryTimeout = 10 * time.Millisecond
+	maxFailures = 1
 	port := 21221
 	subscriptionContext := initSubscription("id", port, 0)
 	subscriptionContexts := []*models.SubscriptionContext{subscriptionContext}
@@ -673,7 +674,7 @@ func BenchmarkHandleEvents100(b *testing.B) {
 		queue <- factomEvent
 	}
 
-	waitOnEventReceived(&eventsReceived, b.N, time.Duration(b.N)*t1ime.Second)
+	waitOnEventReceived(&eventsReceived, b.N, time.Duration(b.N)*time.Second)
 
 	// assert.Equal(b, int32(b.N), eventsReceived)
 }
