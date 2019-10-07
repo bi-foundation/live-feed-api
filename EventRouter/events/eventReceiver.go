@@ -7,7 +7,6 @@ import (
 	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
-	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/gogo/protobuf/proto"
 	"io"
 	"net"
@@ -21,15 +20,12 @@ const (
 // EventReceiver responsible to receive events from factomd
 type EventReceiver interface {
 	Start()
-	Stop()
-	GetState() models.RunState
 	GetEventQueue() chan *eventmessages.FactomEvent
 	GetAddress() string
 }
 
 type receiver struct {
 	eventQueue chan *eventmessages.FactomEvent
-	state      models.RunState
 	listener   net.Listener
 	protocol   string
 	address    string
@@ -39,7 +35,6 @@ type receiver struct {
 func NewReceiver(eventListenerConfig *config.ReceiverConfig) EventReceiver {
 	return &receiver{
 		eventQueue: make(chan *eventmessages.FactomEvent, defaultStandardChannelSize),
-		state:      models.New,
 		protocol:   eventListenerConfig.Protocol,
 		address:    fmt.Sprintf("%s:%d", eventListenerConfig.BindAddress, eventListenerConfig.Port),
 	}
@@ -48,17 +43,6 @@ func NewReceiver(eventListenerConfig *config.ReceiverConfig) EventReceiver {
 // Start the receiver with listening
 func (receiver *receiver) Start() {
 	go receiver.listenIncomingConnections()
-	receiver.state = models.Running
-}
-
-// Stop the receiver
-func (receiver *receiver) Stop() {
-	receiver.state = models.Stopping
-	err := receiver.listener.Close()
-	if err != nil {
-		log.Error("failed to close listener: %v", err)
-	}
-	receiver.state = models.Stopped
 }
 
 func (receiver *receiver) listenIncomingConnections() {
@@ -154,11 +138,6 @@ func getRemoteAddress(conn net.Conn) string {
 		addrString = remoteAddr.String()
 	}
 	return addrString
-}
-
-// GetState to get the state of the receiver
-func (receiver *receiver) GetState() models.RunState {
-	return receiver.state
 }
 
 // GetAddress to get the address where the receiver is listening to

@@ -9,10 +9,8 @@ import (
 	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/events"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
-	"github.com/FactomProject/live-feed-api/EventRouter/models"
 	"github.com/FactomProject/live-feed-api/EventRouter/repository"
 	docs "github.com/FactomProject/live-feed-api/EventRouter/swagger"
-	"time"
 )
 
 func main() {
@@ -32,11 +30,7 @@ func main() {
 
 	api.NewSubscriptionAPI(configuration.Subscription).Start()
 
-	for eventServer.GetState() < models.Stopping {
-		time.Sleep(time.Second)
-	}
-
-	eventServer.Stop()
+	select {}
 }
 
 func loadConfiguration() (configuration *config.Config) {
