@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
-	"github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types"
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
@@ -131,56 +130,10 @@ func listenForEvents(testID string, n int, timeLimit time.Duration) int {
 }
 
 func mockData(t *testing.T) []byte {
-	event := mockAnchorEvent()
+	event := eventmessages.NewPopulatedFactomEvent(randomizer, true)
 	data, err := proto.Marshal(event)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return data
-}
-
-func mockAnchorEvent() *eventmessages.FactomEvent {
-	now := time.Now()
-	testHash := []byte("12345678901234567890123456789012")
-	return &eventmessages.FactomEvent{
-		IdentityChainID: &eventmessages.Hash{
-			HashValue: []byte("value"),
-		},
-		Value: &eventmessages.FactomEvent_DirectoryBlockCommit{
-			DirectoryBlockCommit: &eventmessages.DirectoryBlockCommit{
-				DirectoryBlock: &eventmessages.DirectoryBlock{
-					Header: &eventmessages.DirectoryBlockHeader{
-						BodyMerkleRoot: &eventmessages.Hash{
-							HashValue: testHash,
-						},
-						PreviousKeyMerkleRoot: &eventmessages.Hash{
-							HashValue: testHash,
-						},
-						PreviousFullHash: &eventmessages.Hash{
-							HashValue: testHash,
-						},
-						Timestamp:  &types.Timestamp{Seconds: int64(now.Second()), Nanos: int32(now.Nanosecond())},
-						BlockCount: 456,
-					},
-					Entries: []*eventmessages.DirectoryBlockEntry{
-						{
-							ChainID: &eventmessages.Hash{
-								HashValue: testHash,
-							},
-							KeyMerkleRoot: &eventmessages.Hash{
-								HashValue: testHash,
-							},
-						}, {
-							ChainID: &eventmessages.Hash{
-								HashValue: testHash,
-							},
-							KeyMerkleRoot: &eventmessages.Hash{
-								HashValue: testHash,
-							},
-						},
-					},
-				},
-			},
-		},
-	}
 }
