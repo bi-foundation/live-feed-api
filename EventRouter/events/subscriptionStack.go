@@ -12,6 +12,7 @@ type subscriptionStack struct {
 	processing   bool
 }
 
+// SubscriptionStack is stack to track which subscription should be processed.
 type SubscriptionStack interface {
 	UpdateSubscription(subscription *models.SubscriptionContext)
 	Add([]byte)
@@ -21,6 +22,7 @@ type SubscriptionStack interface {
 	IsProcessing() bool
 }
 
+// NewSubscriptionStack creates a subscription stack
 func NewSubscriptionStack(subscription *models.SubscriptionContext) SubscriptionStack {
 	return &subscriptionStack{
 		subscription: subscription,

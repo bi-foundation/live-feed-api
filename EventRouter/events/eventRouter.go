@@ -111,11 +111,11 @@ func (eventRouter *eventRouter) sendEvent(subscriptionContext *models.Subscripti
 	}
 }
 
-func (eventRouter *eventRouter) emitEvent(subscriptionsId string) {
+func (eventRouter *eventRouter) emitEvent(subscriptionID string) {
 	// process all events that should be send to the subscription
-	eventRouter.emitQueue[subscriptionsId].Processing(true)
+	eventRouter.emitQueue[subscriptionID].Processing(true)
 	for emittingEvents := true; emittingEvents; {
-		subscriptionContext, event := eventRouter.emitQueue[subscriptionsId].Pop()
+		subscriptionContext, event := eventRouter.emitQueue[subscriptionID].Pop()
 		// check if there is nothing left to process
 		if event == nil || subscriptionContext.Subscription.SubscriptionStatus != models.Active {
 			emittingEvents = false
@@ -126,16 +126,16 @@ func (eventRouter *eventRouter) emitEvent(subscriptionsId string) {
 		if subscriptionContext.Failures > 0 {
 			// is subscription context ready updated?
 			var err error
-			subscriptionContext, err = repository.SubscriptionRepository.ReadSubscription(subscriptionsId)
+			subscriptionContext, err = repository.SubscriptionRepository.ReadSubscription(subscriptionID)
 			if err != nil {
 				handleSendFailure(subscriptionContext, err.Error())
 
 				// put the event back on the stack and wait to resend event
-				eventRouter.emitQueue[subscriptionsId].Push(event)
+				eventRouter.emitQueue[subscriptionID].Push(event)
 				time.Sleep(retryTimeout)
 				continue
 			}
-			eventRouter.emitQueue[subscriptionsId].UpdateSubscription(subscriptionContext)
+			eventRouter.emitQueue[subscriptionID].UpdateSubscription(subscriptionContext)
 		}
 
 		err := executeSend(&subscriptionContext.Subscription, event)
@@ -145,14 +145,14 @@ func (eventRouter *eventRouter) emitEvent(subscriptionsId string) {
 			handleSendFailure(subscriptionContext, err.Error())
 
 			// put the event back on the stack and wait to resend event
-			eventRouter.emitQueue[subscriptionsId].Push(event)
+			eventRouter.emitQueue[subscriptionID].Push(event)
 			time.Sleep(retryTimeout)
 			continue
 		}
 
 		handleSendSuccessful(subscriptionContext)
 	}
-	eventRouter.emitQueue[subscriptionsId].Processing(false)
+	eventRouter.emitQueue[subscriptionID].Processing(false)
 }
 
 func executeSend(subscription *models.Subscription, event []byte) error {

@@ -670,7 +670,7 @@ func queryInfo(schema graphql.Schema, object string) interface{} {
 	return r.Data
 }
 
-func BenchmarkFilter2000(b *testing.B) {
+func BenchmarkFilter1000(b *testing.B) {
 	eventTypes := []struct {
 		EventType models.EventType
 		Filtering string
@@ -686,11 +686,9 @@ func BenchmarkFilter2000(b *testing.B) {
 	s := rand.NewSource(time.Now().Unix())
 	r := rand.New(s) // initialize local pseudorandom generator
 
-	n := 2000
-
 	var result []byte
 	var err error
-	for i := 0; i < n; i++ {
+	for i := 0; i < b.N; i++ {
 		eventType := eventTypes[r.Intn(len(eventTypes))]
 		event := createNewEvent(eventType.EventType)
 
@@ -701,7 +699,6 @@ func BenchmarkFilter2000(b *testing.B) {
 			b.Fatalf("failed to marshal result: %v - %v", err, jsonPrettyPrint(string(result)))
 		}
 	}
-
 }
 
 func createNewEvent(eventType models.EventType) *eventmessages.FactomEvent {
