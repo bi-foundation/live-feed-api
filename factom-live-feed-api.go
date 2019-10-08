@@ -23,7 +23,7 @@ func main() {
 	setupDatabase(configuration.Database)
 
 	eventServer := events.NewReceiver(configuration.Receiver)
-	eventRouter := events.NewEventRouter(eventServer.GetEventQueue())
+	eventRouter := events.NewEventRouter(configuration.Router, eventServer.GetEventQueue())
 
 	eventServer.Start()
 	eventRouter.Start()
@@ -48,7 +48,7 @@ func loadConfiguration() (configuration *config.Config) {
 		log.Fatal("%v", err)
 	}
 
-	log.Info("loaded configuration: { \n\treceiver: %v, \n\tsubscription: %v, \n\tdatabase: %v, \n\tlog: %v\n }", configuration.Receiver, configuration.Subscription, configuration.Database, configuration.Log)
+	log.Info("loaded configuration: { \n\treceiver: %v, \n\trouter: %v, \n\tsubscription: %v, \n\tdatabase: %v, \n\tlog: %v\n }", configuration.Receiver, configuration.Router, configuration.Subscription, configuration.Database, configuration.Log)
 	return configuration
 }
 

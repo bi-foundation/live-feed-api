@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
@@ -12,12 +13,6 @@ import (
 	"net/http"
 	"time"
 )
-
-const defaultMaxFailures = 3
-const defaultRetryTimeout = 10 * time.Second
-
-var maxFailures = defaultMaxFailures
-var retryTimeout = defaultRetryTimeout
 
 // EventRouter that route the events to subscriptions
 type EventRouter interface {
@@ -27,11 +22,15 @@ type EventRouter interface {
 type eventRouter struct {
 	eventsInQueue chan *eventmessages.FactomEvent
 	emitQueue     map[string]SubscriptionStack
+	maxRetries    uint16
+	retryTimeout  time.Duration
 }
 
 // NewEventRouter create a new event router that listens to a given queue
-func NewEventRouter(queue chan *eventmessages.FactomEvent) EventRouter {
+func NewEventRouter(routerConfig *config.RouterConfig, queue chan *eventmessages.FactomEvent) EventRouter {
 	return &eventRouter{
+		maxRetries:    routerConfig.MaxRetries,
+		retryTimeout:  time.Duration(routerConfig.RetryTimeout) * time.Second,
 		eventsInQueue: queue,
 		emitQueue:     make(map[string]SubscriptionStack),
 	}
@@ -128,11 +127,11 @@ func (eventRouter *eventRouter) emitEvent(subscriptionID string) {
 			var err error
 			subscriptionContext, err = repository.SubscriptionRepository.ReadSubscription(subscriptionID)
 			if err != nil {
-				handleSendFailure(subscriptionContext, err.Error())
+				eventRouter.handleSendFailure(subscriptionContext, err.Error())
 
 				// put the event back on the stack and wait to resend event
 				eventRouter.emitQueue[subscriptionID].Push(event)
-				time.Sleep(retryTimeout)
+				time.Sleep(eventRouter.retryTimeout)
 				continue
 			}
 			eventRouter.emitQueue[subscriptionID].UpdateSubscription(subscriptionContext)
@@ -142,15 +141,15 @@ func (eventRouter *eventRouter) emitEvent(subscriptionID string) {
 
 		// if there was a failure, update the context in case the subscription has been updated in the mean time
 		if err != nil {
-			handleSendFailure(subscriptionContext, err.Error())
+			eventRouter.handleSendFailure(subscriptionContext, err.Error())
 
 			// put the event back on the stack and wait to resend event
 			eventRouter.emitQueue[subscriptionID].Push(event)
-			time.Sleep(retryTimeout)
+			time.Sleep(eventRouter.retryTimeout)
 			continue
 		}
 
-		handleSendSuccessful(subscriptionContext)
+		eventRouter.handleSendSuccessful(subscriptionContext)
 	}
 	eventRouter.emitQueue[subscriptionID].Processing(false)
 }
@@ -194,10 +193,10 @@ func executeSend(subscription *models.Subscription, event []byte) error {
 
 // emit event fails, if the number of failures pass a threshold, suspend the subscription
 // set the reason in the subscription info
-func handleSendFailure(subscriptionContext *models.SubscriptionContext, reason string) {
+func (eventRouter *eventRouter) handleSendFailure(subscriptionContext *models.SubscriptionContext, reason string) {
 	subscriptionContext.Failures++
 	subscriptionContext.Subscription.SubscriptionInfo = fmt.Sprintf("%s%d: %s\n", subscriptionContext.Subscription.SubscriptionInfo, subscriptionContext.Failures, reason)
-	if subscriptionContext.Failures >= maxFailures {
+	if subscriptionContext.Failures >= eventRouter.maxRetries {
 		subscriptionContext.Subscription.SubscriptionStatus = models.Suspended
 	}
 	// update the database
@@ -207,7 +206,7 @@ func handleSendFailure(subscriptionContext *models.SubscriptionContext, reason s
 	}
 }
 
-func handleSendSuccessful(subscriptionContext *models.SubscriptionContext) {
+func (eventRouter *eventRouter) handleSendSuccessful(subscriptionContext *models.SubscriptionContext) {
 	// update only the subscription if the failures and status needs to be reset
 	if subscriptionContext.Failures > 0 {
 		subscriptionContext.Failures = 0

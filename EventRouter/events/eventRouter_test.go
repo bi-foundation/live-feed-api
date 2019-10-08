@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/FactomProject/live-feed-api/EventRouter/config"
 	"github.com/FactomProject/live-feed-api/EventRouter/eventmessages/generated/eventmessages"
 	"github.com/FactomProject/live-feed-api/EventRouter/log"
 	"github.com/FactomProject/live-feed-api/EventRouter/models"
@@ -38,8 +39,10 @@ func TestHandleEvent(t *testing.T) {
 
 	startMockServer(t, port, &eventsReceived, nil, expectedEvent)
 
+	configuration := &config.RouterConfig{MaxRetries: 3, RetryTimeout: 10}
+
 	queue := make(chan *eventmessages.FactomEvent)
-	router := NewEventRouter(queue)
+	router := NewEventRouter(configuration, queue)
 	router.Start()
 
 	// test send event if an event is send through the channel
@@ -69,8 +72,9 @@ func TestHandleEvents(t *testing.T) {
 	var eventsReceived int32 = 0
 	factomEvent, expectedEvent := mockFactomEvent(t)
 
+	configuration := &config.RouterConfig{MaxRetries: 3, RetryTimeout: 1}
 	queue := make(chan *eventmessages.FactomEvent)
-	router := NewEventRouter(queue)
+	router := NewEventRouter(configuration, queue)
 	router.Start()
 
 	// start two mock server on different port
@@ -99,8 +103,9 @@ func TestHandleFactomEvents(t *testing.T) {
 
 	startMockServer(t, port, &eventsReceived, nil, expectedEvent)
 
+	configuration := &config.RouterConfig{MaxRetries: 3, RetryTimeout: 1}
 	queue := make(chan *eventmessages.FactomEvent)
-	router := NewEventRouter(queue)
+	router := NewEventRouter(configuration, queue)
 	router.Start()
 
 	// test send event if an event is send through the channel
@@ -110,7 +115,6 @@ func TestHandleFactomEvents(t *testing.T) {
 	waitOnEventReceived(&eventsReceived, len(subscriptionContexts)*2, 1*time.Minute)
 
 	assert.Equal(t, int32(2), eventsReceived)
-
 }
 
 func TestSend(t *testing.T) {
@@ -191,14 +195,14 @@ func TestEmitEvent(t *testing.T) {
 	eventRouter.emitEvent(subscriptionID)
 
 	assert.Equal(t, int32(1), eventsReceived)
-	assert.Equal(t, 0, subscriptionContext.Failures)
+	assert.Equal(t, uint16(0), subscriptionContext.Failures)
 	assert.Equal(t, models.Active, subscriptionContext.Subscription.SubscriptionStatus)
 	assert.Equal(t, "", subscriptionContext.Subscription.SubscriptionInfo)
 }
 
 func TestEmitEventFailureRecover(t *testing.T) {
 	// send the event to the wrong endpoint and simulate an external update during the timeout
-	retryTimeout = 1 * time.Millisecond // don't delay the test to long
+	maxRetries := uint16(3)
 
 	port := 25232
 	subscriptionID := "id"
@@ -214,11 +218,11 @@ func TestEmitEventFailureRecover(t *testing.T) {
 	mockStore.On("ReadSubscription", subscriptionID).Return(updatedSubscriptionContext, nil).Once()
 	mockStore.On("UpdateSubscription", subscriptionID).Return(nil, nil).Times(2)
 
-	var eventsReceived int32 = 0
+	eventsReceived := int32(0)
 	_, event := mockFactomEvent(t)
 	startMockServer(t, port, &eventsReceived, nil, event)
 
-	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack)}
+	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack), maxRetries: maxRetries, retryTimeout: 1 * time.Millisecond}
 	eventRouter.emitQueue[subscriptionContext.Subscription.ID] = NewSubscriptionStack(subscriptionContext)
 	eventRouter.emitQueue[subscriptionContext.Subscription.ID].Add(event)
 
@@ -226,8 +230,8 @@ func TestEmitEventFailureRecover(t *testing.T) {
 	eventRouter.emitEvent(subscriptionID)
 
 	assert.Equal(t, int32(1), eventsReceived)
-	assert.Equal(t, 1, subscriptionContext.Failures)
-	assert.Equal(t, 0, updatedSubscriptionContext.Failures)
+	assert.Equal(t, uint16(1), subscriptionContext.Failures)
+	assert.Equal(t, uint16(0), updatedSubscriptionContext.Failures)
 	assert.Equal(t, models.Active, updatedSubscriptionContext.Subscription.SubscriptionStatus)
 	assert.Equal(t, "", updatedSubscriptionContext.Subscription.SubscriptionInfo)
 
@@ -235,7 +239,7 @@ func TestEmitEventFailureRecover(t *testing.T) {
 }
 
 func TestEmitEventFailureRetry(t *testing.T) {
-	retryTimeout = 1 * time.Millisecond // don't delay the test to long
+	maxRetries := uint16(3)
 
 	port := 25233
 	subscriptionID := "id"
@@ -246,12 +250,12 @@ func TestEmitEventFailureRetry(t *testing.T) {
 	mockStore.On("ReadSubscription", subscriptionID).Return(subscriptionContext, nil).Twice()
 	mockStore.On("UpdateSubscription", subscriptionID).Return(nil, nil).Times(3)
 
-	var eventsReceived int32 = 0
+	eventsReceived := int32(0)
 	_, event := mockFactomEvent(t)
 	authFailure := func(r *http.Request) bool { return false }
 	startMockServer(t, port, &eventsReceived, authFailure, event)
 
-	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack)}
+	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack), maxRetries: maxRetries, retryTimeout: 1 * time.Millisecond}
 	eventRouter.emitQueue[subscriptionContext.Subscription.ID] = NewSubscriptionStack(subscriptionContext)
 	eventRouter.emitQueue[subscriptionContext.Subscription.ID].Add(event)
 
@@ -259,7 +263,7 @@ func TestEmitEventFailureRetry(t *testing.T) {
 	eventRouter.emitEvent(subscriptionID)
 
 	assert.Equal(t, int32(3), eventsReceived)
-	assert.Equal(t, maxFailures, subscriptionContext.Failures)
+	assert.Equal(t, maxRetries, subscriptionContext.Failures)
 	assert.Equal(t, models.Suspended, subscriptionContext.Subscription.SubscriptionStatus)
 	assert.NotEqual(t, "", subscriptionContext.Subscription.SubscriptionInfo)
 
@@ -267,7 +271,7 @@ func TestEmitEventFailureRetry(t *testing.T) {
 }
 
 func TestEmitEventDBTimeout(t *testing.T) {
-	retryTimeout = 1 * time.Millisecond // don't delay the test to long
+	maxRetries := uint16(3)
 
 	port := 25234
 	subscriptionID := "id"
@@ -280,14 +284,14 @@ func TestEmitEventDBTimeout(t *testing.T) {
 
 	_, event := mockFactomEvent(t)
 
-	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack)}
+	eventRouter := &eventRouter{emitQueue: make(map[string]SubscriptionStack), maxRetries: maxRetries, retryTimeout: 1 * time.Millisecond}
 	eventRouter.emitQueue[subscriptionContext.Subscription.ID] = NewSubscriptionStack(subscriptionContext)
 	eventRouter.emitQueue[subscriptionContext.Subscription.ID].Add(event)
 
 	// test emit event retry
 	eventRouter.emitEvent(subscriptionID)
 
-	assert.Equal(t, maxFailures, subscriptionContext.Failures)
+	assert.Equal(t, maxRetries, subscriptionContext.Failures)
 	assert.Equal(t, models.Suspended, subscriptionContext.Subscription.SubscriptionStatus)
 	assert.Contains(t, subscriptionContext.Subscription.SubscriptionInfo, "db timeout")
 
@@ -299,7 +303,7 @@ func TestExecuteSendHTTP(t *testing.T) {
 	subscription := initSubscription("id", port, 0)
 
 	_, event := mockFactomEvent(t)
-	var eventsReceived int32 = 0
+	eventsReceived := int32(0)
 
 	// start https server to receive event
 	startMockServer(t, port, &eventsReceived, nil, event)
@@ -334,7 +338,7 @@ func TestExecuteSendHTTPSBearerToken(t *testing.T) {
 	certFile, pkFile, cleanup := testSetupCertificateFiles(t)
 	defer cleanup()
 
-	var eventsReceived int32 = 0
+	eventsReceived := int32(0)
 
 	// as the code makes use of the default client, we allow to ignore expired certificate
 	transCfg := &http.Transport{
@@ -377,7 +381,7 @@ func TestExecuteSendHTTPSBasicAuth(t *testing.T) {
 	certFile, pkFile, cleanup := testSetupCertificateFiles(t)
 	defer cleanup()
 
-	var eventsReceived int32 = 0
+	eventsReceived := int32(0)
 
 	// as the code makes use of the default client, we allow to ignore expired certificate
 	transCfg := &http.Transport{
@@ -415,6 +419,7 @@ func TestHandleSendFailure(t *testing.T) {
 	mockStore.On("UpdateSubscription", "id").Return(nil, nil).Times(3)
 	mockStore.On("UpdateSubscription", "error").Return(nil, fmt.Errorf("db failure")).Once()
 
+	maxRetries := uint16(3)
 	testCases := map[string]*models.SubscriptionContext{
 		"update": {
 			Subscription: models.Subscription{ID: "id"},
@@ -430,13 +435,13 @@ func TestHandleSendFailure(t *testing.T) {
 		},
 		"max-failure": {
 			Subscription: models.Subscription{ID: "id"},
-			Failures:     maxFailures,
+			Failures:     maxRetries,
 		},
 	}
-
+	eventRouter := &eventRouter{maxRetries: maxRetries}
 	for name, subscriptionContext := range testCases {
 		t.Run(name, func(t *testing.T) {
-			handleSendFailure(subscriptionContext, "failed to deliver event")
+			eventRouter.handleSendFailure(subscriptionContext, "failed to deliver event")
 		})
 
 		mockStore.AssertCalled(t, "UpdateSubscription", subscriptionContext.Subscription.ID)
@@ -463,16 +468,16 @@ func TestHandleSendSuccessful(t *testing.T) {
 			Failures:     1,
 		},
 	}
-
+	eventRouter := &eventRouter{}
 	for name, subscriptionContext := range testCases {
 		t.Run(name, func(t *testing.T) {
-			handleSendSuccessful(subscriptionContext)
+			eventRouter.handleSendSuccessful(subscriptionContext)
 		})
 	}
 	mockStore.AssertExpectations(t)
 }
 
-func initSubscription(subscriptionID string, port int, failures int) *models.SubscriptionContext {
+func initSubscription(subscriptionID string, port int, failures uint16) *models.SubscriptionContext {
 	return &models.SubscriptionContext{
 		Subscription: models.Subscription{
 			ID:                 subscriptionID,
@@ -649,7 +654,6 @@ func testTempFile(t *testing.T, prefix string, content string) (string, func()) 
 
 func BenchmarkHandleEvents(b *testing.B) {
 	// setup test
-	retryTimeout = 10 * time.Millisecond
 	port := 21221
 	subscriptionContext := initSubscription("id", port, 0)
 	subscriptionContexts := []*models.SubscriptionContext{subscriptionContext}
@@ -660,13 +664,14 @@ func BenchmarkHandleEvents(b *testing.B) {
 	mockStore.On("ReadSubscription", "id").Return(subscriptionContext, nil)
 	mockStore.On("UpdateSubscription", "id").Return(subscriptionContext, nil)
 
-	var eventsReceived int32 = 0
+	eventsReceived := int32(0)
 	factomEvent, expectedEvent := mockFactomEvent(b)
 
 	startMockServer(b, port, &eventsReceived, nil, expectedEvent)
 
+	configuration := &config.RouterConfig{MaxRetries: 3, RetryTimeout: 1}
 	queue := make(chan *eventmessages.FactomEvent)
-	router := NewEventRouter(queue)
+	router := NewEventRouter(configuration, queue)
 	router.Start()
 
 	// benchmark table

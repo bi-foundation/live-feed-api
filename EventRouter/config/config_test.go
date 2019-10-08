@@ -17,6 +17,10 @@ const testConfig = `
 [log]
   loglevel = "info"
 
+[router]
+  maxretries = 4
+  retrytimeout = 20
+
 [receiver]
   bindaddress = "127.0.0.1"
   port = "8044"
@@ -25,7 +29,7 @@ const testConfig = `
 [subscription]
   bindaddress = "0.0.0.0"
   port = "8777"
-  schemes = ["HTTP","HTTPS"]
+  schemes = "HTTP"
 `
 
 func init() {
@@ -33,11 +37,13 @@ func init() {
 }
 
 func Test(t *testing.T) {
+	// make sure the test doesn't override or change configuration files on disk
 	files := renameConfigFiles(t)
 	defer restoreRenamedFiles(t, files)
 
 	testCases := map[string]func(*testing.T){
 		"TestSpecificConfigFile":     testSpecificConfigFile,
+		"TestWrongTypeConfigFile":    testWrongTypeConfigFile,
 		"TestConfigFileInConfigHome": testConfigFileInConfigHome,
 		"TestEnvVarOverrides":        testEnvVarOverrides,
 		"TestDefaultConfig":          testDefaultConfig,
@@ -50,12 +56,25 @@ func Test(t *testing.T) {
 }
 
 func testSpecificConfigFile(t *testing.T) {
-	configFile, cleanup := createTempConfigFile(t)
+	configFile, cleanup := createTempConfigFile(t, testConfig)
 	defer cleanup()
 
 	config, err := LoadConfigurationFrom(configFile)
 
 	assertConfiguration(t, config, err)
+}
+
+func testWrongTypeConfigFile(t *testing.T) {
+	testConfig := `
+		[router]
+		  retrytimeout = "noint"
+		`
+	configFile, cleanup := createTempConfigFile(t, testConfig)
+	defer cleanup()
+
+	_, err := LoadConfigurationFrom(configFile)
+
+	assert.Error(t, err, `could not read configuration file: 1 error(s) decoding:\n\n* cannot parse 'Router.RetryTimeout' as uint: strconv.ParseUint: parsing \"noint\": invalid syntax`)
 }
 
 func testConfigFileInConfigHome(t *testing.T) {
@@ -98,6 +117,11 @@ func testEnvVarOverrides(t *testing.T) {
 	assert.EqualValues(t, "8666", strconv.Itoa(int(receiverConfig.Port)), "ReceiverConfig.Port mismatch %s != %d", 8666, receiverConfig.Port)
 	assert.EqualValues(t, "tcp", receiverConfig.Protocol, "ReceiverConfig.Protocol mismatch %s != %s", "tcp", receiverConfig.Protocol)
 
+	routerConfig := config.Router
+	assert.NotNil(t, routerConfig, "routerConfig shouldn't be nil")
+	assert.EqualValues(t, uint16(4), routerConfig.MaxRetries)
+	assert.EqualValues(t, uint(20), routerConfig.RetryTimeout)
+
 	subscriptionConfig := config.Subscription
 	assert.NotNil(t, subscriptionConfig, "SubscriptionConfig shouldn't be nil")
 	assert.EqualValues(t, "0.0.0.0", subscriptionConfig.BindAddress, "SubscriptionConfig.BindAddress mismatch %s != %s", "127.0.0.1", subscriptionConfig.BindAddress)
@@ -123,6 +147,11 @@ func testDefaultConfig(t *testing.T) {
 	assert.EqualValues(t, defaultReceiverPort, receiverConfig.Port, "ReceiverConfig.Port mismatch %s != %d", defaultReceiverPort, receiverConfig.Port)
 	assert.EqualValues(t, defaultReceiverProtocol, receiverConfig.Protocol, "ReceiverConfig.Protocol mismatch %s != %s", defaultReceiverProtocol, receiverConfig.Protocol)
 
+	routerConfig := config.Router
+	assert.NotNil(t, routerConfig, "routerConfig shouldn't be nil")
+	assert.EqualValues(t, defaultRouterMaxRetries, routerConfig.MaxRetries, "routerConfig.MaxRetries mismatch %s != %s", defaultRouterMaxRetries, routerConfig.MaxRetries)
+	assert.EqualValues(t, defaultRouterRetryTimeout, routerConfig.RetryTimeout, "routerConfig.RetryTimeout mismatch %s != %d", defaultRouterRetryTimeout, routerConfig.RetryTimeout)
+
 	subscriptionConfig := config.Subscription
 	assert.NotNil(t, subscriptionConfig, "SubscriptionConfig shouldn't be nil")
 	assert.EqualValues(t, defaultSubscriptionAPIAddress, subscriptionConfig.BindAddress, "SubscriptionConfig.BindAddress mismatch %s != %s", defaultSubscriptionAPIAddress, subscriptionConfig.BindAddress)
@@ -141,20 +170,28 @@ func assertConfiguration(t *testing.T, config *Config, err error) {
 	if !assert.Nil(t, err) {
 		t.FailNow()
 	}
-
 	if !assert.NotNil(t, config) {
 		t.FailNow()
 	}
+	if !assert.NotNil(t, config.Log) {
+		t.FailNow()
+	}
+	assert.EqualValues(t, "info", config.Log.LogLevel)
+
 	receiverConfig := config.Receiver
 	if !assert.NotNil(t, receiverConfig, "ReceiverConfig shouldn't be nil") {
 		t.FailNow()
 	}
-
-	assert.EqualValues(t, "info", config.Log.LogLevel)
-
 	assert.EqualValues(t, "127.0.0.1", receiverConfig.BindAddress, "ReceiverConfig.BindAddress mismatch %s != %s", "127.0.0.1", receiverConfig.BindAddress)
 	assert.EqualValues(t, "8044", strconv.Itoa(int(receiverConfig.Port)), "ReceiverConfig.Port mismatch %s != %d", 8044, receiverConfig.Port)
 	assert.EqualValues(t, "tcp", receiverConfig.Protocol, "ReceiverConfig.Protocol mismatch %s != %s", "tcp", receiverConfig.Protocol)
+
+	routerConfig := config.Router
+	if !assert.NotNil(t, routerConfig, "RouterConfig shouldn't be nil") {
+		t.FailNow()
+	}
+	assert.EqualValues(t, uint16(4), routerConfig.MaxRetries)
+	assert.EqualValues(t, uint(20), routerConfig.RetryTimeout)
 
 	subscriptionConfig := config.Subscription
 	if !assert.NotNil(t, subscriptionConfig, "SubscriptionConfig shouldn't be nil") {
@@ -165,7 +202,7 @@ func assertConfiguration(t *testing.T, config *Config, err error) {
 	assert.EqualValues(t, "HTTP", subscriptionConfig.Scheme, "SubscriptionConfig.Schemes mismatch %v != %v", []string{"HTTP", "HTTPS"}, subscriptionConfig.Scheme)
 }
 
-func createTempConfigFile(t *testing.T) (string, func()) {
+func createTempConfigFile(t *testing.T, testConfig string) (string, func()) {
 	oldMask := syscall.Umask(0)
 	defer syscall.Umask(oldMask)
 	file, err := ioutil.TempFile("", "test.*.conf")

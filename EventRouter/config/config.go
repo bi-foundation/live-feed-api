@@ -21,6 +21,9 @@ const (
 	defaultReceiverPort        = 8040
 	defaultReceiverProtocol    = "tcp"
 
+	defaultRouterMaxRetries   = 3
+	defaultRouterRetryTimeout = 30
+
 	defaultSubscriptionAPIAddress  = ""
 	defaultSubscriptionAPIPort     = 8700
 	defaultSubscriptionAPIBasePath = "/live/feed/v" + defaultVersion
@@ -35,6 +38,7 @@ var defaultSubscriptionAPISchemes = "HTTP"
 type Config struct {
 	Log          *LogConfig
 	Receiver     *ReceiverConfig
+	Router       *RouterConfig
 	Subscription *SubscriptionConfig
 	Database     *DatabaseConfig
 }
@@ -49,6 +53,12 @@ type ReceiverConfig struct {
 	Protocol    string
 	BindAddress string
 	Port        uint16
+}
+
+// RouterConfig configuration for the event router
+type RouterConfig struct {
+	MaxRetries   uint16
+	RetryTimeout uint
 }
 
 // SubscriptionConfig configuration for the subscription api
@@ -117,6 +127,7 @@ func loadConfigurationFrom(configFile string) (*Config, error) {
 	// set default configuration values
 	vp.SetDefault("log", buildLogDefaults())
 	vp.SetDefault("receiver", buildReceiverDefaults())
+	vp.SetDefault("router", buildRouterDefaults())
 	vp.SetDefault("subscription", buildSubscriptionDefaults())
 	vp.SetDefault("database", buildDatabaseDefaults())
 
@@ -141,6 +152,10 @@ func defaultConfig() *Config {
 			BindAddress: defaultReceiverBindAddress,
 			Port:        defaultReceiverPort,
 		},
+		Router: &RouterConfig{
+			MaxRetries:   defaultRouterMaxRetries,
+			RetryTimeout: defaultRouterRetryTimeout,
+		},
 		Subscription: &SubscriptionConfig{
 			Scheme:      defaultSubscriptionAPISchemes,
 			BindAddress: defaultSubscriptionAPIAddress,
@@ -155,6 +170,13 @@ func buildReceiverDefaults() map[string]interface{} {
 		"Protocol":    defaultReceiverProtocol,
 		"BindAddress": defaultReceiverBindAddress,
 		"Port":        defaultReceiverPort,
+	}
+}
+
+func buildRouterDefaults() map[string]interface{} {
+	return map[string]interface{}{
+		"MaxRetries":   defaultRouterMaxRetries,
+		"RetryTimeout": defaultRouterRetryTimeout,
 	}
 }
 
