@@ -9,7 +9,6 @@ GOTEST:=$(GOCMD) test
 GOGET:=$(GOCMD) get
 GOLIST:=$(GOCMD) list
 GOVET:=$(GOCMD) vet
-u := $(if $(update),-u)
 
 PACKAGES:=$(shell $(GOLIST) ./EventRouter/...)
 GOFILES:=$(shell find . -path ./vendor -prune -o -name "*.go" -type f)
@@ -28,7 +27,7 @@ clean:
 
 .PHONY: deps
 deps:
-	$(GOGET) ${u} -d
+	$(GOGET) -d
 
 .PHONY: build
 build: deps
