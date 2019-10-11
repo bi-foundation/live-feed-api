@@ -43,6 +43,7 @@ func subscribe(writer http.ResponseWriter, request *http.Request) {
 
 	subscriptionContext, err := repository.SubscriptionRepository.CreateSubscription(subscriptionContext)
 	if err != nil {
+		log.Error("	%v", err)
 		responseError(writer, http.StatusInternalServerError, errors.NewInternalError(fmt.Sprintf("failed to store subscription: %v", err)))
 		return
 	}

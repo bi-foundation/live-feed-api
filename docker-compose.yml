@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  db:
+    container_name: db-container
+    image: mariadb
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: docker-root-pass
+      MYSQL_DATABASE: live_feed_db
+      MYSQL_USER: live-feed-api
+      MYSQL_PASSWORD: docker-pass
+    volumes:
+      - db:/var/lib/mysql
+      - ./sql-schema.sql:/docker-entrypoint-initdb.d/data.sql
+    networks:
+      - app-network
+    restart: on-failure
+
+  app:
+    container_name: live-feed-container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: factom-live-feed-api
+    ports:
+      - 8700:8700
+      - 8040:8040
+    links:
+      - db
+    networks:
+      - app-network
+    environment:
+      - FACTOM_LIVE_FEED_DATABASE_CONNECTIONSTRING=live-feed-api:docker-pass@tcp(db:3306)/live_feed_db
+    depends_on:
+      - db
+    restart: always
+
+volumes:
+  db:
+
+networks:
+  app-network:
+    driver: bridge
