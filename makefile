@@ -27,7 +27,7 @@ clean:
 
 .PHONY: deps
 deps:
-	$(GOGET) -u -d
+	$(GOGET) -d
 
 .PHONY: build
 build: deps
