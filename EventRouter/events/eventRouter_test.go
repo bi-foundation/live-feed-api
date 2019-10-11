@@ -201,7 +201,7 @@ func TestEmitEventFailureRecover(t *testing.T) {
 	retryTimeout = 1 * time.Millisecond // don't delay the test to long
 
 	port := 25232
-	subscriptionID := "id"
+	subscriptionID := "fail-recover-id"
 	subscriptionContext := initSubscription(subscriptionID, 999, 0)
 
 	tmp := *subscriptionContext
