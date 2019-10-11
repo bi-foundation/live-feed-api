@@ -31,6 +31,8 @@ Environment variables can be used to override properties of the configuration. F
 | receiver / bindaddress         | The Network Interface address where the event listener needs to bind to.            | IP address         | 127.0.0.1
 | receiver / port                | The event listener network port.                                                    | port number        | 8040
 | receiver / protocol            | The network protocol that is used to receive event messages from the network.       | tcp                | tcp
+| router / maxretries            | The number of retries the application does when trying to deliver an event.         | number             | 3
+| router / retrytimeout          | The time the application waits after failing to deliver an event.                   | time in seconds    | 30
 | subscription / bindaddress     | The Network Interface address where the subscription API listener needs to bind to. | IP address         | 0.0.0.0 
 | subscription / port            | The event listener network port.                                                    | port number        | 8700
 | subscription / schemes         | The protocol schemes                                                                | HTTP or HTTPS | HTTP  
@@ -48,6 +50,10 @@ This is what factom-live-feed.conf looks like with the default settings:
   bindaddress = "127.0.0.1"
   port = "8040"
   protocol = "tcp"
+
+[router]
+  maxretries = 3
+  retrytimeout = 30
 
 [subscription]
   bindaddress = "0.0.0.0"
