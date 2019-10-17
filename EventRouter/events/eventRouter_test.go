@@ -28,7 +28,7 @@ func init() {
 
 func TestHandleEvent(t *testing.T) {
 	port := 23221
-	subscriptionContexts := []*models.SubscriptionContext{initSubscription("id", port, 0)}
+	subscriptionContexts := models.SubscriptionContexts{initSubscription("id", port, 0)}
 
 	// init mock repository
 	mockStore := repository.InitMockRepository()
@@ -61,7 +61,7 @@ func TestHandleEvents(t *testing.T) {
 
 	subscription1 := initSubscription("id1", port1, 0)
 	subscription2 := initSubscription("id2", port2, 0)
-	subscriptionContexts := []*models.SubscriptionContext{
+	subscriptionContexts := models.SubscriptionContexts{
 		subscription1, subscription1, subscription2, subscription2, subscription1,
 	}
 
@@ -92,7 +92,7 @@ func TestHandleEvents(t *testing.T) {
 
 func TestHandleFactomEvents(t *testing.T) {
 	port := 23224
-	subscriptionContexts := []*models.SubscriptionContext{initSubscription("id", port, 0)}
+	subscriptionContexts := models.SubscriptionContexts{initSubscription("id", port, 0)}
 
 	// init mock repository
 	mockStore := repository.InitMockRepository()
@@ -120,7 +120,7 @@ func TestHandleFactomEvents(t *testing.T) {
 func TestSend(t *testing.T) {
 	port := 26231
 	subscriptionID := "id"
-	subscriptionContexts := []*models.SubscriptionContext{initSubscription(subscriptionID, port, 0)}
+	subscriptionContexts := models.SubscriptionContexts{initSubscription(subscriptionID, port, 0)}
 
 	var eventsReceived int32 = 0
 	factomEvent, event := mockFactomEvent(t)
@@ -655,7 +655,7 @@ func BenchmarkHandleEvents(b *testing.B) {
 	// setup test
 	port := 21221
 	subscriptionContext := initSubscription("id", port, 0)
-	subscriptionContexts := []*models.SubscriptionContext{subscriptionContext}
+	subscriptionContexts := models.SubscriptionContexts{subscriptionContext}
 
 	// init mock repository
 	mockStore := repository.InitMockRepository()
@@ -674,8 +674,8 @@ func BenchmarkHandleEvents(b *testing.B) {
 	router.Start()
 
 	// benchmark table
-	benchmarks := map[string]struct{ SubscriptionContexts []*models.SubscriptionContext }{
-		"send event": {[]*models.SubscriptionContext{subscriptionContext}},
+	benchmarks := map[string]struct{ SubscriptionContexts models.SubscriptionContexts }{
+		"send event": {models.SubscriptionContexts{subscriptionContext}},
 	}
 
 	// run benchmark

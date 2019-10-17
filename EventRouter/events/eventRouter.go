@@ -86,7 +86,7 @@ func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, err
 	}
 }
 
-func (eventRouter *eventRouter) send(subscriptions []*models.SubscriptionContext, factomEvent *eventmessages.FactomEvent) error {
+func (eventRouter *eventRouter) send(subscriptions models.SubscriptionContexts, factomEvent *eventmessages.FactomEvent) error {
 	event, err := json.Marshal(factomEvent)
 	if err != nil {
 		return fmt.Errorf("failed to create json from factom event")

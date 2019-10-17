@@ -48,12 +48,12 @@ func (m *MockRepository) DeleteSubscription(id string) error {
 }
 
 // GetActiveSubscriptions get active subscriptions
-func (m *MockRepository) GetActiveSubscriptions(eventType models.EventType) ([]*models.SubscriptionContext, error) {
+func (m *MockRepository) GetActiveSubscriptions(eventType models.EventType) (models.SubscriptionContexts, error) {
 	rets := m.Called(eventType)
 	/* Since `rets.Get()` is a generic method, that returns whatever we pass to it,
 	 * we need to typecast it to the type we expect, which in this case is []*subscription
 	 */
-	return rets.Get(0).([]*models.SubscriptionContext), rets.Error(1)
+	return rets.Get(0).(models.SubscriptionContexts), rets.Error(1)
 }
 
 // InitMockRepository initialize repository
