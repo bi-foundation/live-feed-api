@@ -79,6 +79,8 @@ func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, err
 		return models.ProcessMessage, nil
 	case *eventmessages.FactomEvent_NodeMessage:
 		return models.NodeMessage, nil
+	case *eventmessages.FactomEvent_StateChange:
+		return "", fmt.Errorf("StatecoChange event type is not implemented in the Live Feed API, please turn off \"EventSendStateChange\" in factomd")
 	default:
 		return "", fmt.Errorf("failed to map factom event to event type")
 	}
