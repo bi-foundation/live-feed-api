@@ -203,52 +203,52 @@ type isAdminBlockEntry_Value interface {
 }
 
 type AdminBlockEntry_AddAuditServer struct {
-	AddAuditServer *AddAuditServer `protobuf:"bytes,1,opt,name=addAuditServer,proto3,oneof"`
+	AddAuditServer *AddAuditServer `protobuf:"bytes,1,opt,name=addAuditServer,proto3,oneof" json:"addAuditServer,omitempty"`
 }
 type AdminBlockEntry_AddEfficiency struct {
-	AddEfficiency *AddEfficiency `protobuf:"bytes,2,opt,name=addEfficiency,proto3,oneof"`
+	AddEfficiency *AddEfficiency `protobuf:"bytes,2,opt,name=addEfficiency,proto3,oneof" json:"addEfficiency,omitempty"`
 }
 type AdminBlockEntry_AddFactoidAddress struct {
-	AddFactoidAddress *AddFactoidAddress `protobuf:"bytes,3,opt,name=addFactoidAddress,proto3,oneof"`
+	AddFactoidAddress *AddFactoidAddress `protobuf:"bytes,3,opt,name=addFactoidAddress,proto3,oneof" json:"addFactoidAddress,omitempty"`
 }
 type AdminBlockEntry_AddFederatedServer struct {
-	AddFederatedServer *AddFederatedServer `protobuf:"bytes,4,opt,name=addFederatedServer,proto3,oneof"`
+	AddFederatedServer *AddFederatedServer `protobuf:"bytes,4,opt,name=addFederatedServer,proto3,oneof" json:"addFederatedServer,omitempty"`
 }
 type AdminBlockEntry_AddFederatedServerBitcoinAnchorKey struct {
-	AddFederatedServerBitcoinAnchorKey *AddFederatedServerBitcoinAnchorKey `protobuf:"bytes,5,opt,name=addFederatedServerBitcoinAnchorKey,proto3,oneof"`
+	AddFederatedServerBitcoinAnchorKey *AddFederatedServerBitcoinAnchorKey `protobuf:"bytes,5,opt,name=addFederatedServerBitcoinAnchorKey,proto3,oneof" json:"addFederatedServerBitcoinAnchorKey,omitempty"`
 }
 type AdminBlockEntry_AddFederatedServerSigningKey struct {
-	AddFederatedServerSigningKey *AddFederatedServerSigningKey `protobuf:"bytes,6,opt,name=addFederatedServerSigningKey,proto3,oneof"`
+	AddFederatedServerSigningKey *AddFederatedServerSigningKey `protobuf:"bytes,6,opt,name=addFederatedServerSigningKey,proto3,oneof" json:"addFederatedServerSigningKey,omitempty"`
 }
 type AdminBlockEntry_AddReplaceMatryoshkaHash struct {
-	AddReplaceMatryoshkaHash *AddReplaceMatryoshkaHash `protobuf:"bytes,7,opt,name=addReplaceMatryoshkaHash,proto3,oneof"`
+	AddReplaceMatryoshkaHash *AddReplaceMatryoshkaHash `protobuf:"bytes,7,opt,name=addReplaceMatryoshkaHash,proto3,oneof" json:"addReplaceMatryoshkaHash,omitempty"`
 }
 type AdminBlockEntry_CancelCoinbaseDescriptor struct {
-	CancelCoinbaseDescriptor *CancelCoinbaseDescriptor `protobuf:"bytes,8,opt,name=cancelCoinbaseDescriptor,proto3,oneof"`
+	CancelCoinbaseDescriptor *CancelCoinbaseDescriptor `protobuf:"bytes,8,opt,name=cancelCoinbaseDescriptor,proto3,oneof" json:"cancelCoinbaseDescriptor,omitempty"`
 }
 type AdminBlockEntry_CoinbaseDescriptor struct {
-	CoinbaseDescriptor *CoinbaseDescriptor `protobuf:"bytes,9,opt,name=coinbaseDescriptor,proto3,oneof"`
+	CoinbaseDescriptor *CoinbaseDescriptor `protobuf:"bytes,9,opt,name=coinbaseDescriptor,proto3,oneof" json:"coinbaseDescriptor,omitempty"`
 }
 type AdminBlockEntry_DirectoryBlockSignatureEntry struct {
-	DirectoryBlockSignatureEntry *DirectoryBlockSignatureEntry `protobuf:"bytes,10,opt,name=directoryBlockSignatureEntry,proto3,oneof"`
+	DirectoryBlockSignatureEntry *DirectoryBlockSignatureEntry `protobuf:"bytes,10,opt,name=directoryBlockSignatureEntry,proto3,oneof" json:"directoryBlockSignatureEntry,omitempty"`
 }
 type AdminBlockEntry_EndOfMinuteEntry struct {
-	EndOfMinuteEntry *EndOfMinuteEntry `protobuf:"bytes,11,opt,name=endOfMinuteEntry,proto3,oneof"`
+	EndOfMinuteEntry *EndOfMinuteEntry `protobuf:"bytes,11,opt,name=endOfMinuteEntry,proto3,oneof" json:"endOfMinuteEntry,omitempty"`
 }
 type AdminBlockEntry_ForwardCompatibleEntry struct {
-	ForwardCompatibleEntry *ForwardCompatibleEntry `protobuf:"bytes,12,opt,name=forwardCompatibleEntry,proto3,oneof"`
+	ForwardCompatibleEntry *ForwardCompatibleEntry `protobuf:"bytes,12,opt,name=forwardCompatibleEntry,proto3,oneof" json:"forwardCompatibleEntry,omitempty"`
 }
 type AdminBlockEntry_IncreaseServerCount struct {
-	IncreaseServerCount *IncreaseServerCount `protobuf:"bytes,13,opt,name=increaseServerCount,proto3,oneof"`
+	IncreaseServerCount *IncreaseServerCount `protobuf:"bytes,13,opt,name=increaseServerCount,proto3,oneof" json:"increaseServerCount,omitempty"`
 }
 type AdminBlockEntry_RemoveFederatedServer struct {
-	RemoveFederatedServer *RemoveFederatedServer `protobuf:"bytes,14,opt,name=removeFederatedServer,proto3,oneof"`
+	RemoveFederatedServer *RemoveFederatedServer `protobuf:"bytes,14,opt,name=removeFederatedServer,proto3,oneof" json:"removeFederatedServer,omitempty"`
 }
 type AdminBlockEntry_RevealMatryoshkaHash struct {
-	RevealMatryoshkaHash *RevealMatryoshkaHash `protobuf:"bytes,15,opt,name=revealMatryoshkaHash,proto3,oneof"`
+	RevealMatryoshkaHash *RevealMatryoshkaHash `protobuf:"bytes,15,opt,name=revealMatryoshkaHash,proto3,oneof" json:"revealMatryoshkaHash,omitempty"`
 }
 type AdminBlockEntry_ServerFault struct {
-	ServerFault *ServerFault `protobuf:"bytes,16,opt,name=serverFault,proto3,oneof"`
+	ServerFault *ServerFault `protobuf:"bytes,16,opt,name=serverFault,proto3,oneof" json:"serverFault,omitempty"`
 }
 
 func (*AdminBlockEntry_AddAuditServer) isAdminBlockEntry_Value()                     {}
