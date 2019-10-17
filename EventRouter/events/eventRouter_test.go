@@ -154,11 +154,10 @@ func TestSendEvents(t *testing.T) {
 	waitOnEventReceived(&eventsReceived, n, 1*time.Minute)
 
 	assert.Equal(t, int32(n), eventsReceived)
-
 }
 
 func TestMapEventType(t *testing.T) {
-	testCases := []models.EventType{models.ChainCommit, models.EntryCommit, models.EntryReveal, models.DirectoryBlockCommit, models.ProcessMessage, models.NodeMessage}
+	testCases := []models.EventType{models.ChainCommit, models.EntryCommit, models.EntryReveal, models.DirectoryBlockCommit, models.StateChange, models.ProcessMessage, models.NodeMessage}
 
 	for _, testCase := range testCases {
 		t.Run(string(testCase), func(t *testing.T) {
