@@ -89,7 +89,7 @@ func TestQueryCommitChain(t *testing.T) {
 			"value": {
 				"version": 1,
 				"timestamp": 1000,
-				"entityState": "HOLDING_QUEUE",
+				"entityState": "ACCEPTED",
 				"entryCreditPublicKey": "\u0001",
 				"signature": "\u0001",
 				"credits": 1,
@@ -129,7 +129,7 @@ func TestQueryCommitEntry(t *testing.T) {
 			"value": {
 				"version": 1,
 				"timestamp": 1000,
-				"entityState": "HOLDING_QUEUE",
+				"entityState": "ACCEPTED",
 				"entryCreditPublicKey": "\u0001",
 				"signature": "\u0001",
 				"credits": 1,
@@ -161,7 +161,7 @@ func TestQueryEntryReveal(t *testing.T) {
 				"hashValue": "\u0001"
 			},
 			"value": {
-			  "entityState": "HOLDING_QUEUE",
+			  "entityState": "ACCEPTED",
 			  "timestamp": 1000,
 			  "entry": { 
 			    "hash": {
@@ -200,7 +200,7 @@ func TestQueryStateChange(t *testing.T) {
 				"hashValue": "\u0001"
 			},
 			"value": {
-			  "entityState": "HOLDING_QUEUE",
+			  "entityState": "ACCEPTED",
 			  "blockHeight": 1,
 			  "entityHash": { 
 				"hashValue": "\u0001"
@@ -325,7 +325,7 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 			  {
 				"value": {
 				  "credits": 1, 
-				  "entityState": "HOLDING_QUEUE", 
+				  "entityState": "ACCEPTED", 
 				  "entryCreditPublicKey": "\u0001", 
 				  "entryHash": {
 				    "hashValue": "\u0001"
