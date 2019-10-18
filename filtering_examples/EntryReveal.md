@@ -15,6 +15,7 @@ Entry Reveal example
                 externalIDs { binaryValue } 
                 content { binaryValue }
             }
+            chainID { hashValue }
         }
     }
 } 

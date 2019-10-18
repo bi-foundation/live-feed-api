@@ -89,6 +89,9 @@ var nonFilteringQuery = `{
         version
       }
       ... on EntryReveal {
+        chainID {
+          hashValue
+        }
         entityState
         entry {
           content {

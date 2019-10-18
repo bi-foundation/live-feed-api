@@ -163,6 +163,9 @@ func TestQueryEntryReveal(t *testing.T) {
 			"value": {
 			  "entityState": "ACCEPTED",
 			  "timestamp": 1000,
+               "chainID": {
+                  "hashValue": "\u0001"
+               }, 
 			  "entry": { 
 			    "hash": {
 				  "hashValue": "\u0001"
