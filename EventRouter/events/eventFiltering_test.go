@@ -714,7 +714,8 @@ func createNewEvent(eventType models.EventType) *eventmessages.FactomEvent {
 		event.Value = eventmessages.NewPopulatedFactomEvent_ProcessMessage(randomizer, false)
 	case models.NodeMessage:
 		event.Value = eventmessages.NewPopulatedFactomEvent_NodeMessage(randomizer, false)
-
+	case models.StateChange:
+		event.Value = eventmessages.NewPopulatedFactomEvent_StateChange(randomizer, false)
 	}
 
 	return event

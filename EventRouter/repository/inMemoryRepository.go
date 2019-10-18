@@ -12,7 +12,7 @@ import (
 type inMemoryRepository struct {
 	sync.RWMutex
 	id int
-	db []*models.SubscriptionContext
+	db models.SubscriptionContexts
 }
 
 // NewInMemoryRepository create a new in memory repository
@@ -94,7 +94,7 @@ func (repository *inMemoryRepository) DeleteSubscription(id string) error {
 }
 
 // GetActiveSubscriptions retrieve all active subscriptions
-func (repository *inMemoryRepository) GetActiveSubscriptions(eventType models.EventType) ([]*models.SubscriptionContext, error) {
+func (repository *inMemoryRepository) GetActiveSubscriptions(eventType models.EventType) (models.SubscriptionContexts, error) {
 	repository.RLock()
 	defer repository.RUnlock()
 

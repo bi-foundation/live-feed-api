@@ -80,13 +80,13 @@ func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, err
 	case *eventmessages.FactomEvent_NodeMessage:
 		return models.NodeMessage, nil
 	case *eventmessages.FactomEvent_StateChange:
-		return "", fmt.Errorf("StateChange event type is not implemented in the Live Feed API, please turn off \"EventSendStateChange\" in factomd")
+		return models.StateChange, nil
 	default:
 		return "", fmt.Errorf("failed to map factom event to event type")
 	}
 }
 
-func (eventRouter *eventRouter) send(subscriptions []*models.SubscriptionContext, factomEvent *eventmessages.FactomEvent) error {
+func (eventRouter *eventRouter) send(subscriptions models.SubscriptionContexts, factomEvent *eventmessages.FactomEvent) error {
 	event, err := json.Marshal(factomEvent)
 	if err != nil {
 		return fmt.Errorf("failed to create json from factom event")

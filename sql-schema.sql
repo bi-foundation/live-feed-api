@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 	callback VARCHAR(2083) NOT NULL,
 	callback_type VARCHAR(25) NOT NULL,
 	status VARCHAR(20) NOT NULL,
-	info VARCHAR(200),
+	info TEXT,
 	access_token VARCHAR(255),
 	username VARCHAR(255),
 	password VARCHAR(255)

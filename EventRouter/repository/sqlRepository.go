@@ -298,7 +298,7 @@ func (repository *sqlRepository) DeleteSubscription(id string) (err error) {
 }
 
 // GetActiveSubscriptions retrieve all active subscriptions
-func (repository *sqlRepository) GetActiveSubscriptions(eventType models.EventType) (subscriptionContexts []*models.SubscriptionContext, err error) {
+func (repository *sqlRepository) GetActiveSubscriptions(eventType models.EventType) (subscriptionContexts models.SubscriptionContexts, err error) {
 	subContexts := make(map[string]*models.SubscriptionContext)
 
 	rows, err := connection.Query(selectSubscriptionsSQL, eventType)
@@ -343,7 +343,7 @@ func (repository *sqlRepository) GetActiveSubscriptions(eventType models.EventTy
 	}
 
 	// preallocate memory for the slice
-	subscriptionContexts = make([]*models.SubscriptionContext, 0, len(subContexts))
+	subscriptionContexts = make(models.SubscriptionContexts, 0, len(subContexts))
 	for _, s := range subContexts {
 		subscriptionContexts = append(subscriptionContexts, s)
 	}

@@ -117,6 +117,7 @@ Users can receive the following event types:
 * entry commit
 * entry reveal
 * directory block commit
+* state change
 * process message
 * node message
 
