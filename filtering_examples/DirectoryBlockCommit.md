@@ -27,6 +27,10 @@ Directory Block Commit example
                 header {
                     blockHeight
                     previousBackRefHash { hashValue }
+                    headerExpansionSize
+                    headerExpansionArea
+                    messageCount
+                    bodySize
                 }
                 entries {
                     value {

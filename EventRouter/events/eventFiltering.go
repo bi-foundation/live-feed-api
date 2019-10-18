@@ -236,6 +236,10 @@ var nonFilteringQuery = `{
           }
           header {
             blockHeight
+            bodySize
+            headerExpansionArea
+            headerExpansionSize
+            messageCount
             previousBackRefHash {
               hashValue
             }

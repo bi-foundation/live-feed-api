@@ -245,7 +245,11 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 			], 
 			"header": {
 			  "blockHeight": 1, 
-			  "previousBackRefHash": {
+			  "bodySize":1,
+              "headerExpansionArea":"\u0001",
+              "headerExpansionSize":1,
+               "messageCount":1,
+               "previousBackRefHash": {
 				"hashValue": "\u0001"
 			  }
 			}
