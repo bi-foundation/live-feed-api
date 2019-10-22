@@ -2,10 +2,8 @@ Node Message example
 ```graphql endpoint doc
 {
     factomNodeName
-    identityChainID {
-        hashValue
-    }
-    value {
+    identityChainID
+    event {
         ... on NodeMessage {
             messageText 
             messageCode 

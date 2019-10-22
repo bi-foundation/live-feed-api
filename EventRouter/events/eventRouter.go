@@ -45,7 +45,7 @@ func (eventRouter *eventRouter) handleEvents() {
 	for factomEvent := range eventRouter.eventsInQueue {
 		eventType, err := mapEventType(factomEvent)
 		if err != nil {
-			log.Error("invalid event type %v: '%v'", err, factomEvent.Value)
+			log.Error("invalid event type %v: '%v'", err, factomEvent.Event)
 			continue
 		}
 
@@ -66,7 +66,7 @@ func (eventRouter *eventRouter) handleEvents() {
 }
 
 func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, error) {
-	switch factomEvent.Value.(type) {
+	switch factomEvent.Event.(type) {
 	case *eventmessages.FactomEvent_DirectoryBlockCommit:
 		return models.DirectoryBlockCommit, nil
 	case *eventmessages.FactomEvent_ChainCommit:

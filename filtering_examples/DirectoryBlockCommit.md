@@ -2,10 +2,8 @@ Directory Block Commit example
 ```graphql endpoint doc
 {
     factomNodeName
-    identityChainID {
-        hashValue
-    }
-    value {
+    identityChainID 
+    event {
         ... on DirectoryBlockCommit {
             directoryBlock {
                 header {
@@ -14,28 +12,28 @@ Directory Block Commit example
                     blockHeight
                     blockCount
                     networkID
-                    bodyMerkleRoot { hashValue }
-                    previousKeyMerkleRoot { hashValue }
-                    previousFullHash { hashValue }
+                    bodyMerkleRoot
+                    previousKeyMerkleRoot
+                    previousFullHash
                 }
                 entries {
-                    chainID { hashValue }
-                    keyMerkleRoot { hashValue }
+                    chainID
+                    keyMerkleRoot
                 }
             }
             adminBlock {
                 header {
                     blockHeight
-                    previousBackRefHash { hashValue }
+                    previousBackRefHash
                     headerExpansionSize
                     headerExpansionArea
                     messageCount
                     bodySize
                 }
                 entries {
-                    value {
+                    adminBlockEntry {
                         ... on AddEfficiency {
-                            identityChainID { hashValue }
+                            identityChainID
                             efficiency
                         }
                         # ... on AddAuditServer { }
@@ -57,51 +55,51 @@ Directory Block Commit example
                 }
             }
             factoidBlock {
-                bodyMerkleRoot { hashValue }
-                previousKeyMerkleRoot { hashValue }
-                previousLedgerKeyMerkleRoot { hashValue }
+                bodyMerkleRoot
+                previousKeyMerkleRoot
+                previousLedgerKeyMerkleRoot
                 exchangeRate
                 blockHeight
                 transactions {
-                    transactionID { hashValue }
+                    transactionID
                     blockHeight
                     timestamp
                     factoidInputs {
                         amount
-                        address { hashValue }
+                        address
                     }
                     factoidOutputs {
                         amount
-                        address { hashValue }
+                        address
                     }
                     entryCreditOutputs {
                         amount
-                        address { hashValue }
+                        address
                     }
                     redeemConditionDataStructures {
-                        value {
+                        rcd {
                             ... on RCD1 {
                                 publicKey 
                             }
                         }
                     }
                     signatureBlocks {
-                        signature { signatureValue }
+                        signature 
                     } 
                 }
             }
             entryCreditBlock {
                 header {
-                    bodyHash { hashValue }
-                    previousHeaderHash { hashValue }
-                    previousFullHash { hashValue }
+                    bodyHash
+                    previousHeaderHash
+                    previousFullHash
                     blockHeight
                     headerExpansionArea
                     objectCount
                     bodySize
                 }
                 entries {
-                    value { 
+                    entryCreditBlockEntry { 
                         ... on ChainCommit {
                             version
                             timestamp
@@ -109,14 +107,14 @@ Directory Block Commit example
                             entryCreditPublicKey
                             signature
                             credits
-                            entryHash { hashValue }
-                            chainIDHash { hashValue }
-                            weld { hashValue }
+                            entryHash
+                            chainIDHash
+                            weld
                         }
                         ... on EntryCommit {
                             version 
                             timestamp
-                            entryHash { hashValue }
+                            entryHash
                             entityState 
                             credits 
                             entryCreditPublicKey 
@@ -124,7 +122,7 @@ Directory Block Commit example
                         }
                         ... on IncreaseBalance { 
                             entryCreditPublicKey
-                            transactionID { hashValue }
+                            transactionID
                             index
                             amount
                         } 
@@ -139,21 +137,21 @@ Directory Block Commit example
             }
             entryBlocks {
                 header {
-                    bodyMerkleRoot { hashValue }
-                    chainID { hashValue }
-                    previousFullHash { hashValue }
-                    previousKeyMerkleRoot { hashValue }
+                    bodyMerkleRoot
+                    chainID
+                    previousFullHash
+                    previousKeyMerkleRoot
                     blockHeight
                     blockSequence
                     entryCount
                 }
-                entryHashes { hashValue }
+                entryHashes
             }
             entryBlockEntries {
                 version
-                hash { hashValue }
-                externalIDs { binaryValue } 
-                content { binaryValue }
+                hash
+                externalIDs 
+                content
             }
         }
     }

@@ -2,10 +2,8 @@ Commit Chain example
 ```graphql endpoint doc
 { 
     factomNodeName
-    identityChainID {
-        hashValue 
-    }
-    value {
+    identityChainID 
+    event {
         ... on ChainCommit {
             version
             timestamp
@@ -13,9 +11,9 @@ Commit Chain example
             entryCreditPublicKey
             signature
             credits
-            entryHash { hashValue }
-            chainIDHash { hashValue }
-            weld { hashValue }
+            entryHash
+            chainIDHash
+            weld
         }
     }
 }

@@ -2,20 +2,18 @@ Entry Reveal example
 ```graphql endpoint doc
 {
     factomNodeName
-    identityChainID {
-        hashValue
-    }
-    value {
+    identityChainID 
+    event {
         ... on EntryReveal {
             timestamp
             entityState
             entry {
                 version
-                hash { hashValue }
-                externalIDs { binaryValue } 
-                content { binaryValue }
+                hash
+                externalIDs 
+                content
+                chainID
             }
-            chainID { hashValue }
         }
     }
 } 

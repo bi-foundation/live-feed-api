@@ -54,125 +54,82 @@ func queryScheme(event interface{}) (graphql.Schema, error) {
 }
 
 var nonFilteringQuery = `{
-    eventSource
-    factomNodeName
-    identityChainID {
-      hashValue
-    }
-    value {
+    event {
       ... on ChainCommit {
-        chainIDHash {
-          hashValue
-        }
+        chainIDHash
         credits
         entityState
         entryCreditPublicKey
-        entryHash {
-          hashValue
-        }
+        entryHash
         signature
         timestamp
         version
-        weld {
-          hashValue
-        }
+        weld
       }
       ... on EntryCommit {
         credits
         entityState
         entryCreditPublicKey
-        entryHash {
-          hashValue
-        }
+        entryHash
         signature
         timestamp
         version
       }
       ... on EntryReveal {
-        chainID {
-          hashValue
-        }
         entityState
         entry {
-          content {
-            binaryValue
-          }
-          externalIDs {
-            binaryValue
-          }
-          hash {
-            hashValue
-          }
+          chainID
+          content
+          externalIDs
+          hash
           version
         }
         timestamp
       }
       ... on StateChange {
         blockHeight
-        entityHash {
-          hashValue
-        }
+        entityHash
         entityState
       }
       ... on DirectoryBlockCommit {
         adminBlock {
           entries {
-            value {
+            adminBlockEntry {
               ... on AddAuditServer {
                 blockHeight
-                identityChainID {
-                  hashValue
-                }
+                identityChainID
               }
               ... on AddEfficiency {
                 efficiency
-                identityChainID {
-                  hashValue
-                }
+                identityChainID
               }
               ... on AddFactoidAddress {
-                address {
-                  hashValue
-                }
-                identityChainID {
-                  hashValue
-                }
+                address
+                identityChainID
               }
               ... on AddFederatedServer {
                 blockHeight
-                identityChainID {
-                  hashValue
-                }
+                identityChainID
               }
               ... on AddFederatedServerBitcoinAnchorKey {
                 ecdsaPublicKey
-                identityChainID {
-                  hashValue
-                }
+                identityChainID
                 keyPriority
                 keyType
               }
               ... on AddFederatedServerSigningKey {
                 blockHeight
-                identityChainID {
-                  hashValue
-                }
+                identityChainID
                 keyPriority
                 publicKey
               }
               ... on AddReplaceMatryoshkaHash {
                 factoidOutputs {
-                  address {
-                    hashValue
-                  }
+                  address
                   amount
                 }
-                identityChainID {
-                  hashValue
-                }
-                matryoshkaHash {
-                  hashValue
-                }
+                identityChainID
+                matryoshkaHash
               }
               ... on CancelCoinbaseDescriptor {
                 descriptorHeight
@@ -180,16 +137,12 @@ var nonFilteringQuery = `{
               }
               ... on CoinbaseDescriptor {
                 factoidOutputs {
-                  address {
-                    hashValue
-                  }
+                  address
                   amount
                 }
               }
               ... on DirectoryBlockSignatureEntry {
-                identityAdminChainID {
-                  hashValue
-                }
+                identityAdminChainID
                 previousDirectoryBlockSignature {
                   publicKey
                   signature
@@ -207,27 +160,17 @@ var nonFilteringQuery = `{
               }
               ... on RemoveFederatedServer {
                 blockHeight
-                identityChainID {
-                  hashValue
-                }
+                identityChainID
               }
               ... on RevealMatryoshkaHash {
-                identityChainID {
-                  hashValue
-                }
-                matryoshkaHash {
-                  hashValue
-                }
+                identityChainID
+                matryoshkaHash
               }
               ... on ServerFault {
-                auditServerID {
-                  hashValue
-                }
+                auditServerID
                 blockHeight
                 messageEntryHeight
-                serverID {
-                  hashValue
-                }
+                serverID
                 signatureList {
                   publicKey
                   signature
@@ -243,98 +186,63 @@ var nonFilteringQuery = `{
             headerExpansionArea
             headerExpansionSize
             messageCount
-            previousBackRefHash {
-              hashValue
-            }
+            previousBackRefHash
           }
         }
         directoryBlock {
           entries {
-            chainID {
-              hashValue
-            }
-            keyMerkleRoot {
-              hashValue
-            }
+            chainID
+            keyMerkleRoot
           }
           header {
             blockCount
             blockHeight
-            bodyMerkleRoot {
-              hashValue
-            }
+            bodyMerkleRoot
             networkID
-            previousFullHash {
-              hashValue
-            }
-            previousKeyMerkleRoot {
-              hashValue
-            }
+            previousFullHash
+            previousKeyMerkleRoot
             timestamp
             version
           }
         }
         entryBlockEntries {
-          content {
-            binaryValue
-          }
-          externalIDs {
-            binaryValue
-          }
-          hash {
-            hashValue
-          }
+          chainID
+          content
+          externalIDs
+          hash
           version
         }
         entryBlocks {
-          entryHashes {
-            hashValue
-          }
+          entryHashes
           header {
             blockHeight
             blockSequence
-            bodyMerkleRoot {
-              hashValue
-            }
-            chainID {
-              hashValue
-            }
+            bodyMerkleRoot
+            chainID
             entryCount
-            previousFullHash {
-              hashValue
-            }
-            previousKeyMerkleRoot {
-              hashValue
-            }
+            previousFullHash
+            previousKeyMerkleRoot
           }
         }
         entryCreditBlock {
           entries {
-            value {
+            entryCreditBlockEntry {
               ... on ChainCommit {
-                chainIDHash {
-                  hashValue
-                }
+                chainIDHash
                 credits
                 entityState
                 entryCreditPublicKey
-                entryHash {
-                  hashValue
-                }
+                entryHash
                 signature
                 timestamp
                 version
-                weld {
-                  hashValue
-                }
+                weld
               }
               ... on EntryCommit {
                 credits
                 entityState
                 entryCreditPublicKey
-                entryHash {
-                  hashValue
-                }
+                entryHash
                 signature
                 timestamp
                 version
@@ -343,9 +251,7 @@ var nonFilteringQuery = `{
                 amount
                 entryCreditPublicKey
                 index
-                transactionID {
-                  hashValue
-                }
+                transactionID
               }
               ... on MinuteNumber {
                 minuteNumber
@@ -357,68 +263,46 @@ var nonFilteringQuery = `{
           }
           header {
             blockHeight
-            bodyHash {
-              hashValue
-            }
+            bodyHash
             bodySize
             headerExpansionArea
             objectCount
-            previousFullHash {
-              hashValue
-            }
-            previousHeaderHash {
-              hashValue
-            }
+            previousFullHash
+            previousHeaderHash
           }
         }
         factoidBlock {
           blockHeight
-          bodyMerkleRoot {
-            hashValue
-          }
+          bodyMerkleRoot
           exchangeRate
-          previousKeyMerkleRoot {
-            hashValue
-          }
-          previousLedgerKeyMerkleRoot {
-            hashValue
-          }
+          previousKeyMerkleRoot
+          previousLedgerKeyMerkleRoot
           transactions {
             blockHeight
             entryCreditOutputs {
-              address {
-                hashValue
-              }
+              address
               amount
             }
             factoidInputs {
-              address {
-                hashValue
-              }
+              address
               amount
             }
             factoidOutputs {
-              address {
-                hashValue
-              }
+              address
               amount
             }
             redeemConditionDataStructures {
-              value {
+              rcd {
                 ... on RCD1 {
                   publicKey
                 }
               }
             }
             signatureBlocks {
-              signature {
-                signatureValue
-              }
+              signature
             }
             timestamp
-            transactionID {
-              hashValue
-            }
+            transactionID
           }
         }
       }
@@ -433,4 +317,7 @@ var nonFilteringQuery = `{
         messageText
       }
     }
+    eventSource
+    factomNodeName
+    identityChainID
 }`

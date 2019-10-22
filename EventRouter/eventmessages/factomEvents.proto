@@ -5,8 +5,9 @@ option java_package = "com.factom.factomd.eventmessages";
 
 import "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/graphql.proto";
 import "github.com/bi-foundation/protobuf-graphql-extension/graphqlproto/types/timestamp.proto";
-import "eventmessages/sharedTypes.proto";
 import "eventmessages/adminBlock.proto";
+import "eventmessages/directoryBlock.proto";
+import "eventmessages/entryBlock.proto";
 import "eventmessages/factoidBlock.proto";
 
 option (graphqlproto.graphql) = true;
@@ -15,8 +16,8 @@ option (graphqlproto.graphql) = true;
 message FactomEvent {
     EventSource eventSource = 1;
     string factomNodeName = 2;
-    Hash identityChainID = 3;
-    oneof value {
+    bytes identityChainID = 3;
+    oneof event {
         ChainCommit chainCommit = 4;
         EntryCommit entryCommit = 5;
         EntryReveal entryReveal = 6;
@@ -30,9 +31,9 @@ message FactomEvent {
 // ====  FACTOM EVENT VALUES =====
 message ChainCommit {
     EntityState entityState = 1;
-    Hash chainIDHash = 2;
-    Hash entryHash = 3;
-    Hash weld = 4;
+    bytes chainIDHash = 2;
+    bytes entryHash = 3;
+    bytes weld = 4;
     graphqlproto.types.Timestamp timestamp = 5;
     uint32 credits = 6;
     bytes entryCreditPublicKey = 7;
@@ -40,10 +41,9 @@ message ChainCommit {
     uint32 version = 9;
 }
 
-
 message EntryCommit {
     EntityState entityState = 1;
-    Hash entryHash = 2;
+    bytes entryHash = 2;
     graphqlproto.types.Timestamp timestamp = 3;
     uint32 credits = 4;
     bytes entryCreditPublicKey = 5;
@@ -51,21 +51,17 @@ message EntryCommit {
     uint32 version = 7;
 }
 
-
 message EntryReveal {
     EntityState entityState = 1;
     EntryBlockEntry entry = 2;
     graphqlproto.types.Timestamp timestamp = 3;
-    Hash chainID = 4;
 }
 
-
 message StateChange {
-    Hash entityHash = 1;
+    bytes entityHash = 1;
     EntityState entityState = 2;
     uint32 blockHeight = 3;
 }
-
 
 message DirectoryBlockCommit {
     DirectoryBlock directoryBlock = 1;
@@ -76,59 +72,19 @@ message DirectoryBlockCommit {
     repeated EntryBlockEntry entryBlockEntries = 6;
 }
 
-// ====  DIRECTORY BLOCK DETAILS =====
-message DirectoryBlock {
-    DirectoryBlockHeader header = 1;
-    repeated DirectoryBlockEntry entries = 2;
-}
-
-message DirectoryBlockHeader {
-    Hash bodyMerkleRoot = 1;
-    Hash previousKeyMerkleRoot = 2;
-    Hash previousFullHash = 3;
-    graphqlproto.types.Timestamp timestamp = 4;
-    uint32 blockHeight = 5;
-    uint32 blockCount = 6;
-    uint32 version = 7;
-    uint32 networkID = 8;
-}
-
-message DirectoryBlockEntry {
-    Hash chainID = 1;
-    Hash keyMerkleRoot = 2;
-}
-
-message EntryBlock {
-    EntryBlockHeader header = 1;
-    repeated Hash entryHashes = 2;
-}
-
-message EntryBlockHeader {
-    Hash bodyMerkleRoot = 1;
-    Hash chainID = 2;
-    Hash previousFullHash = 3;
-    Hash previousKeyMerkleRoot = 4;
-    uint32 blockHeight = 5;
-    uint32 blockSequence = 6;
-    uint32 entryCount = 7;
-}
-
-message EntryBlockEntry {
-    Hash hash = 1;
-    repeated ExternalId externalIDs = 2;
-    Content content = 3;
-    uint32 version = 4;
-}
-
+/* Although readability would increase when the entry credit block would have its own file. The oneof in
+ * EntryCreditBlockEntry prevents this. This is linked back to type that are defined in this file.
+ */
+// ====  ENTRY CREDIT BLOCK =====
 message EntryCreditBlock {
     EntryCreditBlockHeader header = 1;
     repeated EntryCreditBlockEntry entries = 2;
 }
 
 message EntryCreditBlockHeader {
-    Hash bodyHash = 1;
-    Hash previousHeaderHash = 2;
-    Hash previousFullHash = 3;
+    bytes bodyHash = 1;
+    bytes previousHeaderHash = 2;
+    bytes previousFullHash = 3;
     uint32 blockHeight = 4;
     bytes headerExpansionArea = 5;
     uint64 objectCount = 6;
@@ -136,7 +92,7 @@ message EntryCreditBlockHeader {
 }
 
 message EntryCreditBlockEntry {
-    oneof value {
+    oneof entryCreditBlockEntry {
         ChainCommit chainCommit = 1;
         EntryCommit entryCommit = 2;
         IncreaseBalance increaseBalance = 3;
@@ -147,7 +103,7 @@ message EntryCreditBlockEntry {
 
 message IncreaseBalance {
     bytes entryCreditPublicKey = 1;
-    Hash transactionID = 2;
+    bytes transactionID = 2;
     uint64 index = 3;
     uint64 amount = 4;
 }
@@ -166,7 +122,6 @@ message ProcessMessage {
     Level level = 2;
     string messageText = 3;
 }
-
 
 message NodeMessage {
     NodeMessageCode messageCode = 1;

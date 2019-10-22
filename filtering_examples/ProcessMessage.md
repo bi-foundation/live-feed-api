@@ -2,10 +2,8 @@ Process Message example
 ```graphql endpoint doc
 {
     factomNodeName
-    identityChainID {
-        hashValue
-    }
-    value {
+    identityChainID 
+    event {
         ... on ProcessMessage {
             messageText 
             processCode 

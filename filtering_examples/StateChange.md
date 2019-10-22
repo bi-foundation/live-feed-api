@@ -2,12 +2,10 @@ State Change example
 ```graphql endpoint doc
 {
     factomNodeName
-    identityChainID {
-        hashValue
-    }
-    value {
+    identityChainID 
+    event {
         ... on StateChange {
-            entityHash { hashValue }
+            entityHash
             entityState 
             blockHeight
         }

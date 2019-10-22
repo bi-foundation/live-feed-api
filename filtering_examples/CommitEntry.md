@@ -2,10 +2,8 @@ Commit Entry example
 ```graphql endpoint doc
 {
     factomNodeName
-    identityChainID {
-        hashValue
-    }
-    value {
+    identityChainID 
+    event {
         ... on EntryCommit {
             version
             timestamp
@@ -13,7 +11,7 @@ Commit Entry example
             entryCreditPublicKey
             signature
             credits
-            entryHash { hashValue }
+            entryHash
         }
     }
 }

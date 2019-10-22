@@ -17,6 +17,21 @@ import (
 
 var randomizer = Randomizer{}
 
+func TestNoFilteringQuery(t *testing.T) {
+	// this test is used to verify if no filtering produces the full result.
+	// if the protobuf changes, make sure the non filtering query is updated.
+	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
+	schema, err := queryScheme(event)
+	if err != nil {
+		log.Fatalf("failed to create new schema, error: %v", err)
+	}
+
+	// build the query
+	query := buildNonFilteringQuery(schema)
+
+	assert.EqualValues(t, query, nonFilteringQuery)
+}
+
 func TestQueryNoFiltering(t *testing.T) {
 	eventTypes := []models.EventType{models.ChainCommit, models.EntryCommit, models.EntryReveal, models.DirectoryBlockCommit, models.ProcessMessage, models.NodeMessage}
 
@@ -56,17 +71,15 @@ func TestQueryOnDifferentEvent(t *testing.T) {
 	expectedJSON := `{
   		"event": {
 			"factomNodeName": "1",
-			"identityChainID": {
-				"hashValue": "\u0001"
-			},
-			"value": {
+			"identityChainID": "\u0001",
+			"event": {
 			}
 		}
 	}`
 
 	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
 	chainCommit := eventmessages.NewPopulatedFactomEvent_EntryCommit(randomizer, false)
-	event.Value = chainCommit
+	event.Event = chainCommit
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -83,25 +96,17 @@ func TestQueryCommitChain(t *testing.T) {
 	expectedJSON := `{
   		"event": {
 			"factomNodeName": "1",
-			"identityChainID": {
-				"hashValue": "\u0001"
-			},
-			"value": {
+			"identityChainID": "\u0001",
+			"event": {
 				"version": 1,
 				"timestamp": 1000,
 				"entityState": "ACCEPTED",
 				"entryCreditPublicKey": "\u0001",
 				"signature": "\u0001",
 				"credits": 1,
-				"entryHash": {
-					"hashValue": "\u0001"
-				},
-				"chainIDHash": {
-					"hashValue": "\u0001"
-				},
-				"weld": {
-					"hashValue": "\u0001"
-				}
+				"entryHash": "\u0001",
+				"chainIDHash": "\u0001",
+				"weld": "\u0001"
 			}
 		}
 	}`
@@ -123,19 +128,15 @@ func TestQueryCommitEntry(t *testing.T) {
 	expectedJSON := `{
   		"event": {
 			"factomNodeName": "1",
-			"identityChainID": {
-				"hashValue": "\u0001"
-			},
-			"value": {
+			"identityChainID": "\u0001",
+			"event": {
 				"version": 1,
 				"timestamp": 1000,
 				"entityState": "ACCEPTED",
 				"entryCreditPublicKey": "\u0001",
 				"signature": "\u0001",
 				"credits": 1,
-				"entryHash": {
-					"hashValue": "\u0001"
-				}
+				"entryHash": "\u0001"
 			}
 		}
 	}`
@@ -157,25 +158,15 @@ func TestQueryEntryReveal(t *testing.T) {
 	expectedJSON := `{
   		"event": {
 			"factomNodeName": "1",
-			"identityChainID": {
-				"hashValue": "\u0001"
-			},
-			"value": {
+			"identityChainID": "\u0001",
+			"event": {
 			  "entityState": "ACCEPTED",
 			  "timestamp": 1000,
-               "chainID": {
-                  "hashValue": "\u0001"
-               }, 
-			  "entry": { 
-			    "hash": {
-				  "hashValue": "\u0001"
-			    }, 
-			    "externalIDs": [{
-				  "binaryValue": "\u0001"
-			    }],
-			    "content": {
-				  "binaryValue": "\u0001"
-			    }, 
+			  "entry": {
+                "chainID": "\u0001", 
+			    "hash": "\u0001", 
+			    "externalIDs": ["\u0001"],
+			    "content": "\u0001", 
 			    "version": 1
 			  }
 			}
@@ -199,22 +190,18 @@ func TestQueryStateChange(t *testing.T) {
 	expectedJSON := `{
   		"event": {
 			"factomNodeName": "1",
-			"identityChainID": {
-				"hashValue": "\u0001"
-			},
-			"value": {
+			"identityChainID": "\u0001",
+			"event": {
 			  "entityState": "ACCEPTED",
 			  "blockHeight": 1,
-			  "entityHash": { 
-				"hashValue": "\u0001"
-			  }
+			  "entityHash": "\u0001"
 			}
 		  }
 		}`
 
 	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
 	entryCommit := eventmessages.NewPopulatedFactomEvent_StateChange(randomizer, false)
-	event.Value = entryCommit
+	event.Event = entryCommit
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -231,18 +218,14 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 	expectedJSON := `{
 	  "event": {
 		"factomNodeName": "1", 
-		"identityChainID": {
-		  "hashValue": "\u0001"
-		}, 
-		"value": {
+		"identityChainID": "\u0001", 
+		"event": {
 		  "adminBlock": {
 			"entries": [
 			  {
-				"value": {
+				"adminBlockEntry": {
 					"efficiency": 1, 
-					"identityChainID": {
-					  "hashValue": "\u0001"
-					}
+					"identityChainID": "\u0001"
 				}
 			  }
 			], 
@@ -252,91 +235,59 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
               "headerExpansionArea":"\u0001",
               "headerExpansionSize":1,
                "messageCount":1,
-               "previousBackRefHash": {
-				"hashValue": "\u0001"
-			  }
+               "previousBackRefHash": "\u0001"
 			}
 		  }, 
 		  "directoryBlock": {
 			"entries": [
 			  {
-				"chainID": {
-				  "hashValue": "\u0001"
-				}, 
-				"keyMerkleRoot": {
-				  "hashValue": "\u0001"
-				}
+				"chainID": "\u0001", 
+				"keyMerkleRoot": "\u0001"
 			  }
 			], 
 			"header": {
 			  "blockCount": 1, 
 			  "blockHeight": 1, 
-			  "bodyMerkleRoot": {
-				"hashValue": "\u0001"
-			  }, 
+			  "bodyMerkleRoot": "\u0001", 
 			  "networkID": 1, 
-			  "previousFullHash": {
-				"hashValue": "\u0001"
-			  }, 
-			  "previousKeyMerkleRoot": {
-				"hashValue": "\u0001"
-			  }, 
+			  "previousFullHash": "\u0001", 
+			  "previousKeyMerkleRoot": "\u0001", 
 			  "timestamp": 1000, 
 			  "version": 1
 			}
 		  }, 
 		  "entryBlockEntries": [
 			{
-			  "content": {
-				"binaryValue": "\u0001"
-			  }, 
-			  "externalIDs": [
-				{
-				  "binaryValue": "\u0001"
-				}
-			  ], 
-			  "hash": {
-				"hashValue": "\u0001"
-			  }, 
+			  "content": "\u0001", 
+			  "externalIDs": ["\u0001"], 
+			  "hash": "\u0001", 
 			  "version": 1
 			}
 		  ], 
 		  "entryBlocks": [
 			{
 			  "entryHashes": [
-				{
-				  "hashValue": "\u0001"
-				}
+				"\u0001"
 			  ], 
 			  "header": {
 				"blockHeight": 1, 
 				"blockSequence": 1, 
-				"bodyMerkleRoot": {
-				  "hashValue": "\u0001"
-				}, 
-				"chainID": {
-				  "hashValue": "\u0001"
-				}, 
+				"bodyMerkleRoot": "\u0001", 
+				"chainID": "\u0001", 
 				"entryCount": 1, 
-				"previousFullHash": {
-				  "hashValue": "\u0001"
-				}, 
-				"previousKeyMerkleRoot": {
-				  "hashValue": "\u0001"
-				}
+				"previousFullHash": "\u0001", 
+				"previousKeyMerkleRoot": "\u0001"
 			  }
 			}
 		  ], 
 		  "entryCreditBlock": {
 			"entries": [
 			  {
-				"value": {
+				"entryCreditBlockEntry": {
 				  "credits": 1, 
 				  "entityState": "ACCEPTED", 
 				  "entryCreditPublicKey": "\u0001", 
-				  "entryHash": {
-				    "hashValue": "\u0001"
-				  }, 
+				  "entryHash": "\u0001", 
 				  "signature": "\u0001", 
 				  "timestamp": 1000, 
 				  "version": 1
@@ -345,79 +296,55 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 			], 
 			"header": {
 			  "blockHeight": 1, 
-			  "bodyHash": {
-				"hashValue": "\u0001"
-			  }, 
+			  "bodyHash": "\u0001", 
 			  "bodySize": 1, 
 			  "headerExpansionArea": "\u0001", 
 			  "objectCount": 1, 
-			  "previousFullHash": {
-				"hashValue": "\u0001"
-			  }, 
-			  "previousHeaderHash": {
-				"hashValue": "\u0001"
-			  }
+			  "previousFullHash": "\u0001", 
+			  "previousHeaderHash": "\u0001"
 			}
 		  }, 
 		  "factoidBlock": {
 			"blockHeight": 1, 
-			"bodyMerkleRoot": {
-			  "hashValue": "\u0001"
-			}, 
+			"bodyMerkleRoot": "\u0001", 
 			"exchangeRate": 1, 
-			"previousKeyMerkleRoot": {
-			  "hashValue": "\u0001"
-			}, 
-			"previousLedgerKeyMerkleRoot": {
-			  "hashValue": "\u0001"
-			}, 
+			"previousKeyMerkleRoot": "\u0001", 
+			"previousLedgerKeyMerkleRoot": "\u0001", 
 			"transactions": [
 			  {
 				"blockHeight": 1, 
 				"entryCreditOutputs": [
 				  {
-					"address": {
-					  "hashValue": "\u0001"
-					}, 
+					"address": "\u0001", 
 					"amount": 1
 				  }
 				], 
 				"factoidInputs": [
 				  {
-					"address": {
-					  "hashValue": "\u0001"
-					}, 
+					"address": "\u0001", 
 					"amount": 1
 				  }
 				], 
 				"factoidOutputs": [
 				  {
-					"address": {
-					  "hashValue": "\u0001"
-					}, 
+					"address": "\u0001", 
 					"amount": 1
 				  }
 				], 
 				"redeemConditionDataStructures": [
 				  {
-					"value": {
+					"rcd": {
                       "publicKey": "\u0001"
 					}
 				  }
 				], 
 				"signatureBlocks": [
 				  {
-					"signature": [
-					  {
-						"signatureValue": "\u0001"
-					  }
-					]
+					"signature": ["\u0001"]
 				  }
 				], 
 				"timestamp": 1000, 
-				"transactionID": {
-				  "hashValue": "\u0001"
-				}
+				"transactionID": "\u0001"
 			  }
 			]
 		  }
@@ -442,10 +369,8 @@ func TestQueryProcessMessage(t *testing.T) {
 	expectedJSON := `{
   		"event": {
 			"factomNodeName": "1",
-			"identityChainID": {
-				"hashValue": "\u0001"
-			},
-			"value": {
+			"identityChainID": "\u0001",
+			"event": {
 			  "messageText": "1",
 			  "processCode": "NEW_MINUTE",
 			  "level": "WARNING"
@@ -470,10 +395,8 @@ func TestQueryNodeMessage(t *testing.T) {
 	expectedJSON := `{ 
 		"event": {
 			"factomNodeName": "1",
-			"identityChainID": {
-				"hashValue": "\u0001"
-			},
-			"value": {
+			"identityChainID": "\u0001",
+			"event": {
 			  "messageText": "1",
 			  "messageCode": "STARTED",
 			  "level": "WARNING"
@@ -601,17 +524,20 @@ func traverseType(schema graphql.Schema, indent int, object string) string {
 			if fSchema, ok := tSchema["fields"].([]interface{}); ok {
 				for _, fields := range fSchema {
 					if field, ok := fields.(map[string]interface{}); ok {
-						// fmt.Printf("%s%v : %v \n", indentation, field["name"], field["type"])
 						if fieldType, ok := field["type"].(map[string]interface{}); ok {
 							if fieldType["kind"] == "OBJECT" || fieldType["kind"] == "UNION" {
-								fmt.Fprintf(&builder, "%s%v {\n", indentation, field["name"])
+								fmt.Fprintf(&builder, "%s%v", indentation, field["name"])
 								query := traverseType(schema, indent+2, fieldType["name"].(string))
-								fmt.Fprintf(&builder, "%s%s}\n", query, indentation)
+								fmt.Fprintf(&builder, " {\n%s%s}\n", query, indentation)
 							} else if fieldType["kind"] == "LIST" {
 								if listType, ok := fieldType["ofType"].(map[string]interface{}); ok {
-									fmt.Fprintf(&builder, "%s%v {\n", indentation, field["name"])
+									fmt.Fprintf(&builder, "%s%v", indentation, field["name"])
 									query := traverseType(schema, indent+2, listType["name"].(string))
-									fmt.Fprintf(&builder, "%s%s}\n", query, indentation)
+									if len(query) > 1 {
+										fmt.Fprintf(&builder, " {\n%s%s}\n", query, indentation)
+									} else {
+										fmt.Fprintf(&builder, "\n")
+									}
 								}
 							} else {
 								fmt.Fprintf(&builder, "%s%s\n", indentation, field["name"])
@@ -706,19 +632,19 @@ func createNewEvent(eventType models.EventType) *eventmessages.FactomEvent {
 	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
 	switch eventType {
 	case models.DirectoryBlockCommit:
-		event.Value = eventmessages.NewPopulatedFactomEvent_DirectoryBlockCommit(randomizer, false)
+		event.Event = eventmessages.NewPopulatedFactomEvent_DirectoryBlockCommit(randomizer, false)
 	case models.ChainCommit:
-		event.Value = eventmessages.NewPopulatedFactomEvent_ChainCommit(randomizer, false)
+		event.Event = eventmessages.NewPopulatedFactomEvent_ChainCommit(randomizer, false)
 	case models.EntryCommit:
-		event.Value = eventmessages.NewPopulatedFactomEvent_EntryCommit(randomizer, false)
+		event.Event = eventmessages.NewPopulatedFactomEvent_EntryCommit(randomizer, false)
 	case models.EntryReveal:
-		event.Value = eventmessages.NewPopulatedFactomEvent_EntryReveal(randomizer, false)
+		event.Event = eventmessages.NewPopulatedFactomEvent_EntryReveal(randomizer, false)
 	case models.ProcessMessage:
-		event.Value = eventmessages.NewPopulatedFactomEvent_ProcessMessage(randomizer, false)
+		event.Event = eventmessages.NewPopulatedFactomEvent_ProcessMessage(randomizer, false)
 	case models.NodeMessage:
-		event.Value = eventmessages.NewPopulatedFactomEvent_NodeMessage(randomizer, false)
+		event.Event = eventmessages.NewPopulatedFactomEvent_NodeMessage(randomizer, false)
 	case models.StateChange:
-		event.Value = eventmessages.NewPopulatedFactomEvent_StateChange(randomizer, false)
+		event.Event = eventmessages.NewPopulatedFactomEvent_StateChange(randomizer, false)
 	}
 
 	return event

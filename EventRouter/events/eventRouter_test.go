@@ -171,7 +171,7 @@ func TestMapEventType(t *testing.T) {
 
 func TestMapEventTypeUnknown(t *testing.T) {
 	event := eventmessages.NewPopulatedFactomEvent(randomizer, true)
-	event.Value = nil
+	event.Event = nil
 	_, err := mapEventType(event)
 
 	assert.Error(t, err)

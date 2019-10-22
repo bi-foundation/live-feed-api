@@ -172,8 +172,8 @@ func (NodeMessageCode) EnumDescriptor() ([]byte, []int) {
 type FactomEvent struct {
 	EventSource     EventSource `protobuf:"varint,1,opt,name=eventSource,proto3,enum=eventmessages.EventSource" json:"eventSource,omitempty"`
 	FactomNodeName  string      `protobuf:"bytes,2,opt,name=factomNodeName,proto3" json:"factomNodeName,omitempty"`
-	IdentityChainID *Hash       `protobuf:"bytes,3,opt,name=identityChainID,proto3" json:"identityChainID,omitempty"`
-	// Types that are valid to be assigned to Value:
+	IdentityChainID []byte      `protobuf:"bytes,3,opt,name=identityChainID,proto3" json:"identityChainID,omitempty"`
+	// Types that are valid to be assigned to Event:
 	//	*FactomEvent_ChainCommit
 	//	*FactomEvent_EntryCommit
 	//	*FactomEvent_EntryReveal
@@ -181,7 +181,7 @@ type FactomEvent struct {
 	//	*FactomEvent_DirectoryBlockCommit
 	//	*FactomEvent_ProcessMessage
 	//	*FactomEvent_NodeMessage
-	Value                isFactomEvent_Value `protobuf_oneof:"value"`
+	Event                isFactomEvent_Event `protobuf_oneof:"event"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
 	XXX_unrecognized     []byte              `json:"-"`
 	XXX_sizecache        int32               `json:"-"`
@@ -220,8 +220,8 @@ func (m *FactomEvent) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_FactomEvent proto.InternalMessageInfo
 
-type isFactomEvent_Value interface {
-	isFactomEvent_Value()
+type isFactomEvent_Event interface {
+	isFactomEvent_Event()
 	Equal(interface{}) bool
 	MarshalTo([]byte) (int, error)
 	Size() int
@@ -249,17 +249,17 @@ type FactomEvent_NodeMessage struct {
 	NodeMessage *NodeMessage `protobuf:"bytes,10,opt,name=nodeMessage,proto3,oneof" json:"nodeMessage,omitempty"`
 }
 
-func (*FactomEvent_ChainCommit) isFactomEvent_Value()          {}
-func (*FactomEvent_EntryCommit) isFactomEvent_Value()          {}
-func (*FactomEvent_EntryReveal) isFactomEvent_Value()          {}
-func (*FactomEvent_StateChange) isFactomEvent_Value()          {}
-func (*FactomEvent_DirectoryBlockCommit) isFactomEvent_Value() {}
-func (*FactomEvent_ProcessMessage) isFactomEvent_Value()       {}
-func (*FactomEvent_NodeMessage) isFactomEvent_Value()          {}
+func (*FactomEvent_ChainCommit) isFactomEvent_Event()          {}
+func (*FactomEvent_EntryCommit) isFactomEvent_Event()          {}
+func (*FactomEvent_EntryReveal) isFactomEvent_Event()          {}
+func (*FactomEvent_StateChange) isFactomEvent_Event()          {}
+func (*FactomEvent_DirectoryBlockCommit) isFactomEvent_Event() {}
+func (*FactomEvent_ProcessMessage) isFactomEvent_Event()       {}
+func (*FactomEvent_NodeMessage) isFactomEvent_Event()          {}
 
-func (m *FactomEvent) GetValue() isFactomEvent_Value {
+func (m *FactomEvent) GetEvent() isFactomEvent_Event {
 	if m != nil {
-		return m.Value
+		return m.Event
 	}
 	return nil
 }
@@ -278,7 +278,7 @@ func (m *FactomEvent) GetFactomNodeName() string {
 	return ""
 }
 
-func (m *FactomEvent) GetIdentityChainID() *Hash {
+func (m *FactomEvent) GetIdentityChainID() []byte {
 	if m != nil {
 		return m.IdentityChainID
 	}
@@ -286,49 +286,49 @@ func (m *FactomEvent) GetIdentityChainID() *Hash {
 }
 
 func (m *FactomEvent) GetChainCommit() *ChainCommit {
-	if x, ok := m.GetValue().(*FactomEvent_ChainCommit); ok {
+	if x, ok := m.GetEvent().(*FactomEvent_ChainCommit); ok {
 		return x.ChainCommit
 	}
 	return nil
 }
 
 func (m *FactomEvent) GetEntryCommit() *EntryCommit {
-	if x, ok := m.GetValue().(*FactomEvent_EntryCommit); ok {
+	if x, ok := m.GetEvent().(*FactomEvent_EntryCommit); ok {
 		return x.EntryCommit
 	}
 	return nil
 }
 
 func (m *FactomEvent) GetEntryReveal() *EntryReveal {
-	if x, ok := m.GetValue().(*FactomEvent_EntryReveal); ok {
+	if x, ok := m.GetEvent().(*FactomEvent_EntryReveal); ok {
 		return x.EntryReveal
 	}
 	return nil
 }
 
 func (m *FactomEvent) GetStateChange() *StateChange {
-	if x, ok := m.GetValue().(*FactomEvent_StateChange); ok {
+	if x, ok := m.GetEvent().(*FactomEvent_StateChange); ok {
 		return x.StateChange
 	}
 	return nil
 }
 
 func (m *FactomEvent) GetDirectoryBlockCommit() *DirectoryBlockCommit {
-	if x, ok := m.GetValue().(*FactomEvent_DirectoryBlockCommit); ok {
+	if x, ok := m.GetEvent().(*FactomEvent_DirectoryBlockCommit); ok {
 		return x.DirectoryBlockCommit
 	}
 	return nil
 }
 
 func (m *FactomEvent) GetProcessMessage() *ProcessMessage {
-	if x, ok := m.GetValue().(*FactomEvent_ProcessMessage); ok {
+	if x, ok := m.GetEvent().(*FactomEvent_ProcessMessage); ok {
 		return x.ProcessMessage
 	}
 	return nil
 }
 
 func (m *FactomEvent) GetNodeMessage() *NodeMessage {
-	if x, ok := m.GetValue().(*FactomEvent_NodeMessage); ok {
+	if x, ok := m.GetEvent().(*FactomEvent_NodeMessage); ok {
 		return x.NodeMessage
 	}
 	return nil
@@ -350,9 +350,9 @@ func (*FactomEvent) XXX_OneofWrappers() []interface{} {
 // ====  FACTOM EVENT VALUES =====
 type ChainCommit struct {
 	EntityState          EntityState      `protobuf:"varint,1,opt,name=entityState,proto3,enum=eventmessages.EntityState" json:"entityState,omitempty"`
-	ChainIDHash          *Hash            `protobuf:"bytes,2,opt,name=chainIDHash,proto3" json:"chainIDHash,omitempty"`
-	EntryHash            *Hash            `protobuf:"bytes,3,opt,name=entryHash,proto3" json:"entryHash,omitempty"`
-	Weld                 *Hash            `protobuf:"bytes,4,opt,name=weld,proto3" json:"weld,omitempty"`
+	ChainIDHash          []byte           `protobuf:"bytes,2,opt,name=chainIDHash,proto3" json:"chainIDHash,omitempty"`
+	EntryHash            []byte           `protobuf:"bytes,3,opt,name=entryHash,proto3" json:"entryHash,omitempty"`
+	Weld                 []byte           `protobuf:"bytes,4,opt,name=weld,proto3" json:"weld,omitempty"`
 	Timestamp            *types.Timestamp `protobuf:"bytes,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	Credits              uint32           `protobuf:"varint,6,opt,name=credits,proto3" json:"credits,omitempty"`
 	EntryCreditPublicKey []byte           `protobuf:"bytes,7,opt,name=entryCreditPublicKey,proto3" json:"entryCreditPublicKey,omitempty"`
@@ -403,21 +403,21 @@ func (m *ChainCommit) GetEntityState() EntityState {
 	return EntityState_REQUESTED
 }
 
-func (m *ChainCommit) GetChainIDHash() *Hash {
+func (m *ChainCommit) GetChainIDHash() []byte {
 	if m != nil {
 		return m.ChainIDHash
 	}
 	return nil
 }
 
-func (m *ChainCommit) GetEntryHash() *Hash {
+func (m *ChainCommit) GetEntryHash() []byte {
 	if m != nil {
 		return m.EntryHash
 	}
 	return nil
 }
 
-func (m *ChainCommit) GetWeld() *Hash {
+func (m *ChainCommit) GetWeld() []byte {
 	if m != nil {
 		return m.Weld
 	}
@@ -461,7 +461,7 @@ func (m *ChainCommit) GetVersion() uint32 {
 
 type EntryCommit struct {
 	EntityState          EntityState      `protobuf:"varint,1,opt,name=entityState,proto3,enum=eventmessages.EntityState" json:"entityState,omitempty"`
-	EntryHash            *Hash            `protobuf:"bytes,2,opt,name=entryHash,proto3" json:"entryHash,omitempty"`
+	EntryHash            []byte           `protobuf:"bytes,2,opt,name=entryHash,proto3" json:"entryHash,omitempty"`
 	Timestamp            *types.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	Credits              uint32           `protobuf:"varint,4,opt,name=credits,proto3" json:"credits,omitempty"`
 	EntryCreditPublicKey []byte           `protobuf:"bytes,5,opt,name=entryCreditPublicKey,proto3" json:"entryCreditPublicKey,omitempty"`
@@ -512,7 +512,7 @@ func (m *EntryCommit) GetEntityState() EntityState {
 	return EntityState_REQUESTED
 }
 
-func (m *EntryCommit) GetEntryHash() *Hash {
+func (m *EntryCommit) GetEntryHash() []byte {
 	if m != nil {
 		return m.EntryHash
 	}
@@ -558,7 +558,6 @@ type EntryReveal struct {
 	EntityState          EntityState      `protobuf:"varint,1,opt,name=entityState,proto3,enum=eventmessages.EntityState" json:"entityState,omitempty"`
 	Entry                *EntryBlockEntry `protobuf:"bytes,2,opt,name=entry,proto3" json:"entry,omitempty"`
 	Timestamp            *types.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	ChainID              *Hash            `protobuf:"bytes,4,opt,name=chainID,proto3" json:"chainID,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
 	XXX_sizecache        int32            `json:"-"`
@@ -618,15 +617,8 @@ func (m *EntryReveal) GetTimestamp() *types.Timestamp {
 	return nil
 }
 
-func (m *EntryReveal) GetChainID() *Hash {
-	if m != nil {
-		return m.ChainID
-	}
-	return nil
-}
-
 type StateChange struct {
-	EntityHash           *Hash       `protobuf:"bytes,1,opt,name=entityHash,proto3" json:"entityHash,omitempty"`
+	EntityHash           []byte      `protobuf:"bytes,1,opt,name=entityHash,proto3" json:"entityHash,omitempty"`
 	EntityState          EntityState `protobuf:"varint,2,opt,name=entityState,proto3,enum=eventmessages.EntityState" json:"entityState,omitempty"`
 	BlockHeight          uint32      `protobuf:"varint,3,opt,name=blockHeight,proto3" json:"blockHeight,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
@@ -667,7 +659,7 @@ func (m *StateChange) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_StateChange proto.InternalMessageInfo
 
-func (m *StateChange) GetEntityHash() *Hash {
+func (m *StateChange) GetEntityHash() []byte {
 	if m != nil {
 		return m.EntityHash
 	}
@@ -775,441 +767,7 @@ func (m *DirectoryBlockCommit) GetEntryBlockEntries() []*EntryBlockEntry {
 	return nil
 }
 
-// ====  DIRECTORY BLOCK DETAILS =====
-type DirectoryBlock struct {
-	Header               *DirectoryBlockHeader  `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	Entries              []*DirectoryBlockEntry `protobuf:"bytes,2,rep,name=entries,proto3" json:"entries,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
-	XXX_unrecognized     []byte                 `json:"-"`
-	XXX_sizecache        int32                  `json:"-"`
-}
-
-func (m *DirectoryBlock) Reset()         { *m = DirectoryBlock{} }
-func (m *DirectoryBlock) String() string { return proto.CompactTextString(m) }
-func (*DirectoryBlock) ProtoMessage()    {}
-func (*DirectoryBlock) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{6}
-}
-func (m *DirectoryBlock) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DirectoryBlock) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_DirectoryBlock.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *DirectoryBlock) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DirectoryBlock.Merge(m, src)
-}
-func (m *DirectoryBlock) XXX_Size() int {
-	return m.Size()
-}
-func (m *DirectoryBlock) XXX_DiscardUnknown() {
-	xxx_messageInfo_DirectoryBlock.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DirectoryBlock proto.InternalMessageInfo
-
-func (m *DirectoryBlock) GetHeader() *DirectoryBlockHeader {
-	if m != nil {
-		return m.Header
-	}
-	return nil
-}
-
-func (m *DirectoryBlock) GetEntries() []*DirectoryBlockEntry {
-	if m != nil {
-		return m.Entries
-	}
-	return nil
-}
-
-type DirectoryBlockHeader struct {
-	BodyMerkleRoot        *Hash            `protobuf:"bytes,1,opt,name=bodyMerkleRoot,proto3" json:"bodyMerkleRoot,omitempty"`
-	PreviousKeyMerkleRoot *Hash            `protobuf:"bytes,2,opt,name=previousKeyMerkleRoot,proto3" json:"previousKeyMerkleRoot,omitempty"`
-	PreviousFullHash      *Hash            `protobuf:"bytes,3,opt,name=previousFullHash,proto3" json:"previousFullHash,omitempty"`
-	Timestamp             *types.Timestamp `protobuf:"bytes,4,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	BlockHeight           uint32           `protobuf:"varint,5,opt,name=blockHeight,proto3" json:"blockHeight,omitempty"`
-	BlockCount            uint32           `protobuf:"varint,6,opt,name=blockCount,proto3" json:"blockCount,omitempty"`
-	Version               uint32           `protobuf:"varint,7,opt,name=version,proto3" json:"version,omitempty"`
-	NetworkID             uint32           `protobuf:"varint,8,opt,name=networkID,proto3" json:"networkID,omitempty"`
-	XXX_NoUnkeyedLiteral  struct{}         `json:"-"`
-	XXX_unrecognized      []byte           `json:"-"`
-	XXX_sizecache         int32            `json:"-"`
-}
-
-func (m *DirectoryBlockHeader) Reset()         { *m = DirectoryBlockHeader{} }
-func (m *DirectoryBlockHeader) String() string { return proto.CompactTextString(m) }
-func (*DirectoryBlockHeader) ProtoMessage()    {}
-func (*DirectoryBlockHeader) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{7}
-}
-func (m *DirectoryBlockHeader) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DirectoryBlockHeader) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_DirectoryBlockHeader.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *DirectoryBlockHeader) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DirectoryBlockHeader.Merge(m, src)
-}
-func (m *DirectoryBlockHeader) XXX_Size() int {
-	return m.Size()
-}
-func (m *DirectoryBlockHeader) XXX_DiscardUnknown() {
-	xxx_messageInfo_DirectoryBlockHeader.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DirectoryBlockHeader proto.InternalMessageInfo
-
-func (m *DirectoryBlockHeader) GetBodyMerkleRoot() *Hash {
-	if m != nil {
-		return m.BodyMerkleRoot
-	}
-	return nil
-}
-
-func (m *DirectoryBlockHeader) GetPreviousKeyMerkleRoot() *Hash {
-	if m != nil {
-		return m.PreviousKeyMerkleRoot
-	}
-	return nil
-}
-
-func (m *DirectoryBlockHeader) GetPreviousFullHash() *Hash {
-	if m != nil {
-		return m.PreviousFullHash
-	}
-	return nil
-}
-
-func (m *DirectoryBlockHeader) GetTimestamp() *types.Timestamp {
-	if m != nil {
-		return m.Timestamp
-	}
-	return nil
-}
-
-func (m *DirectoryBlockHeader) GetBlockHeight() uint32 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
-
-func (m *DirectoryBlockHeader) GetBlockCount() uint32 {
-	if m != nil {
-		return m.BlockCount
-	}
-	return 0
-}
-
-func (m *DirectoryBlockHeader) GetVersion() uint32 {
-	if m != nil {
-		return m.Version
-	}
-	return 0
-}
-
-func (m *DirectoryBlockHeader) GetNetworkID() uint32 {
-	if m != nil {
-		return m.NetworkID
-	}
-	return 0
-}
-
-type DirectoryBlockEntry struct {
-	ChainID              *Hash    `protobuf:"bytes,1,opt,name=chainID,proto3" json:"chainID,omitempty"`
-	KeyMerkleRoot        *Hash    `protobuf:"bytes,2,opt,name=keyMerkleRoot,proto3" json:"keyMerkleRoot,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *DirectoryBlockEntry) Reset()         { *m = DirectoryBlockEntry{} }
-func (m *DirectoryBlockEntry) String() string { return proto.CompactTextString(m) }
-func (*DirectoryBlockEntry) ProtoMessage()    {}
-func (*DirectoryBlockEntry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{8}
-}
-func (m *DirectoryBlockEntry) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DirectoryBlockEntry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_DirectoryBlockEntry.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *DirectoryBlockEntry) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DirectoryBlockEntry.Merge(m, src)
-}
-func (m *DirectoryBlockEntry) XXX_Size() int {
-	return m.Size()
-}
-func (m *DirectoryBlockEntry) XXX_DiscardUnknown() {
-	xxx_messageInfo_DirectoryBlockEntry.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DirectoryBlockEntry proto.InternalMessageInfo
-
-func (m *DirectoryBlockEntry) GetChainID() *Hash {
-	if m != nil {
-		return m.ChainID
-	}
-	return nil
-}
-
-func (m *DirectoryBlockEntry) GetKeyMerkleRoot() *Hash {
-	if m != nil {
-		return m.KeyMerkleRoot
-	}
-	return nil
-}
-
-type EntryBlock struct {
-	Header               *EntryBlockHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	EntryHashes          []*Hash           `protobuf:"bytes,2,rep,name=entryHashes,proto3" json:"entryHashes,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
-}
-
-func (m *EntryBlock) Reset()         { *m = EntryBlock{} }
-func (m *EntryBlock) String() string { return proto.CompactTextString(m) }
-func (*EntryBlock) ProtoMessage()    {}
-func (*EntryBlock) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{9}
-}
-func (m *EntryBlock) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *EntryBlock) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_EntryBlock.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *EntryBlock) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EntryBlock.Merge(m, src)
-}
-func (m *EntryBlock) XXX_Size() int {
-	return m.Size()
-}
-func (m *EntryBlock) XXX_DiscardUnknown() {
-	xxx_messageInfo_EntryBlock.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_EntryBlock proto.InternalMessageInfo
-
-func (m *EntryBlock) GetHeader() *EntryBlockHeader {
-	if m != nil {
-		return m.Header
-	}
-	return nil
-}
-
-func (m *EntryBlock) GetEntryHashes() []*Hash {
-	if m != nil {
-		return m.EntryHashes
-	}
-	return nil
-}
-
-type EntryBlockHeader struct {
-	BodyMerkleRoot        *Hash    `protobuf:"bytes,1,opt,name=bodyMerkleRoot,proto3" json:"bodyMerkleRoot,omitempty"`
-	ChainID               *Hash    `protobuf:"bytes,2,opt,name=chainID,proto3" json:"chainID,omitempty"`
-	PreviousFullHash      *Hash    `protobuf:"bytes,3,opt,name=previousFullHash,proto3" json:"previousFullHash,omitempty"`
-	PreviousKeyMerkleRoot *Hash    `protobuf:"bytes,4,opt,name=previousKeyMerkleRoot,proto3" json:"previousKeyMerkleRoot,omitempty"`
-	BlockHeight           uint32   `protobuf:"varint,5,opt,name=blockHeight,proto3" json:"blockHeight,omitempty"`
-	BlockSequence         uint32   `protobuf:"varint,6,opt,name=blockSequence,proto3" json:"blockSequence,omitempty"`
-	EntryCount            uint32   `protobuf:"varint,7,opt,name=entryCount,proto3" json:"entryCount,omitempty"`
-	XXX_NoUnkeyedLiteral  struct{} `json:"-"`
-	XXX_unrecognized      []byte   `json:"-"`
-	XXX_sizecache         int32    `json:"-"`
-}
-
-func (m *EntryBlockHeader) Reset()         { *m = EntryBlockHeader{} }
-func (m *EntryBlockHeader) String() string { return proto.CompactTextString(m) }
-func (*EntryBlockHeader) ProtoMessage()    {}
-func (*EntryBlockHeader) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{10}
-}
-func (m *EntryBlockHeader) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *EntryBlockHeader) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_EntryBlockHeader.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *EntryBlockHeader) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EntryBlockHeader.Merge(m, src)
-}
-func (m *EntryBlockHeader) XXX_Size() int {
-	return m.Size()
-}
-func (m *EntryBlockHeader) XXX_DiscardUnknown() {
-	xxx_messageInfo_EntryBlockHeader.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_EntryBlockHeader proto.InternalMessageInfo
-
-func (m *EntryBlockHeader) GetBodyMerkleRoot() *Hash {
-	if m != nil {
-		return m.BodyMerkleRoot
-	}
-	return nil
-}
-
-func (m *EntryBlockHeader) GetChainID() *Hash {
-	if m != nil {
-		return m.ChainID
-	}
-	return nil
-}
-
-func (m *EntryBlockHeader) GetPreviousFullHash() *Hash {
-	if m != nil {
-		return m.PreviousFullHash
-	}
-	return nil
-}
-
-func (m *EntryBlockHeader) GetPreviousKeyMerkleRoot() *Hash {
-	if m != nil {
-		return m.PreviousKeyMerkleRoot
-	}
-	return nil
-}
-
-func (m *EntryBlockHeader) GetBlockHeight() uint32 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
-
-func (m *EntryBlockHeader) GetBlockSequence() uint32 {
-	if m != nil {
-		return m.BlockSequence
-	}
-	return 0
-}
-
-func (m *EntryBlockHeader) GetEntryCount() uint32 {
-	if m != nil {
-		return m.EntryCount
-	}
-	return 0
-}
-
-type EntryBlockEntry struct {
-	Hash                 *Hash         `protobuf:"bytes,1,opt,name=hash,proto3" json:"hash,omitempty"`
-	ExternalIDs          []*ExternalId `protobuf:"bytes,2,rep,name=externalIDs,proto3" json:"externalIDs,omitempty"`
-	Content              *Content      `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
-	Version              uint32        `protobuf:"varint,4,opt,name=version,proto3" json:"version,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
-	XXX_unrecognized     []byte        `json:"-"`
-	XXX_sizecache        int32         `json:"-"`
-}
-
-func (m *EntryBlockEntry) Reset()         { *m = EntryBlockEntry{} }
-func (m *EntryBlockEntry) String() string { return proto.CompactTextString(m) }
-func (*EntryBlockEntry) ProtoMessage()    {}
-func (*EntryBlockEntry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{11}
-}
-func (m *EntryBlockEntry) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *EntryBlockEntry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_EntryBlockEntry.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *EntryBlockEntry) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EntryBlockEntry.Merge(m, src)
-}
-func (m *EntryBlockEntry) XXX_Size() int {
-	return m.Size()
-}
-func (m *EntryBlockEntry) XXX_DiscardUnknown() {
-	xxx_messageInfo_EntryBlockEntry.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_EntryBlockEntry proto.InternalMessageInfo
-
-func (m *EntryBlockEntry) GetHash() *Hash {
-	if m != nil {
-		return m.Hash
-	}
-	return nil
-}
-
-func (m *EntryBlockEntry) GetExternalIDs() []*ExternalId {
-	if m != nil {
-		return m.ExternalIDs
-	}
-	return nil
-}
-
-func (m *EntryBlockEntry) GetContent() *Content {
-	if m != nil {
-		return m.Content
-	}
-	return nil
-}
-
-func (m *EntryBlockEntry) GetVersion() uint32 {
-	if m != nil {
-		return m.Version
-	}
-	return 0
-}
-
+// ====  ENTRY CREDIT BLOCK =====
 type EntryCreditBlock struct {
 	Header               *EntryCreditBlockHeader  `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
 	Entries              []*EntryCreditBlockEntry `protobuf:"bytes,2,rep,name=entries,proto3" json:"entries,omitempty"`
@@ -1222,7 +780,7 @@ func (m *EntryCreditBlock) Reset()         { *m = EntryCreditBlock{} }
 func (m *EntryCreditBlock) String() string { return proto.CompactTextString(m) }
 func (*EntryCreditBlock) ProtoMessage()    {}
 func (*EntryCreditBlock) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{12}
+	return fileDescriptor_d6566f2e3579336b, []int{6}
 }
 func (m *EntryCreditBlock) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1266,9 +824,9 @@ func (m *EntryCreditBlock) GetEntries() []*EntryCreditBlockEntry {
 }
 
 type EntryCreditBlockHeader struct {
-	BodyHash             *Hash    `protobuf:"bytes,1,opt,name=bodyHash,proto3" json:"bodyHash,omitempty"`
-	PreviousHeaderHash   *Hash    `protobuf:"bytes,2,opt,name=previousHeaderHash,proto3" json:"previousHeaderHash,omitempty"`
-	PreviousFullHash     *Hash    `protobuf:"bytes,3,opt,name=previousFullHash,proto3" json:"previousFullHash,omitempty"`
+	BodyHash             []byte   `protobuf:"bytes,1,opt,name=bodyHash,proto3" json:"bodyHash,omitempty"`
+	PreviousHeaderHash   []byte   `protobuf:"bytes,2,opt,name=previousHeaderHash,proto3" json:"previousHeaderHash,omitempty"`
+	PreviousFullHash     []byte   `protobuf:"bytes,3,opt,name=previousFullHash,proto3" json:"previousFullHash,omitempty"`
 	BlockHeight          uint32   `protobuf:"varint,4,opt,name=blockHeight,proto3" json:"blockHeight,omitempty"`
 	HeaderExpansionArea  []byte   `protobuf:"bytes,5,opt,name=headerExpansionArea,proto3" json:"headerExpansionArea,omitempty"`
 	ObjectCount          uint64   `protobuf:"varint,6,opt,name=objectCount,proto3" json:"objectCount,omitempty"`
@@ -1282,7 +840,7 @@ func (m *EntryCreditBlockHeader) Reset()         { *m = EntryCreditBlockHeader{}
 func (m *EntryCreditBlockHeader) String() string { return proto.CompactTextString(m) }
 func (*EntryCreditBlockHeader) ProtoMessage()    {}
 func (*EntryCreditBlockHeader) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{13}
+	return fileDescriptor_d6566f2e3579336b, []int{7}
 }
 func (m *EntryCreditBlockHeader) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1311,21 +869,21 @@ func (m *EntryCreditBlockHeader) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_EntryCreditBlockHeader proto.InternalMessageInfo
 
-func (m *EntryCreditBlockHeader) GetBodyHash() *Hash {
+func (m *EntryCreditBlockHeader) GetBodyHash() []byte {
 	if m != nil {
 		return m.BodyHash
 	}
 	return nil
 }
 
-func (m *EntryCreditBlockHeader) GetPreviousHeaderHash() *Hash {
+func (m *EntryCreditBlockHeader) GetPreviousHeaderHash() []byte {
 	if m != nil {
 		return m.PreviousHeaderHash
 	}
 	return nil
 }
 
-func (m *EntryCreditBlockHeader) GetPreviousFullHash() *Hash {
+func (m *EntryCreditBlockHeader) GetPreviousFullHash() []byte {
 	if m != nil {
 		return m.PreviousFullHash
 	}
@@ -1361,23 +919,23 @@ func (m *EntryCreditBlockHeader) GetBodySize() uint64 {
 }
 
 type EntryCreditBlockEntry struct {
-	// Types that are valid to be assigned to Value:
+	// Types that are valid to be assigned to EntryCreditBlockEntry:
 	//	*EntryCreditBlockEntry_ChainCommit
 	//	*EntryCreditBlockEntry_EntryCommit
 	//	*EntryCreditBlockEntry_IncreaseBalance
 	//	*EntryCreditBlockEntry_MinuteNumber
 	//	*EntryCreditBlockEntry_ServerIndexNumber
-	Value                isEntryCreditBlockEntry_Value `protobuf_oneof:"value"`
-	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
-	XXX_unrecognized     []byte                        `json:"-"`
-	XXX_sizecache        int32                         `json:"-"`
+	EntryCreditBlockEntry isEntryCreditBlockEntry_EntryCreditBlockEntry `protobuf_oneof:"entryCreditBlockEntry"`
+	XXX_NoUnkeyedLiteral  struct{}                                      `json:"-"`
+	XXX_unrecognized      []byte                                        `json:"-"`
+	XXX_sizecache         int32                                         `json:"-"`
 }
 
 func (m *EntryCreditBlockEntry) Reset()         { *m = EntryCreditBlockEntry{} }
 func (m *EntryCreditBlockEntry) String() string { return proto.CompactTextString(m) }
 func (*EntryCreditBlockEntry) ProtoMessage()    {}
 func (*EntryCreditBlockEntry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{14}
+	return fileDescriptor_d6566f2e3579336b, []int{8}
 }
 func (m *EntryCreditBlockEntry) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1406,8 +964,8 @@ func (m *EntryCreditBlockEntry) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_EntryCreditBlockEntry proto.InternalMessageInfo
 
-type isEntryCreditBlockEntry_Value interface {
-	isEntryCreditBlockEntry_Value()
+type isEntryCreditBlockEntry_EntryCreditBlockEntry interface {
+	isEntryCreditBlockEntry_EntryCreditBlockEntry()
 	Equal(interface{}) bool
 	MarshalTo([]byte) (int, error)
 	Size() int
@@ -1429,49 +987,49 @@ type EntryCreditBlockEntry_ServerIndexNumber struct {
 	ServerIndexNumber *ServerIndexNumber `protobuf:"bytes,5,opt,name=serverIndexNumber,proto3,oneof" json:"serverIndexNumber,omitempty"`
 }
 
-func (*EntryCreditBlockEntry_ChainCommit) isEntryCreditBlockEntry_Value()       {}
-func (*EntryCreditBlockEntry_EntryCommit) isEntryCreditBlockEntry_Value()       {}
-func (*EntryCreditBlockEntry_IncreaseBalance) isEntryCreditBlockEntry_Value()   {}
-func (*EntryCreditBlockEntry_MinuteNumber) isEntryCreditBlockEntry_Value()      {}
-func (*EntryCreditBlockEntry_ServerIndexNumber) isEntryCreditBlockEntry_Value() {}
+func (*EntryCreditBlockEntry_ChainCommit) isEntryCreditBlockEntry_EntryCreditBlockEntry()       {}
+func (*EntryCreditBlockEntry_EntryCommit) isEntryCreditBlockEntry_EntryCreditBlockEntry()       {}
+func (*EntryCreditBlockEntry_IncreaseBalance) isEntryCreditBlockEntry_EntryCreditBlockEntry()   {}
+func (*EntryCreditBlockEntry_MinuteNumber) isEntryCreditBlockEntry_EntryCreditBlockEntry()      {}
+func (*EntryCreditBlockEntry_ServerIndexNumber) isEntryCreditBlockEntry_EntryCreditBlockEntry() {}
 
-func (m *EntryCreditBlockEntry) GetValue() isEntryCreditBlockEntry_Value {
+func (m *EntryCreditBlockEntry) GetEntryCreditBlockEntry() isEntryCreditBlockEntry_EntryCreditBlockEntry {
 	if m != nil {
-		return m.Value
+		return m.EntryCreditBlockEntry
 	}
 	return nil
 }
 
 func (m *EntryCreditBlockEntry) GetChainCommit() *ChainCommit {
-	if x, ok := m.GetValue().(*EntryCreditBlockEntry_ChainCommit); ok {
+	if x, ok := m.GetEntryCreditBlockEntry().(*EntryCreditBlockEntry_ChainCommit); ok {
 		return x.ChainCommit
 	}
 	return nil
 }
 
 func (m *EntryCreditBlockEntry) GetEntryCommit() *EntryCommit {
-	if x, ok := m.GetValue().(*EntryCreditBlockEntry_EntryCommit); ok {
+	if x, ok := m.GetEntryCreditBlockEntry().(*EntryCreditBlockEntry_EntryCommit); ok {
 		return x.EntryCommit
 	}
 	return nil
 }
 
 func (m *EntryCreditBlockEntry) GetIncreaseBalance() *IncreaseBalance {
-	if x, ok := m.GetValue().(*EntryCreditBlockEntry_IncreaseBalance); ok {
+	if x, ok := m.GetEntryCreditBlockEntry().(*EntryCreditBlockEntry_IncreaseBalance); ok {
 		return x.IncreaseBalance
 	}
 	return nil
 }
 
 func (m *EntryCreditBlockEntry) GetMinuteNumber() *MinuteNumber {
-	if x, ok := m.GetValue().(*EntryCreditBlockEntry_MinuteNumber); ok {
+	if x, ok := m.GetEntryCreditBlockEntry().(*EntryCreditBlockEntry_MinuteNumber); ok {
 		return x.MinuteNumber
 	}
 	return nil
 }
 
 func (m *EntryCreditBlockEntry) GetServerIndexNumber() *ServerIndexNumber {
-	if x, ok := m.GetValue().(*EntryCreditBlockEntry_ServerIndexNumber); ok {
+	if x, ok := m.GetEntryCreditBlockEntry().(*EntryCreditBlockEntry_ServerIndexNumber); ok {
 		return x.ServerIndexNumber
 	}
 	return nil
@@ -1490,7 +1048,7 @@ func (*EntryCreditBlockEntry) XXX_OneofWrappers() []interface{} {
 
 type IncreaseBalance struct {
 	EntryCreditPublicKey []byte   `protobuf:"bytes,1,opt,name=entryCreditPublicKey,proto3" json:"entryCreditPublicKey,omitempty"`
-	TransactionID        *Hash    `protobuf:"bytes,2,opt,name=transactionID,proto3" json:"transactionID,omitempty"`
+	TransactionID        []byte   `protobuf:"bytes,2,opt,name=transactionID,proto3" json:"transactionID,omitempty"`
 	Index                uint64   `protobuf:"varint,3,opt,name=index,proto3" json:"index,omitempty"`
 	Amount               uint64   `protobuf:"varint,4,opt,name=amount,proto3" json:"amount,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -1502,7 +1060,7 @@ func (m *IncreaseBalance) Reset()         { *m = IncreaseBalance{} }
 func (m *IncreaseBalance) String() string { return proto.CompactTextString(m) }
 func (*IncreaseBalance) ProtoMessage()    {}
 func (*IncreaseBalance) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{15}
+	return fileDescriptor_d6566f2e3579336b, []int{9}
 }
 func (m *IncreaseBalance) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1538,7 +1096,7 @@ func (m *IncreaseBalance) GetEntryCreditPublicKey() []byte {
 	return nil
 }
 
-func (m *IncreaseBalance) GetTransactionID() *Hash {
+func (m *IncreaseBalance) GetTransactionID() []byte {
 	if m != nil {
 		return m.TransactionID
 	}
@@ -1570,7 +1128,7 @@ func (m *MinuteNumber) Reset()         { *m = MinuteNumber{} }
 func (m *MinuteNumber) String() string { return proto.CompactTextString(m) }
 func (*MinuteNumber) ProtoMessage()    {}
 func (*MinuteNumber) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{16}
+	return fileDescriptor_d6566f2e3579336b, []int{10}
 }
 func (m *MinuteNumber) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1617,7 +1175,7 @@ func (m *ServerIndexNumber) Reset()         { *m = ServerIndexNumber{} }
 func (m *ServerIndexNumber) String() string { return proto.CompactTextString(m) }
 func (*ServerIndexNumber) ProtoMessage()    {}
 func (*ServerIndexNumber) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{17}
+	return fileDescriptor_d6566f2e3579336b, []int{11}
 }
 func (m *ServerIndexNumber) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1667,7 +1225,7 @@ func (m *ProcessMessage) Reset()         { *m = ProcessMessage{} }
 func (m *ProcessMessage) String() string { return proto.CompactTextString(m) }
 func (*ProcessMessage) ProtoMessage()    {}
 func (*ProcessMessage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{18}
+	return fileDescriptor_d6566f2e3579336b, []int{12}
 }
 func (m *ProcessMessage) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1730,7 +1288,7 @@ func (m *NodeMessage) Reset()         { *m = NodeMessage{} }
 func (m *NodeMessage) String() string { return proto.CompactTextString(m) }
 func (*NodeMessage) ProtoMessage()    {}
 func (*NodeMessage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{19}
+	return fileDescriptor_d6566f2e3579336b, []int{13}
 }
 func (m *NodeMessage) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1792,12 +1350,6 @@ func init() {
 	proto.RegisterType((*EntryReveal)(nil), "eventmessages.EntryReveal")
 	proto.RegisterType((*StateChange)(nil), "eventmessages.StateChange")
 	proto.RegisterType((*DirectoryBlockCommit)(nil), "eventmessages.DirectoryBlockCommit")
-	proto.RegisterType((*DirectoryBlock)(nil), "eventmessages.DirectoryBlock")
-	proto.RegisterType((*DirectoryBlockHeader)(nil), "eventmessages.DirectoryBlockHeader")
-	proto.RegisterType((*DirectoryBlockEntry)(nil), "eventmessages.DirectoryBlockEntry")
-	proto.RegisterType((*EntryBlock)(nil), "eventmessages.EntryBlock")
-	proto.RegisterType((*EntryBlockHeader)(nil), "eventmessages.EntryBlockHeader")
-	proto.RegisterType((*EntryBlockEntry)(nil), "eventmessages.EntryBlockEntry")
 	proto.RegisterType((*EntryCreditBlock)(nil), "eventmessages.EntryCreditBlock")
 	proto.RegisterType((*EntryCreditBlockHeader)(nil), "eventmessages.EntryCreditBlockHeader")
 	proto.RegisterType((*EntryCreditBlockEntry)(nil), "eventmessages.EntryCreditBlockEntry")
@@ -1811,115 +1363,97 @@ func init() {
 func init() { proto.RegisterFile("eventmessages/factomEvents.proto", fileDescriptor_d6566f2e3579336b) }
 
 var fileDescriptor_d6566f2e3579336b = []byte{
-	// 1721 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x58, 0xcd, 0x6f, 0x23, 0x49,
-	0x1d, 0x75, 0xfb, 0x23, 0x8e, 0x7f, 0x8e, 0x1d, 0x4f, 0x4d, 0x76, 0x64, 0x86, 0x1d, 0x8f, 0xd5,
-	0x2c, 0x30, 0x44, 0x3b, 0xce, 0x92, 0x65, 0x85, 0x46, 0xd9, 0x0f, 0x1c, 0xbb, 0x33, 0xf6, 0x26,
-	0xb1, 0x43, 0xd9, 0xb3, 0xa3, 0xec, 0x25, 0x6a, 0xbb, 0x6b, 0xe2, 0x26, 0x76, 0x77, 0xb6, 0xbb,
-	0x9d, 0x4d, 0x10, 0x12, 0xe2, 0xcc, 0x89, 0x0b, 0x27, 0x10, 0x62, 0x4f, 0x9c, 0x90, 0xb8, 0x71,
-	0x04, 0x71, 0xe1, 0xc8, 0x9f, 0xc0, 0xe6, 0xce, 0x85, 0x13, 0x47, 0x54, 0xd5, 0x65, 0x77, 0x75,
-	0xb9, 0x6d, 0x27, 0x98, 0x93, 0x5d, 0x55, 0xef, 0xfd, 0xba, 0xea, 0xd5, 0xab, 0x5f, 0x7d, 0x40,
-	0x99, 0x5c, 0x11, 0xcb, 0x1b, 0x11, 0xd7, 0xd5, 0xcf, 0x89, 0xbb, 0xf3, 0x46, 0xef, 0x7b, 0xf6,
-	0x48, 0xa3, 0x75, 0x6e, 0xe5, 0xd2, 0xb1, 0x3d, 0x1b, 0xe5, 0x42, 0x88, 0xc7, 0xad, 0x73, 0xd3,
-	0x1b, 0x8c, 0x7b, 0x95, 0xbe, 0x3d, 0xda, 0xe9, 0x99, 0xcf, 0xdf, 0xd8, 0x63, 0xcb, 0xd0, 0x3d,
-	0xd3, 0xb6, 0x76, 0x18, 0xbc, 0x37, 0x7e, 0xf3, 0xfc, 0xdc, 0xd1, 0x2f, 0x07, 0x5f, 0x0c, 0x9f,
-	0x93, 0x6b, 0x8f, 0x58, 0x2e, 0x6d, 0xe2, 0x35, 0x0c, 0x31, 0x29, 0xf8, 0xe1, 0x1f, 0x7f, 0xb6,
-	0x72, 0x3c, 0xef, 0xe6, 0x92, 0xb8, 0x3b, 0x9e, 0x39, 0x22, 0xae, 0xa7, 0x8f, 0x2e, 0x79, 0xdc,
-	0xa7, 0xe1, 0x81, 0xb9, 0x03, 0xdd, 0x21, 0x46, 0x97, 0x42, 0x39, 0xa0, 0x14, 0x06, 0xe8, 0xc6,
-	0xc8, 0xb4, 0xf6, 0x87, 0x76, 0xff, 0x82, 0xb7, 0x47, 0x29, 0x63, 0x1a, 0x02, 0x42, 0xfd, 0x5d,
-	0x0a, 0xb2, 0x07, 0x81, 0x60, 0xe8, 0x43, 0xc8, 0x32, 0x4e, 0xc7, 0x1e, 0x3b, 0x7d, 0x52, 0x54,
-	0xca, 0xca, 0xb3, 0xfc, 0xee, 0xe3, 0x4a, 0x28, 0x4e, 0x45, 0x0b, 0x10, 0x58, 0x84, 0xa3, 0xef,
-	0x40, 0xde, 0x57, 0xbf, 0x65, 0x1b, 0xa4, 0xa5, 0x8f, 0x48, 0x31, 0x5e, 0x56, 0x9e, 0x65, 0xb0,
-	0x54, 0x8b, 0x3e, 0x82, 0x4d, 0xd3, 0x20, 0x96, 0x67, 0x7a, 0x37, 0xb5, 0x81, 0x6e, 0x5a, 0xcd,
-	0x7a, 0x31, 0x51, 0x56, 0x9e, 0x65, 0x77, 0x1f, 0x4a, 0x5f, 0x6a, 0xe8, 0xee, 0x00, 0xcb, 0x58,
-	0xf4, 0x31, 0x64, 0xfb, 0xf4, 0x6f, 0xcd, 0x1e, 0x8d, 0x4c, 0xaf, 0x98, 0x64, 0x54, 0xb9, 0x93,
-	0xb5, 0x00, 0xd1, 0x88, 0x61, 0x91, 0x40, 0xf9, 0xc4, 0xf2, 0x9c, 0x1b, 0xce, 0x4f, 0x45, 0xf2,
-	0xb5, 0x00, 0x41, 0xf9, 0x02, 0x61, 0xca, 0xc7, 0xe4, 0x8a, 0xe8, 0xc3, 0xe2, 0xda, 0x7c, 0xbe,
-	0x8f, 0x98, 0xf2, 0xfd, 0x22, 0xe5, 0xbb, 0x9e, 0xee, 0x91, 0xda, 0x40, 0xb7, 0xce, 0x49, 0x31,
-	0x1d, 0xc9, 0xef, 0x04, 0x08, 0xca, 0x17, 0x08, 0xe8, 0x14, 0xb6, 0x0c, 0xd3, 0x21, 0x7d, 0xcf,
-	0x76, 0x6e, 0xd8, 0x64, 0xf2, 0x81, 0xac, 0xb3, 0x40, 0xdf, 0x92, 0x02, 0xd5, 0x23, 0xa0, 0x8d,
-	0x18, 0x8e, 0x0c, 0x81, 0x5e, 0x42, 0xfe, 0xd2, 0xb1, 0xfb, 0xc4, 0x75, 0x8f, 0x7d, 0x7e, 0x31,
-	0xc3, 0x82, 0x3e, 0x91, 0x82, 0x9e, 0x84, 0x40, 0x8d, 0x18, 0x96, 0x68, 0x74, 0x8c, 0x96, 0x6d,
-	0x90, 0x49, 0x14, 0x88, 0x1c, 0x63, 0x2b, 0x40, 0xd0, 0x31, 0x0a, 0x84, 0xfd, 0x34, 0xa4, 0xae,
-	0xf4, 0xe1, 0x98, 0xa8, 0xbf, 0x4f, 0x40, 0x56, 0x98, 0x4b, 0xe6, 0x50, 0xe6, 0x06, 0x26, 0xd0,
-	0x3c, 0x87, 0x06, 0x08, 0x2c, 0xc2, 0xd1, 0x07, 0xdc, 0x3a, 0xcd, 0x3a, 0xb5, 0x16, 0xb3, 0xe7,
-	0x1c, 0xd7, 0x89, 0x38, 0xf4, 0x7d, 0xc8, 0xb0, 0x09, 0x64, 0xa4, 0x05, 0x56, 0x0d, 0x50, 0xe8,
-	0xbb, 0x90, 0xfc, 0x92, 0x0c, 0x0d, 0xee, 0xce, 0x48, 0x34, 0x03, 0xa0, 0x3d, 0xc8, 0x4c, 0x17,
-	0x3e, 0xf7, 0xe2, 0x93, 0x8a, 0x98, 0x1d, 0x2a, 0x2c, 0x3b, 0x54, 0xba, 0x13, 0x10, 0x0e, 0xf0,
-	0xa8, 0x08, 0xe9, 0xbe, 0x43, 0x0c, 0xd3, 0x73, 0x99, 0x0d, 0x73, 0x78, 0x52, 0x44, 0xbb, 0xb0,
-	0xe5, 0x7b, 0x96, 0x95, 0x4f, 0xc6, 0xbd, 0xa1, 0xd9, 0x3f, 0x24, 0x37, 0xcc, 0x6d, 0x1b, 0x38,
-	0xb2, 0x0d, 0xbd, 0x0d, 0x19, 0xd7, 0x3c, 0xb7, 0x74, 0x6f, 0xec, 0x10, 0xe6, 0xa6, 0x0d, 0x1c,
-	0x54, 0xd0, 0x6f, 0x5d, 0x11, 0x87, 0x26, 0x2f, 0x66, 0x8a, 0x1c, 0x9e, 0x14, 0xd5, 0xbf, 0xc6,
-	0x21, 0x2b, 0xac, 0x97, 0x15, 0xe7, 0x28, 0x24, 0x76, 0xfc, 0x4e, 0x62, 0x87, 0x34, 0x4c, 0xfc,
-	0xef, 0x1a, 0x26, 0xef, 0xa6, 0x61, 0xea, 0xae, 0x1a, 0xae, 0x2d, 0xd0, 0x30, 0x1d, 0xd6, 0xf0,
-	0x5f, 0x0a, 0xd7, 0x90, 0x27, 0x89, 0xd5, 0x34, 0xfc, 0x01, 0xa4, 0x58, 0xef, 0xb8, 0x7e, 0xa5,
-	0xa8, 0xe4, 0xc4, 0xd6, 0xbd, 0xff, 0x49, 0x1f, 0xbc, 0x9a, 0x8c, 0xcf, 0x21, 0xcd, 0x97, 0xcc,
-	0x22, 0xcf, 0x4f, 0x30, 0xea, 0x57, 0x0a, 0x64, 0x85, 0x1c, 0x87, 0xde, 0x07, 0xf0, 0x07, 0xc0,
-	0xa6, 0x5d, 0x99, 0x1f, 0x41, 0x80, 0xc9, 0x22, 0xc5, 0xef, 0x27, 0x52, 0x19, 0xb2, 0x3d, 0xaa,
-	0x41, 0x83, 0x98, 0xe7, 0x03, 0x8f, 0x0d, 0x38, 0x87, 0xc5, 0x2a, 0xf5, 0x4f, 0x09, 0xd8, 0x8a,
-	0xca, 0x9f, 0x48, 0x83, 0x7c, 0x38, 0x7f, 0xf2, 0x1e, 0x3f, 0x59, 0x98, 0x7c, 0xb1, 0x44, 0x42,
-	0x2f, 0x00, 0x82, 0x4d, 0x9b, 0xcf, 0xd5, 0x37, 0xa4, 0x10, 0xd5, 0x29, 0x00, 0x0b, 0x60, 0xf4,
-	0x09, 0x6c, 0x88, 0xfb, 0x39, 0x9f, 0xae, 0x6f, 0x4a, 0xe4, 0x03, 0x01, 0x82, 0x43, 0x04, 0x74,
-	0x08, 0x05, 0xc1, 0xc0, 0x7e, 0x10, 0x7f, 0xe2, 0x9e, 0x46, 0x6e, 0x85, 0x01, 0x0c, 0xcf, 0x10,
-	0xd1, 0x1e, 0xdf, 0x12, 0x59, 0xc9, 0x2d, 0xa6, 0xca, 0x89, 0x88, 0x91, 0x04, 0xae, 0xc3, 0x22,
-	0x1a, 0x1d, 0xc1, 0x03, 0x12, 0x32, 0xa4, 0x49, 0x68, 0x3a, 0x4b, 0xdc, 0xc1, 0xb8, 0xb3, 0x44,
-	0xf5, 0x97, 0x0a, 0xe4, 0xc3, 0xb2, 0xa3, 0x3d, 0x58, 0x1b, 0x10, 0xdd, 0x20, 0x0e, 0x9f, 0xa5,
-	0xc5, 0x5b, 0x64, 0x83, 0x41, 0x31, 0xa7, 0xa0, 0x0f, 0x21, 0x4d, 0x78, 0x9f, 0xe2, 0xac, 0x4f,
-	0xea, 0x42, 0xb6, 0xdf, 0xaf, 0x09, 0x45, 0xfd, 0xf5, 0x8c, 0x83, 0xfc, 0xf0, 0x68, 0x0f, 0xf2,
-	0x3d, 0xdb, 0xb8, 0x39, 0x26, 0xce, 0xc5, 0x90, 0x60, 0xdb, 0xf6, 0x16, 0x79, 0x5e, 0x82, 0xa2,
-	0x26, 0xbc, 0x75, 0xe9, 0x90, 0x2b, 0xd3, 0x1e, 0xbb, 0x87, 0x44, 0x8c, 0xb1, 0x20, 0x5d, 0x46,
-	0x33, 0xd0, 0x27, 0x50, 0x98, 0x34, 0x1c, 0x8c, 0x87, 0xc3, 0x65, 0x3b, 0xdc, 0x0c, 0x38, 0x9c,
-	0x34, 0x92, 0xf7, 0x4c, 0x1a, 0xd2, 0x12, 0x4c, 0xcd, 0x2c, 0x41, 0x54, 0x02, 0xe8, 0xf9, 0x0b,
-	0x6f, 0x6c, 0x79, 0x7c, 0x93, 0x13, 0x6a, 0xe6, 0x67, 0x54, 0x9a, 0x89, 0x2d, 0xe2, 0x7d, 0x69,
-	0x3b, 0x17, 0xcd, 0x3a, 0xdb, 0xcd, 0x72, 0x38, 0xa8, 0x50, 0x7f, 0x0e, 0x0f, 0x23, 0x26, 0x4e,
-	0xcc, 0x62, 0xca, 0xf2, 0x2c, 0x86, 0x5e, 0x40, 0xee, 0xe2, 0xae, 0x13, 0x10, 0x46, 0xaa, 0x3f,
-	0x03, 0x08, 0xdc, 0x8c, 0x7e, 0x28, 0x59, 0xf4, 0xe9, 0x5c, 0xe3, 0x4b, 0xf6, 0xfc, 0x80, 0xaf,
-	0x3c, 0xfa, 0x89, 0xa9, 0x45, 0xa3, 0x4f, 0x34, 0x02, 0x4e, 0xfd, 0x77, 0x1c, 0x0a, 0x72, 0xcc,
-	0xd5, 0x3c, 0x29, 0x28, 0x17, 0xbf, 0x83, 0x72, 0x2b, 0xfb, 0x6e, 0xee, 0x1a, 0x48, 0xde, 0x7b,
-	0x0d, 0x2c, 0x77, 0xe1, 0x3b, 0x90, 0x63, 0xc5, 0x0e, 0xf9, 0x62, 0x4c, 0xac, 0x3e, 0xe1, 0x46,
-	0x0c, 0x57, 0x52, 0xaf, 0xf2, 0x7b, 0x02, 0xf5, 0xaa, 0x6f, 0x47, 0xa1, 0x46, 0xfd, 0x9b, 0x02,
-	0x9b, 0x52, 0x06, 0xa3, 0xe7, 0xc4, 0xc1, 0x92, 0x1d, 0x8f, 0x01, 0x58, 0x8a, 0xbd, 0xf6, 0x88,
-	0x63, 0xe9, 0xc3, 0x66, 0x7d, 0x32, 0xd1, 0x33, 0x29, 0x76, 0x82, 0x30, 0xb0, 0x88, 0x46, 0xef,
-	0x41, 0xba, 0x6f, 0x5b, 0x1e, 0xb1, 0x3c, 0x2e, 0xf2, 0x23, 0xf9, 0xba, 0xe4, 0xb7, 0xe2, 0x09,
-	0x4c, 0x5c, 0x57, 0xc9, 0xf0, 0x49, 0xe5, 0x57, 0x0a, 0xb7, 0x8e, 0xb8, 0x01, 0x7c, 0x24, 0xf9,
-	0xf7, 0xdb, 0x4b, 0xf6, 0x10, 0xc9, 0xc5, 0x1f, 0xcb, 0x49, 0xf6, 0x9d, 0x25, 0x7c, 0x29, 0xcd,
-	0x7e, 0x1d, 0x87, 0x47, 0xd1, 0x9f, 0x40, 0x3b, 0xb0, 0x4e, 0x9d, 0xba, 0xec, 0x58, 0x31, 0x05,
-	0xa1, 0x1a, 0xa0, 0x89, 0x4d, 0xfc, 0x10, 0xcb, 0x0e, 0xa2, 0x11, 0xf0, 0xd5, 0xed, 0x2d, 0x79,
-	0x32, 0x39, 0xeb, 0xc9, 0xf7, 0xe0, 0xa1, 0xaf, 0x9e, 0x76, 0x7d, 0xa9, 0xb3, 0x47, 0x85, 0xaa,
-	0x43, 0x74, 0x7e, 0x38, 0x8d, 0x6a, 0xa2, 0x31, 0xed, 0xde, 0x4f, 0x48, 0xdf, 0x0b, 0x92, 0x69,
-	0x12, 0x8b, 0x55, 0xe8, 0xb1, 0x2f, 0x56, 0xc7, 0xfc, 0xa9, 0x7f, 0x2f, 0x4d, 0xe2, 0x69, 0x59,
-	0xfd, 0x45, 0x02, 0xde, 0x8a, 0x9c, 0x06, 0xf9, 0x42, 0xae, 0xac, 0x78, 0x21, 0x8f, 0xdf, 0xf7,
-	0x42, 0xfe, 0x29, 0x6c, 0x9a, 0x56, 0xdf, 0x21, 0xba, 0x4b, 0xf6, 0xf5, 0xa1, 0x4e, 0xd7, 0x67,
-	0x22, 0xf2, 0xdc, 0xdb, 0x0c, 0xa3, 0x1a, 0x31, 0x2c, 0x13, 0x51, 0x15, 0x36, 0x46, 0xa6, 0x35,
-	0xf6, 0x48, 0x6b, 0x3c, 0xea, 0x11, 0x87, 0x67, 0x13, 0xf9, 0x5c, 0x75, 0x2c, 0x40, 0x1a, 0x31,
-	0x1c, 0xa2, 0xa0, 0x13, 0x78, 0xe0, 0x12, 0xe7, 0x8a, 0x38, 0x4d, 0xcb, 0x20, 0xd7, 0x3c, 0x8e,
-	0x7f, 0xb3, 0x2b, 0xcb, 0xb7, 0x7c, 0x19, 0xd7, 0x88, 0xe1, 0x59, 0x72, 0x70, 0x1b, 0xfe, 0xa3,
-	0x02, 0x9b, 0xd2, 0x20, 0xe6, 0xde, 0x52, 0x94, 0x05, 0xb7, 0x94, 0x17, 0x90, 0xf3, 0x1c, 0xdd,
-	0x72, 0xf5, 0xbe, 0x67, 0xda, 0x4b, 0x52, 0x76, 0x18, 0x89, 0xb6, 0x20, 0x65, 0xd2, 0xae, 0x31,
-	0x89, 0x93, 0xd8, 0x2f, 0xa0, 0x47, 0xb0, 0xa6, 0x8f, 0x98, 0xab, 0x92, 0xac, 0x9a, 0x97, 0xd4,
-	0x5d, 0xd8, 0x10, 0xb5, 0x42, 0xaa, 0x24, 0xaf, 0xc2, 0x7c, 0x1d, 0xaa, 0x53, 0xab, 0xf0, 0x60,
-	0x46, 0x17, 0xf4, 0x6e, 0x94, 0xa8, 0x3e, 0x7b, 0xb6, 0x41, 0xfd, 0x8d, 0x02, 0xf9, 0xf0, 0x1b,
-	0x05, 0xbd, 0x2b, 0xf0, 0x37, 0x8a, 0x9a, 0x6d, 0xcc, 0xbb, 0x50, 0x9d, 0x04, 0x08, 0x2c, 0xc2,
-	0xd1, 0x36, 0xa4, 0x86, 0xe4, 0x8a, 0x0c, 0xf9, 0x1d, 0x63, 0x4b, 0xe2, 0x1d, 0xd1, 0x36, 0xec,
-	0x43, 0xe8, 0x32, 0xe3, 0x0d, 0x5d, 0x72, 0xed, 0x27, 0xdc, 0x0c, 0x16, 0xab, 0xd4, 0xdf, 0x2a,
-	0x90, 0x15, 0x1e, 0x3f, 0xd0, 0x8f, 0xa6, 0x0c, 0xa1, 0x6f, 0xa5, 0xf9, 0xaf, 0x25, 0x7e, 0xff,
-	0x04, 0xca, 0xff, 0xb7, 0x7f, 0xdb, 0xcf, 0x20, 0x2b, 0x3c, 0xf2, 0xa1, 0x75, 0x48, 0x1e, 0x35,
-	0x3f, 0xd3, 0x0a, 0x31, 0xb4, 0x09, 0x59, 0xac, 0x9d, 0x1c, 0x55, 0x4f, 0xcf, 0xf6, 0xdb, 0xed,
-	0x6e, 0x41, 0xd9, 0xfe, 0x9c, 0xdd, 0x5a, 0xa7, 0x57, 0xaa, 0x1c, 0x64, 0xb0, 0xf6, 0xe3, 0x57,
-	0x5a, 0xa7, 0xab, 0xd5, 0x0b, 0x31, 0xb4, 0x01, 0xeb, 0xd5, 0x5a, 0x4d, 0x3b, 0xa1, 0x25, 0x85,
-	0x96, 0xb0, 0xf6, 0xa9, 0x56, 0xa3, 0xa5, 0x38, 0x2a, 0xc3, 0xdb, 0xb5, 0xf6, 0xf1, 0x71, 0xb3,
-	0xdb, 0xd5, 0xea, 0x67, 0xdd, 0xf6, 0x59, 0xbd, 0x89, 0xb5, 0x5a, 0xb7, 0x8d, 0x4f, 0xcf, 0xf6,
-	0x8f, 0xda, 0xb5, 0xc3, 0x42, 0x62, 0xfb, 0x7b, 0x90, 0x62, 0xfd, 0xa6, 0xdf, 0x6f, 0xb6, 0x0e,
-	0xda, 0x85, 0x18, 0xca, 0x42, 0xfa, 0x75, 0x15, 0xb7, 0x9a, 0xad, 0x97, 0x05, 0x05, 0x65, 0x20,
-	0xa5, 0x61, 0xdc, 0xc6, 0x85, 0xf8, 0xf6, 0xbb, 0x90, 0x15, 0xa6, 0x8e, 0x76, 0xa3, 0xa5, 0xbd,
-	0xe6, 0x81, 0x62, 0x28, 0x0f, 0x40, 0x8b, 0xc7, 0xcd, 0xd6, 0xab, 0xae, 0x56, 0x50, 0xb6, 0x35,
-	0xd8, 0x94, 0xc4, 0xa4, 0x81, 0x5f, 0x6a, 0x2d, 0x0d, 0x57, 0x8f, 0xfc, 0xaf, 0x74, 0xba, 0x55,
-	0xec, 0xf7, 0x1a, 0x60, 0xad, 0x73, 0xda, 0xaa, 0xb1, 0x3e, 0x6f, 0xc0, 0x7a, 0xa7, 0xf1, 0xaa,
-	0x5b, 0x6f, 0xbf, 0x6e, 0x15, 0x12, 0xfb, 0xc7, 0xff, 0xf9, 0xba, 0xa4, 0xfc, 0xe1, 0xb6, 0xa4,
-	0xfc, 0xf9, 0xb6, 0xa4, 0xfc, 0xfd, 0xb6, 0xa4, 0xfc, 0xe3, 0xb6, 0xa4, 0xfc, 0xf3, 0xb6, 0xa4,
-	0xfc, 0xe5, 0xab, 0xa7, 0x0a, 0x94, 0xfb, 0xf6, 0xa8, 0xe2, 0x3f, 0x7c, 0xf2, 0x1f, 0x23, 0x3c,
-	0x29, 0x9f, 0x87, 0x9f, 0xa5, 0x7b, 0x6b, 0xec, 0xb4, 0xfc, 0xfe, 0x7f, 0x03, 0x00, 0x00, 0xff,
-	0xff, 0xa8, 0x4a, 0x5b, 0x57, 0xd0, 0x16, 0x00, 0x00,
+	// 1426 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x58, 0xcd, 0x72, 0x1b, 0xc5,
+	0x16, 0x56, 0xeb, 0xc7, 0xb6, 0x8e, 0x64, 0x5b, 0xe9, 0xeb, 0xe4, 0xea, 0xfa, 0x26, 0x8a, 0x6a,
+	0x6e, 0x2e, 0x65, 0x54, 0x89, 0x4c, 0x19, 0x36, 0x54, 0x20, 0xa0, 0x9f, 0x71, 0xa4, 0xc4, 0x96,
+	0x4c, 0x4b, 0x49, 0xca, 0xd9, 0xb8, 0x46, 0x33, 0x1d, 0x6b, 0x40, 0x9a, 0x11, 0x33, 0x23, 0x63,
+	0xf3, 0x08, 0x54, 0xb1, 0xc8, 0x92, 0x2a, 0xd8, 0x64, 0xc5, 0x82, 0x0d, 0x3b, 0x56, 0x14, 0x4b,
+	0x96, 0x3c, 0x02, 0xf8, 0x29, 0x58, 0x52, 0xdd, 0xd3, 0xd2, 0xf4, 0x8c, 0xc6, 0xf9, 0xc1, 0xac,
+	0xe2, 0x73, 0xfa, 0xfb, 0xce, 0x9c, 0xfe, 0xfa, 0x74, 0x9f, 0xa3, 0x40, 0x99, 0x9e, 0x50, 0xcb,
+	0x1b, 0x53, 0xd7, 0xd5, 0x8e, 0xa9, 0xbb, 0xfd, 0x4c, 0xd3, 0x3d, 0x7b, 0xac, 0x32, 0x9f, 0x5b,
+	0x9d, 0x38, 0xb6, 0x67, 0xe3, 0xd5, 0x10, 0x62, 0xb3, 0x73, 0x6c, 0x7a, 0xc3, 0xe9, 0xa0, 0xaa,
+	0xdb, 0xe3, 0xed, 0x81, 0x79, 0xe7, 0x99, 0x3d, 0xb5, 0x0c, 0xcd, 0x33, 0x6d, 0x6b, 0x9b, 0xc3,
+	0x07, 0xd3, 0x67, 0x77, 0x8e, 0x1d, 0x6d, 0x32, 0xfc, 0x7c, 0x74, 0x87, 0x9e, 0x7a, 0xd4, 0x72,
+	0xd9, 0x92, 0xf0, 0x70, 0xc4, 0xcc, 0xf0, 0xc3, 0x6f, 0x3e, 0xbe, 0x74, 0x3c, 0xef, 0x6c, 0x42,
+	0xdd, 0x6d, 0xcf, 0x1c, 0x53, 0xd7, 0xd3, 0xc6, 0x13, 0x11, 0xb7, 0x14, 0xde, 0x98, 0x66, 0x8c,
+	0x4d, 0xab, 0x3e, 0xb2, 0xf5, 0xcf, 0xc4, 0xba, 0x12, 0x5e, 0x37, 0x4c, 0x87, 0xea, 0x9e, 0xed,
+	0x9c, 0xc9, 0x98, 0x48, 0x0c, 0x6a, 0x79, 0xe1, 0xf5, 0x38, 0xf1, 0x4c, 0x43, 0x42, 0x28, 0x5f,
+	0x65, 0x20, 0xb7, 0x1b, 0x68, 0x8a, 0x3f, 0x80, 0x1c, 0xe7, 0xf4, 0xec, 0xa9, 0xa3, 0xd3, 0x22,
+	0x2a, 0xa3, 0xad, 0xb5, 0x9d, 0xcd, 0x6a, 0x28, 0x4e, 0x55, 0x0d, 0x10, 0x44, 0x86, 0xe3, 0xb7,
+	0x60, 0xcd, 0x3f, 0xa0, 0x8e, 0x6d, 0xd0, 0x8e, 0x36, 0xa6, 0xc5, 0x64, 0x19, 0x6d, 0x65, 0x49,
+	0xc4, 0x8b, 0xb7, 0x60, 0xdd, 0x34, 0xa8, 0xe5, 0x99, 0xde, 0x59, 0x63, 0xa8, 0x99, 0x56, 0xbb,
+	0x59, 0x4c, 0x95, 0xd1, 0x56, 0x9e, 0x44, 0xdd, 0xf8, 0x1e, 0xe4, 0x74, 0xf6, 0x67, 0xc3, 0x1e,
+	0x8f, 0x4d, 0xaf, 0x98, 0x2e, 0xa3, 0xad, 0xdc, 0x42, 0x3e, 0x8d, 0x00, 0xd1, 0x4a, 0x10, 0x99,
+	0xc0, 0xf8, 0x5c, 0x15, 0xc1, 0xcf, 0xc4, 0xf2, 0xd5, 0x00, 0xc1, 0xf8, 0x12, 0x61, 0xce, 0x27,
+	0xf4, 0x84, 0x6a, 0xa3, 0xe2, 0xd2, 0xc5, 0x7c, 0x1f, 0x31, 0xe7, 0xfb, 0x26, 0xe3, 0xbb, 0x9e,
+	0xe6, 0xd1, 0xc6, 0x50, 0xb3, 0x8e, 0x69, 0x71, 0x39, 0x96, 0xdf, 0x0b, 0x10, 0x8c, 0x2f, 0x11,
+	0xf0, 0x21, 0x6c, 0x84, 0x4f, 0x5e, 0x6c, 0x64, 0x85, 0x07, 0xfa, 0x5f, 0x24, 0x50, 0x33, 0x06,
+	0xda, 0x4a, 0x90, 0xd8, 0x10, 0xf8, 0x3e, 0xac, 0x4d, 0x1c, 0x5b, 0xa7, 0xae, 0xbb, 0xef, 0xf3,
+	0x8b, 0x59, 0x1e, 0xf4, 0x46, 0x24, 0xe8, 0x41, 0x08, 0xd4, 0x4a, 0x90, 0x08, 0x8d, 0xed, 0xd1,
+	0xb2, 0x0d, 0x3a, 0x8b, 0x02, 0xb1, 0x7b, 0xec, 0x04, 0x08, 0xb6, 0x47, 0x89, 0x50, 0x5f, 0x86,
+	0x0c, 0xc7, 0x2a, 0xe7, 0x49, 0xc8, 0x49, 0x67, 0xc9, 0x8b, 0x91, 0x57, 0x03, 0x17, 0xe8, 0xa2,
+	0x62, 0x0c, 0x10, 0x44, 0x86, 0xe3, 0xb2, 0x28, 0x9d, 0x76, 0xb3, 0xa5, 0xb9, 0x43, 0x5e, 0x89,
+	0x79, 0x22, 0xbb, 0xf0, 0x75, 0xc8, 0xf2, 0xb3, 0xe2, 0xeb, 0x7e, 0x01, 0x06, 0x0e, 0x8c, 0x21,
+	0xfd, 0x05, 0x1d, 0x19, 0xbc, 0xe6, 0xf2, 0x84, 0xff, 0x8d, 0xef, 0x42, 0x76, 0x7e, 0x8f, 0x45,
+	0x31, 0xdd, 0xa8, 0xca, 0x97, 0xbd, 0xca, 0x2f, 0x7b, 0xb5, 0x3f, 0x03, 0x91, 0x00, 0x8f, 0x8b,
+	0xb0, 0xac, 0x3b, 0xd4, 0x30, 0x3d, 0x97, 0xd7, 0xd1, 0x2a, 0x99, 0x99, 0x78, 0x07, 0x36, 0xfc,
+	0xa2, 0xe3, 0xf6, 0xc1, 0x74, 0x30, 0x32, 0xf5, 0x87, 0xf4, 0x8c, 0x97, 0x4b, 0x9e, 0xc4, 0xae,
+	0xb1, 0xe4, 0x5d, 0xf3, 0xd8, 0xd2, 0xbc, 0xa9, 0x43, 0x79, 0x39, 0xe4, 0x49, 0xe0, 0x60, 0xdf,
+	0x3a, 0xa1, 0x0e, 0x7b, 0x8b, 0xf8, 0xa9, 0xae, 0x92, 0x99, 0xa9, 0xfc, 0x90, 0x84, 0x9c, 0x54,
+	0xf0, 0x97, 0x14, 0x39, 0x24, 0x61, 0x32, 0x2a, 0x61, 0x48, 0xae, 0xd4, 0xdf, 0x97, 0x2b, 0xfd,
+	0x7a, 0x72, 0x65, 0x5e, 0x57, 0xae, 0xa5, 0x97, 0xc8, 0xb5, 0x1c, 0x96, 0xeb, 0x67, 0x24, 0xe4,
+	0x12, 0x17, 0xfa, 0x72, 0x72, 0xbd, 0x07, 0x19, 0x9e, 0x1d, 0x97, 0x2a, 0xb7, 0x53, 0x8a, 0x7b,
+	0x48, 0xf8, 0x1d, 0xf5, 0x3f, 0xe9, 0x83, 0x2f, 0x25, 0xa3, 0xf2, 0x35, 0x82, 0x9c, 0xf4, 0xc0,
+	0xe0, 0x12, 0x80, 0x9f, 0x11, 0x3f, 0x32, 0xc4, 0x95, 0x90, 0x3c, 0xd1, 0x0d, 0x26, 0xdf, 0xf8,
+	0xd2, 0x0d, 0x58, 0xfe, 0x2d, 0x6a, 0x1e, 0x0f, 0x3d, 0x9e, 0xec, 0x2a, 0x91, 0x5d, 0xca, 0x8f,
+	0x29, 0xd8, 0x88, 0x7b, 0xa7, 0xb0, 0x0a, 0x6b, 0xe1, 0x77, 0x8a, 0x27, 0xb7, 0xf8, 0x1e, 0x85,
+	0xc9, 0x24, 0x42, 0xc2, 0xef, 0x03, 0x04, 0xbd, 0x54, 0xe8, 0xfc, 0x9f, 0x48, 0x88, 0xda, 0x1c,
+	0x40, 0x24, 0x30, 0xfe, 0x08, 0xf2, 0x72, 0x8b, 0x14, 0x52, 0xff, 0x37, 0x42, 0xde, 0x95, 0x20,
+	0x24, 0x44, 0xc0, 0x0f, 0xa1, 0x20, 0x15, 0x9f, 0x1f, 0xc4, 0x6f, 0x59, 0x37, 0x63, 0x5b, 0x4e,
+	0x00, 0x23, 0x0b, 0x44, 0x7c, 0x57, 0xb4, 0x1e, 0x6e, 0xb9, 0xc5, 0x4c, 0x39, 0x15, 0xb3, 0x93,
+	0xa0, 0x62, 0x88, 0x8c, 0xc6, 0x7b, 0x70, 0x85, 0x86, 0x8a, 0xc9, 0xa4, 0xec, 0xd5, 0x49, 0xbd,
+	0x46, 0xd1, 0x2d, 0x12, 0x95, 0xe7, 0x08, 0x0a, 0xd1, 0x8c, 0xf1, 0x87, 0xb0, 0x34, 0xa4, 0x9a,
+	0x41, 0x1d, 0x71, 0x4e, 0xff, 0x7f, 0xc5, 0x16, 0x5b, 0x1c, 0x4c, 0x04, 0x09, 0xdf, 0x83, 0x65,
+	0x2a, 0xf2, 0x4a, 0xf2, 0xbc, 0x6e, 0xbd, 0x82, 0xef, 0x67, 0x37, 0x23, 0x29, 0x2f, 0x92, 0x70,
+	0x2d, 0xfe, 0x13, 0x78, 0x13, 0x56, 0x06, 0xb6, 0x21, 0x17, 0xf8, 0xdc, 0xc6, 0x55, 0xc0, 0x13,
+	0x87, 0x9e, 0x98, 0xf6, 0xd4, 0xf5, 0xd1, 0xd2, 0xcb, 0x15, 0xb3, 0x82, 0x2b, 0x50, 0x98, 0x79,
+	0x77, 0xa7, 0xa3, 0x91, 0xd4, 0x2a, 0x16, 0xfc, 0xd1, 0xe2, 0x4f, 0x2f, 0x14, 0x3f, 0x7e, 0x07,
+	0xfe, 0xe5, 0x6f, 0x5f, 0x3d, 0x9d, 0x68, 0x7c, 0x54, 0xac, 0x39, 0x54, 0x13, 0x0f, 0x57, 0xdc,
+	0x12, 0x8b, 0x69, 0x0f, 0x3e, 0xa5, 0xba, 0xd7, 0xb0, 0xa7, 0x96, 0xc7, 0x5f, 0xae, 0x34, 0x91,
+	0x5d, 0xb3, 0xdd, 0xf6, 0xcc, 0x2f, 0xfd, 0xf9, 0x22, 0x4d, 0xe6, 0xb6, 0xf2, 0x3c, 0x05, 0x57,
+	0x63, 0x75, 0x8c, 0x0e, 0x56, 0xe8, 0x92, 0x83, 0x55, 0xf2, 0x4d, 0x07, 0xab, 0x07, 0xb0, 0x6e,
+	0x5a, 0xba, 0x43, 0x35, 0x97, 0xd6, 0xb5, 0x91, 0x66, 0xe9, 0x54, 0x5c, 0xb7, 0x68, 0x79, 0xb6,
+	0xc3, 0xa8, 0x56, 0x82, 0x44, 0x89, 0xb8, 0x06, 0xf9, 0xb1, 0x69, 0x4d, 0x3d, 0xda, 0x99, 0x8e,
+	0x07, 0xd4, 0x11, 0x57, 0x2e, 0x7a, 0x6f, 0xf7, 0x25, 0x48, 0x2b, 0x41, 0x42, 0x14, 0x7c, 0x00,
+	0x57, 0x5c, 0xea, 0x9c, 0x50, 0xa7, 0x6d, 0x19, 0xf4, 0x54, 0xc4, 0xf1, 0x1b, 0x7c, 0x39, 0x3a,
+	0xad, 0x45, 0x71, 0xad, 0x04, 0x59, 0x24, 0xd7, 0xff, 0x0d, 0x57, 0x69, 0x9c, 0xf2, 0xca, 0x37,
+	0x08, 0xd6, 0x23, 0x9b, 0xba, 0xb0, 0xa3, 0xa1, 0x97, 0x74, 0xb4, 0x5b, 0xb0, 0xea, 0x39, 0x9a,
+	0xe5, 0x6a, 0x3a, 0xfb, 0x35, 0xd2, 0x6e, 0x8a, 0x22, 0x0e, 0x3b, 0xf1, 0x06, 0x64, 0x4c, 0x96,
+	0x15, 0x57, 0x37, 0x4d, 0x7c, 0x03, 0x5f, 0x83, 0x25, 0x6d, 0xcc, 0x0b, 0x2a, 0xcd, 0xdd, 0xc2,
+	0x52, 0x76, 0x20, 0x2f, 0xcb, 0x84, 0x95, 0x88, 0xb2, 0x88, 0x97, 0x74, 0xc8, 0xa7, 0xd4, 0xe0,
+	0xca, 0x82, 0x24, 0xf8, 0x76, 0x9c, 0x9e, 0x3e, 0x7b, 0x71, 0x41, 0xf9, 0x16, 0xc1, 0x5a, 0x78,
+	0xcc, 0x64, 0x6d, 0x48, 0x8c, 0x99, 0x0d, 0xdb, 0xb8, 0xa8, 0xcf, 0x1e, 0x04, 0x08, 0x22, 0xc3,
+	0x71, 0x05, 0x32, 0x23, 0x7a, 0x42, 0x47, 0xa2, 0x7d, 0x6d, 0x44, 0x78, 0x7b, 0x6c, 0x8d, 0xf8,
+	0x10, 0x76, 0xc3, 0xc4, 0x42, 0x9f, 0x9e, 0xfa, 0x2d, 0x2b, 0x4b, 0x64, 0x97, 0xf2, 0x1d, 0x82,
+	0x9c, 0x34, 0xbf, 0xe2, 0x8f, 0xe7, 0x0c, 0x29, 0xb7, 0xd2, 0xc5, 0x03, 0xaf, 0x9f, 0x9f, 0x44,
+	0xf9, 0x67, 0xf3, 0xab, 0x6c, 0x41, 0x4e, 0xfa, 0x49, 0x86, 0x57, 0x20, 0xbd, 0xd7, 0x7e, 0xac,
+	0x16, 0x12, 0x78, 0x1d, 0x72, 0x44, 0x3d, 0xd8, 0xab, 0x1d, 0x1e, 0xd5, 0xbb, 0xdd, 0x7e, 0x01,
+	0x55, 0x9e, 0xf2, 0x61, 0x66, 0xde, 0xad, 0x57, 0x21, 0x4b, 0xd4, 0x4f, 0x1e, 0xa9, 0xbd, 0xbe,
+	0xda, 0x2c, 0x24, 0x70, 0x1e, 0x56, 0x6a, 0x8d, 0x86, 0x7a, 0xc0, 0x2c, 0xc4, 0x2c, 0xa2, 0x3e,
+	0x50, 0x1b, 0xcc, 0x4a, 0xe2, 0x32, 0x5c, 0x6f, 0x74, 0xf7, 0xf7, 0xdb, 0xfd, 0xbe, 0xda, 0x3c,
+	0xea, 0x77, 0x8f, 0x9a, 0x6d, 0xa2, 0x36, 0xfa, 0x5d, 0x72, 0x78, 0x54, 0xdf, 0xeb, 0x36, 0x1e,
+	0x16, 0x52, 0x95, 0xb7, 0x21, 0xc3, 0xf3, 0x66, 0xdf, 0x6f, 0x77, 0x76, 0xbb, 0x85, 0x04, 0xce,
+	0xc1, 0xf2, 0x93, 0x1a, 0xe9, 0xb4, 0x3b, 0xf7, 0x0b, 0x08, 0x67, 0x21, 0xa3, 0x12, 0xd2, 0x25,
+	0x85, 0x64, 0xe5, 0x36, 0xe4, 0xa4, 0xa3, 0x63, 0x69, 0x74, 0xd4, 0x27, 0x22, 0x50, 0x02, 0xaf,
+	0x01, 0x30, 0x73, 0xbf, 0xdd, 0x79, 0xd4, 0x57, 0x0b, 0xa8, 0xa2, 0xc2, 0x7a, 0x44, 0x4c, 0x16,
+	0xf8, 0xbe, 0xda, 0x51, 0x49, 0x6d, 0xcf, 0xff, 0x4a, 0xaf, 0x5f, 0x23, 0x7e, 0xd6, 0x00, 0x4b,
+	0xbd, 0xc3, 0x4e, 0x83, 0xe7, 0x9c, 0x87, 0x95, 0x5e, 0xeb, 0x51, 0xbf, 0xd9, 0x7d, 0xd2, 0x29,
+	0xa4, 0xea, 0xfb, 0x7f, 0xfe, 0x51, 0x42, 0xdf, 0x9f, 0x97, 0xd0, 0x4f, 0xe7, 0x25, 0xf4, 0xeb,
+	0x79, 0x09, 0xfd, 0x76, 0x5e, 0x42, 0xbf, 0x9f, 0x97, 0xd0, 0x2f, 0x2f, 0x6e, 0x22, 0x28, 0xeb,
+	0xf6, 0xb8, 0xea, 0xff, 0x4c, 0x15, 0xff, 0x18, 0xe1, 0x43, 0x79, 0x1a, 0xfe, 0x7f, 0x86, 0xc1,
+	0x12, 0x9f, 0xbc, 0xde, 0xfd, 0x2b, 0x00, 0x00, 0xff, 0xff, 0x18, 0xf6, 0xc4, 0x15, 0xa1, 0x10,
+	0x00, 0x00,
 }
 
 func (this *FactomEvent) Equal(that interface{}) bool {
@@ -1947,16 +1481,16 @@ func (this *FactomEvent) Equal(that interface{}) bool {
 	if this.FactomNodeName != that1.FactomNodeName {
 		return false
 	}
-	if !this.IdentityChainID.Equal(that1.IdentityChainID) {
+	if !bytes.Equal(this.IdentityChainID, that1.IdentityChainID) {
 		return false
 	}
-	if that1.Value == nil {
-		if this.Value != nil {
+	if that1.Event == nil {
+		if this.Event != nil {
 			return false
 		}
-	} else if this.Value == nil {
+	} else if this.Event == nil {
 		return false
-	} else if !this.Value.Equal(that1.Value) {
+	} else if !this.Event.Equal(that1.Event) {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -2154,13 +1688,13 @@ func (this *ChainCommit) Equal(that interface{}) bool {
 	if this.EntityState != that1.EntityState {
 		return false
 	}
-	if !this.ChainIDHash.Equal(that1.ChainIDHash) {
+	if !bytes.Equal(this.ChainIDHash, that1.ChainIDHash) {
 		return false
 	}
-	if !this.EntryHash.Equal(that1.EntryHash) {
+	if !bytes.Equal(this.EntryHash, that1.EntryHash) {
 		return false
 	}
-	if !this.Weld.Equal(that1.Weld) {
+	if !bytes.Equal(this.Weld, that1.Weld) {
 		return false
 	}
 	if !this.Timestamp.Equal(that1.Timestamp) {
@@ -2205,7 +1739,7 @@ func (this *EntryCommit) Equal(that interface{}) bool {
 	if this.EntityState != that1.EntityState {
 		return false
 	}
-	if !this.EntryHash.Equal(that1.EntryHash) {
+	if !bytes.Equal(this.EntryHash, that1.EntryHash) {
 		return false
 	}
 	if !this.Timestamp.Equal(that1.Timestamp) {
@@ -2256,9 +1790,6 @@ func (this *EntryReveal) Equal(that interface{}) bool {
 	if !this.Timestamp.Equal(that1.Timestamp) {
 		return false
 	}
-	if !this.ChainID.Equal(that1.ChainID) {
-		return false
-	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
 		return false
 	}
@@ -2283,7 +1814,7 @@ func (this *StateChange) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.EntityHash.Equal(that1.EntityHash) {
+	if !bytes.Equal(this.EntityHash, that1.EntityHash) {
 		return false
 	}
 	if this.EntityState != that1.EntityState {
@@ -2349,240 +1880,6 @@ func (this *DirectoryBlockCommit) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *DirectoryBlock) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*DirectoryBlock)
-	if !ok {
-		that2, ok := that.(DirectoryBlock)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Header.Equal(that1.Header) {
-		return false
-	}
-	if len(this.Entries) != len(that1.Entries) {
-		return false
-	}
-	for i := range this.Entries {
-		if !this.Entries[i].Equal(that1.Entries[i]) {
-			return false
-		}
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *DirectoryBlockHeader) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*DirectoryBlockHeader)
-	if !ok {
-		that2, ok := that.(DirectoryBlockHeader)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.BodyMerkleRoot.Equal(that1.BodyMerkleRoot) {
-		return false
-	}
-	if !this.PreviousKeyMerkleRoot.Equal(that1.PreviousKeyMerkleRoot) {
-		return false
-	}
-	if !this.PreviousFullHash.Equal(that1.PreviousFullHash) {
-		return false
-	}
-	if !this.Timestamp.Equal(that1.Timestamp) {
-		return false
-	}
-	if this.BlockHeight != that1.BlockHeight {
-		return false
-	}
-	if this.BlockCount != that1.BlockCount {
-		return false
-	}
-	if this.Version != that1.Version {
-		return false
-	}
-	if this.NetworkID != that1.NetworkID {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *DirectoryBlockEntry) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*DirectoryBlockEntry)
-	if !ok {
-		that2, ok := that.(DirectoryBlockEntry)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.ChainID.Equal(that1.ChainID) {
-		return false
-	}
-	if !this.KeyMerkleRoot.Equal(that1.KeyMerkleRoot) {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *EntryBlock) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*EntryBlock)
-	if !ok {
-		that2, ok := that.(EntryBlock)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Header.Equal(that1.Header) {
-		return false
-	}
-	if len(this.EntryHashes) != len(that1.EntryHashes) {
-		return false
-	}
-	for i := range this.EntryHashes {
-		if !this.EntryHashes[i].Equal(that1.EntryHashes[i]) {
-			return false
-		}
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *EntryBlockHeader) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*EntryBlockHeader)
-	if !ok {
-		that2, ok := that.(EntryBlockHeader)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.BodyMerkleRoot.Equal(that1.BodyMerkleRoot) {
-		return false
-	}
-	if !this.ChainID.Equal(that1.ChainID) {
-		return false
-	}
-	if !this.PreviousFullHash.Equal(that1.PreviousFullHash) {
-		return false
-	}
-	if !this.PreviousKeyMerkleRoot.Equal(that1.PreviousKeyMerkleRoot) {
-		return false
-	}
-	if this.BlockHeight != that1.BlockHeight {
-		return false
-	}
-	if this.BlockSequence != that1.BlockSequence {
-		return false
-	}
-	if this.EntryCount != that1.EntryCount {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
-func (this *EntryBlockEntry) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*EntryBlockEntry)
-	if !ok {
-		that2, ok := that.(EntryBlockEntry)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.Hash.Equal(that1.Hash) {
-		return false
-	}
-	if len(this.ExternalIDs) != len(that1.ExternalIDs) {
-		return false
-	}
-	for i := range this.ExternalIDs {
-		if !this.ExternalIDs[i].Equal(that1.ExternalIDs[i]) {
-			return false
-		}
-	}
-	if !this.Content.Equal(that1.Content) {
-		return false
-	}
-	if this.Version != that1.Version {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
 func (this *EntryCreditBlock) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
@@ -2637,13 +1934,13 @@ func (this *EntryCreditBlockHeader) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.BodyHash.Equal(that1.BodyHash) {
+	if !bytes.Equal(this.BodyHash, that1.BodyHash) {
 		return false
 	}
-	if !this.PreviousHeaderHash.Equal(that1.PreviousHeaderHash) {
+	if !bytes.Equal(this.PreviousHeaderHash, that1.PreviousHeaderHash) {
 		return false
 	}
-	if !this.PreviousFullHash.Equal(that1.PreviousFullHash) {
+	if !bytes.Equal(this.PreviousFullHash, that1.PreviousFullHash) {
 		return false
 	}
 	if this.BlockHeight != that1.BlockHeight {
@@ -2682,13 +1979,13 @@ func (this *EntryCreditBlockEntry) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if that1.Value == nil {
-		if this.Value != nil {
+	if that1.EntryCreditBlockEntry == nil {
+		if this.EntryCreditBlockEntry != nil {
 			return false
 		}
-	} else if this.Value == nil {
+	} else if this.EntryCreditBlockEntry == nil {
 		return false
-	} else if !this.Value.Equal(that1.Value) {
+	} else if !this.EntryCreditBlockEntry.Equal(that1.EntryCreditBlockEntry) {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -2838,7 +2135,7 @@ func (this *IncreaseBalance) Equal(that interface{}) bool {
 	if !bytes.Equal(this.EntryCreditPublicKey, that1.EntryCreditPublicKey) {
 		return false
 	}
-	if !this.TransactionID.Equal(that1.TransactionID) {
+	if !bytes.Equal(this.TransactionID, that1.TransactionID) {
 		return false
 	}
 	if this.Index != that1.Index {
@@ -2984,7 +2281,7 @@ type FactomEventGetter interface {
 }
 
 var GraphQLFactomEventType *github_com_graphql_go_graphql.Object
-var GraphQLFactomEventValueUnion *github_com_graphql_go_graphql.Union
+var GraphQLFactomEventEventUnion *github_com_graphql_go_graphql.Union
 
 type ChainCommitGetter interface {
 	GetChainCommit() *ChainCommit
@@ -3016,42 +2313,6 @@ type DirectoryBlockCommitGetter interface {
 
 var GraphQLDirectoryBlockCommitType *github_com_graphql_go_graphql.Object
 
-type DirectoryBlockGetter interface {
-	GetDirectoryBlock() *DirectoryBlock
-}
-
-var GraphQLDirectoryBlockType *github_com_graphql_go_graphql.Object
-
-type DirectoryBlockHeaderGetter interface {
-	GetDirectoryBlockHeader() *DirectoryBlockHeader
-}
-
-var GraphQLDirectoryBlockHeaderType *github_com_graphql_go_graphql.Object
-
-type DirectoryBlockEntryGetter interface {
-	GetDirectoryBlockEntry() *DirectoryBlockEntry
-}
-
-var GraphQLDirectoryBlockEntryType *github_com_graphql_go_graphql.Object
-
-type EntryBlockGetter interface {
-	GetEntryBlock() *EntryBlock
-}
-
-var GraphQLEntryBlockType *github_com_graphql_go_graphql.Object
-
-type EntryBlockHeaderGetter interface {
-	GetEntryBlockHeader() *EntryBlockHeader
-}
-
-var GraphQLEntryBlockHeaderType *github_com_graphql_go_graphql.Object
-
-type EntryBlockEntryGetter interface {
-	GetEntryBlockEntry() *EntryBlockEntry
-}
-
-var GraphQLEntryBlockEntryType *github_com_graphql_go_graphql.Object
-
 type EntryCreditBlockGetter interface {
 	GetEntryCreditBlock() *EntryCreditBlock
 }
@@ -3069,7 +2330,7 @@ type EntryCreditBlockEntryGetter interface {
 }
 
 var GraphQLEntryCreditBlockEntryType *github_com_graphql_go_graphql.Object
-var GraphQLEntryCreditBlockEntryValueUnion *github_com_graphql_go_graphql.Union
+var GraphQLEntryCreditBlockEntryEntryCreditBlockEntryUnion *github_com_graphql_go_graphql.Union
 
 type IncreaseBalanceGetter interface {
 	GetIncreaseBalance() *IncreaseBalance
@@ -3253,15 +2514,12 @@ func init() {
 					},
 				},
 				"identityChainID": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*FactomEvent)
 						if ok {
-							if obj.IdentityChainID == nil {
-								return nil, nil
-							}
-							return obj.GetIdentityChainID(), nil
+							return obj.IdentityChainID, nil
 						}
 						inter, ok := p.Source.(FactomEventGetter)
 						if ok {
@@ -3269,23 +2527,20 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.IdentityChainID == nil {
-								return nil, nil
-							}
-							return face.GetIdentityChainID(), nil
+							return face.IdentityChainID, nil
 						}
 						return nil, fmt.Errorf("field identityChainID not resolved")
 					},
 				},
-				"value": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLFactomEventValueUnion,
+				"event": &github_com_graphql_go_graphql.Field{
+					Type:        GraphQLFactomEventEventUnion,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*FactomEvent)
 						if !ok {
-							return nil, fmt.Errorf("field value not resolved")
+							return nil, fmt.Errorf("field event not resolved")
 						}
-						return obj.GetValue(), nil
+						return obj.GetEvent(), nil
 					},
 				},
 			}
@@ -3316,15 +2571,12 @@ func init() {
 					},
 				},
 				"chainIDHash": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*ChainCommit)
 						if ok {
-							if obj.ChainIDHash == nil {
-								return nil, nil
-							}
-							return obj.GetChainIDHash(), nil
+							return obj.ChainIDHash, nil
 						}
 						inter, ok := p.Source.(ChainCommitGetter)
 						if ok {
@@ -3332,24 +2584,18 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.ChainIDHash == nil {
-								return nil, nil
-							}
-							return face.GetChainIDHash(), nil
+							return face.ChainIDHash, nil
 						}
 						return nil, fmt.Errorf("field chainIDHash not resolved")
 					},
 				},
 				"entryHash": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*ChainCommit)
 						if ok {
-							if obj.EntryHash == nil {
-								return nil, nil
-							}
-							return obj.GetEntryHash(), nil
+							return obj.EntryHash, nil
 						}
 						inter, ok := p.Source.(ChainCommitGetter)
 						if ok {
@@ -3357,24 +2603,18 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.EntryHash == nil {
-								return nil, nil
-							}
-							return face.GetEntryHash(), nil
+							return face.EntryHash, nil
 						}
 						return nil, fmt.Errorf("field entryHash not resolved")
 					},
 				},
 				"weld": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*ChainCommit)
 						if ok {
-							if obj.Weld == nil {
-								return nil, nil
-							}
-							return obj.GetWeld(), nil
+							return obj.Weld, nil
 						}
 						inter, ok := p.Source.(ChainCommitGetter)
 						if ok {
@@ -3382,10 +2622,7 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.Weld == nil {
-								return nil, nil
-							}
-							return face.GetWeld(), nil
+							return face.Weld, nil
 						}
 						return nil, fmt.Errorf("field weld not resolved")
 					},
@@ -3519,15 +2756,12 @@ func init() {
 					},
 				},
 				"entryHash": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*EntryCommit)
 						if ok {
-							if obj.EntryHash == nil {
-								return nil, nil
-							}
-							return obj.GetEntryHash(), nil
+							return obj.EntryHash, nil
 						}
 						inter, ok := p.Source.(EntryCommitGetter)
 						if ok {
@@ -3535,10 +2769,7 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.EntryHash == nil {
-								return nil, nil
-							}
-							return face.GetEntryHash(), nil
+							return face.EntryHash, nil
 						}
 						return nil, fmt.Errorf("field entryHash not resolved")
 					},
@@ -3721,31 +2952,6 @@ func init() {
 						return nil, fmt.Errorf("field timestamp not resolved")
 					},
 				},
-				"chainID": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryReveal)
-						if ok {
-							if obj.ChainID == nil {
-								return nil, nil
-							}
-							return obj.GetChainID(), nil
-						}
-						inter, ok := p.Source.(EntryRevealGetter)
-						if ok {
-							face := inter.GetEntryReveal()
-							if face == nil {
-								return nil, nil
-							}
-							if face.ChainID == nil {
-								return nil, nil
-							}
-							return face.GetChainID(), nil
-						}
-						return nil, fmt.Errorf("field chainID not resolved")
-					},
-				},
 			}
 		}),
 	})
@@ -3755,15 +2961,12 @@ func init() {
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"entityHash": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*StateChange)
 						if ok {
-							if obj.EntityHash == nil {
-								return nil, nil
-							}
-							return obj.GetEntityHash(), nil
+							return obj.EntityHash, nil
 						}
 						inter, ok := p.Source.(StateChangeGetter)
 						if ok {
@@ -3771,10 +2974,7 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.EntityHash == nil {
-								return nil, nil
-							}
-							return face.GetEntityHash(), nil
+							return face.EntityHash, nil
 						}
 						return nil, fmt.Errorf("field entityHash not resolved")
 					},
@@ -3966,616 +3166,9 @@ func init() {
 			}
 		}),
 	})
-	GraphQLDirectoryBlockType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "DirectoryBlock",
-		Description: "====  DIRECTORY BLOCK DETAILS =====",
-		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
-			return github_com_graphql_go_graphql.Fields{
-				"header": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLDirectoryBlockHeaderType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlock)
-						if ok {
-							if obj.Header == nil {
-								return nil, nil
-							}
-							return obj.GetHeader(), nil
-						}
-						inter, ok := p.Source.(DirectoryBlockGetter)
-						if ok {
-							face := inter.GetDirectoryBlock()
-							if face == nil {
-								return nil, nil
-							}
-							if face.Header == nil {
-								return nil, nil
-							}
-							return face.GetHeader(), nil
-						}
-						return nil, fmt.Errorf("field header not resolved")
-					},
-				},
-				"entries": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.NewList(GraphQLDirectoryBlockEntryType),
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlock)
-						if ok {
-							return obj.Entries, nil
-						}
-						inter, ok := p.Source.(DirectoryBlockGetter)
-						if ok {
-							face := inter.GetDirectoryBlock()
-							if face == nil {
-								return nil, nil
-							}
-							return face.Entries, nil
-						}
-						return nil, fmt.Errorf("field entries not resolved")
-					},
-				},
-			}
-		}),
-	})
-	GraphQLDirectoryBlockHeaderType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "DirectoryBlockHeader",
-		Description: "",
-		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
-			return github_com_graphql_go_graphql.Fields{
-				"bodyMerkleRoot": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlockHeader)
-						if ok {
-							if obj.BodyMerkleRoot == nil {
-								return nil, nil
-							}
-							return obj.GetBodyMerkleRoot(), nil
-						}
-						inter, ok := p.Source.(DirectoryBlockHeaderGetter)
-						if ok {
-							face := inter.GetDirectoryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							if face.BodyMerkleRoot == nil {
-								return nil, nil
-							}
-							return face.GetBodyMerkleRoot(), nil
-						}
-						return nil, fmt.Errorf("field bodyMerkleRoot not resolved")
-					},
-				},
-				"previousKeyMerkleRoot": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlockHeader)
-						if ok {
-							if obj.PreviousKeyMerkleRoot == nil {
-								return nil, nil
-							}
-							return obj.GetPreviousKeyMerkleRoot(), nil
-						}
-						inter, ok := p.Source.(DirectoryBlockHeaderGetter)
-						if ok {
-							face := inter.GetDirectoryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							if face.PreviousKeyMerkleRoot == nil {
-								return nil, nil
-							}
-							return face.GetPreviousKeyMerkleRoot(), nil
-						}
-						return nil, fmt.Errorf("field previousKeyMerkleRoot not resolved")
-					},
-				},
-				"previousFullHash": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlockHeader)
-						if ok {
-							if obj.PreviousFullHash == nil {
-								return nil, nil
-							}
-							return obj.GetPreviousFullHash(), nil
-						}
-						inter, ok := p.Source.(DirectoryBlockHeaderGetter)
-						if ok {
-							face := inter.GetDirectoryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							if face.PreviousFullHash == nil {
-								return nil, nil
-							}
-							return face.GetPreviousFullHash(), nil
-						}
-						return nil, fmt.Errorf("field previousFullHash not resolved")
-					},
-				},
-				"timestamp": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.Timestamp,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlockHeader)
-						if ok {
-							if obj.Timestamp == nil {
-								return nil, nil
-							}
-							return obj.GetTimestamp(), nil
-						}
-						inter, ok := p.Source.(DirectoryBlockHeaderGetter)
-						if ok {
-							face := inter.GetDirectoryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							if face.Timestamp == nil {
-								return nil, nil
-							}
-							return face.GetTimestamp(), nil
-						}
-						return nil, fmt.Errorf("field timestamp not resolved")
-					},
-				},
-				"blockHeight": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlockHeader)
-						if ok {
-							return obj.BlockHeight, nil
-						}
-						inter, ok := p.Source.(DirectoryBlockHeaderGetter)
-						if ok {
-							face := inter.GetDirectoryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							return face.BlockHeight, nil
-						}
-						return nil, fmt.Errorf("field blockHeight not resolved")
-					},
-				},
-				"blockCount": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlockHeader)
-						if ok {
-							return obj.BlockCount, nil
-						}
-						inter, ok := p.Source.(DirectoryBlockHeaderGetter)
-						if ok {
-							face := inter.GetDirectoryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							return face.BlockCount, nil
-						}
-						return nil, fmt.Errorf("field blockCount not resolved")
-					},
-				},
-				"version": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlockHeader)
-						if ok {
-							return obj.Version, nil
-						}
-						inter, ok := p.Source.(DirectoryBlockHeaderGetter)
-						if ok {
-							face := inter.GetDirectoryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							return face.Version, nil
-						}
-						return nil, fmt.Errorf("field version not resolved")
-					},
-				},
-				"networkID": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlockHeader)
-						if ok {
-							return obj.NetworkID, nil
-						}
-						inter, ok := p.Source.(DirectoryBlockHeaderGetter)
-						if ok {
-							face := inter.GetDirectoryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							return face.NetworkID, nil
-						}
-						return nil, fmt.Errorf("field networkID not resolved")
-					},
-				},
-			}
-		}),
-	})
-	GraphQLDirectoryBlockEntryType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "DirectoryBlockEntry",
-		Description: "",
-		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
-			return github_com_graphql_go_graphql.Fields{
-				"chainID": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlockEntry)
-						if ok {
-							if obj.ChainID == nil {
-								return nil, nil
-							}
-							return obj.GetChainID(), nil
-						}
-						inter, ok := p.Source.(DirectoryBlockEntryGetter)
-						if ok {
-							face := inter.GetDirectoryBlockEntry()
-							if face == nil {
-								return nil, nil
-							}
-							if face.ChainID == nil {
-								return nil, nil
-							}
-							return face.GetChainID(), nil
-						}
-						return nil, fmt.Errorf("field chainID not resolved")
-					},
-				},
-				"keyMerkleRoot": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*DirectoryBlockEntry)
-						if ok {
-							if obj.KeyMerkleRoot == nil {
-								return nil, nil
-							}
-							return obj.GetKeyMerkleRoot(), nil
-						}
-						inter, ok := p.Source.(DirectoryBlockEntryGetter)
-						if ok {
-							face := inter.GetDirectoryBlockEntry()
-							if face == nil {
-								return nil, nil
-							}
-							if face.KeyMerkleRoot == nil {
-								return nil, nil
-							}
-							return face.GetKeyMerkleRoot(), nil
-						}
-						return nil, fmt.Errorf("field keyMerkleRoot not resolved")
-					},
-				},
-			}
-		}),
-	})
-	GraphQLEntryBlockType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "EntryBlock",
-		Description: "",
-		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
-			return github_com_graphql_go_graphql.Fields{
-				"header": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLEntryBlockHeaderType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlock)
-						if ok {
-							if obj.Header == nil {
-								return nil, nil
-							}
-							return obj.GetHeader(), nil
-						}
-						inter, ok := p.Source.(EntryBlockGetter)
-						if ok {
-							face := inter.GetEntryBlock()
-							if face == nil {
-								return nil, nil
-							}
-							if face.Header == nil {
-								return nil, nil
-							}
-							return face.GetHeader(), nil
-						}
-						return nil, fmt.Errorf("field header not resolved")
-					},
-				},
-				"entryHashes": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.NewList(GraphQLHashType),
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlock)
-						if ok {
-							return obj.EntryHashes, nil
-						}
-						inter, ok := p.Source.(EntryBlockGetter)
-						if ok {
-							face := inter.GetEntryBlock()
-							if face == nil {
-								return nil, nil
-							}
-							return face.EntryHashes, nil
-						}
-						return nil, fmt.Errorf("field entryHashes not resolved")
-					},
-				},
-			}
-		}),
-	})
-	GraphQLEntryBlockHeaderType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "EntryBlockHeader",
-		Description: "",
-		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
-			return github_com_graphql_go_graphql.Fields{
-				"bodyMerkleRoot": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlockHeader)
-						if ok {
-							if obj.BodyMerkleRoot == nil {
-								return nil, nil
-							}
-							return obj.GetBodyMerkleRoot(), nil
-						}
-						inter, ok := p.Source.(EntryBlockHeaderGetter)
-						if ok {
-							face := inter.GetEntryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							if face.BodyMerkleRoot == nil {
-								return nil, nil
-							}
-							return face.GetBodyMerkleRoot(), nil
-						}
-						return nil, fmt.Errorf("field bodyMerkleRoot not resolved")
-					},
-				},
-				"chainID": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlockHeader)
-						if ok {
-							if obj.ChainID == nil {
-								return nil, nil
-							}
-							return obj.GetChainID(), nil
-						}
-						inter, ok := p.Source.(EntryBlockHeaderGetter)
-						if ok {
-							face := inter.GetEntryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							if face.ChainID == nil {
-								return nil, nil
-							}
-							return face.GetChainID(), nil
-						}
-						return nil, fmt.Errorf("field chainID not resolved")
-					},
-				},
-				"previousFullHash": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlockHeader)
-						if ok {
-							if obj.PreviousFullHash == nil {
-								return nil, nil
-							}
-							return obj.GetPreviousFullHash(), nil
-						}
-						inter, ok := p.Source.(EntryBlockHeaderGetter)
-						if ok {
-							face := inter.GetEntryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							if face.PreviousFullHash == nil {
-								return nil, nil
-							}
-							return face.GetPreviousFullHash(), nil
-						}
-						return nil, fmt.Errorf("field previousFullHash not resolved")
-					},
-				},
-				"previousKeyMerkleRoot": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlockHeader)
-						if ok {
-							if obj.PreviousKeyMerkleRoot == nil {
-								return nil, nil
-							}
-							return obj.GetPreviousKeyMerkleRoot(), nil
-						}
-						inter, ok := p.Source.(EntryBlockHeaderGetter)
-						if ok {
-							face := inter.GetEntryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							if face.PreviousKeyMerkleRoot == nil {
-								return nil, nil
-							}
-							return face.GetPreviousKeyMerkleRoot(), nil
-						}
-						return nil, fmt.Errorf("field previousKeyMerkleRoot not resolved")
-					},
-				},
-				"blockHeight": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlockHeader)
-						if ok {
-							return obj.BlockHeight, nil
-						}
-						inter, ok := p.Source.(EntryBlockHeaderGetter)
-						if ok {
-							face := inter.GetEntryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							return face.BlockHeight, nil
-						}
-						return nil, fmt.Errorf("field blockHeight not resolved")
-					},
-				},
-				"blockSequence": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlockHeader)
-						if ok {
-							return obj.BlockSequence, nil
-						}
-						inter, ok := p.Source.(EntryBlockHeaderGetter)
-						if ok {
-							face := inter.GetEntryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							return face.BlockSequence, nil
-						}
-						return nil, fmt.Errorf("field blockSequence not resolved")
-					},
-				},
-				"entryCount": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlockHeader)
-						if ok {
-							return obj.EntryCount, nil
-						}
-						inter, ok := p.Source.(EntryBlockHeaderGetter)
-						if ok {
-							face := inter.GetEntryBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							return face.EntryCount, nil
-						}
-						return nil, fmt.Errorf("field entryCount not resolved")
-					},
-				},
-			}
-		}),
-	})
-	GraphQLEntryBlockEntryType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "EntryBlockEntry",
-		Description: "",
-		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
-			return github_com_graphql_go_graphql.Fields{
-				"hash": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlockEntry)
-						if ok {
-							if obj.Hash == nil {
-								return nil, nil
-							}
-							return obj.GetHash(), nil
-						}
-						inter, ok := p.Source.(EntryBlockEntryGetter)
-						if ok {
-							face := inter.GetEntryBlockEntry()
-							if face == nil {
-								return nil, nil
-							}
-							if face.Hash == nil {
-								return nil, nil
-							}
-							return face.GetHash(), nil
-						}
-						return nil, fmt.Errorf("field hash not resolved")
-					},
-				},
-				"externalIDs": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.NewList(GraphQLExternalIdType),
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlockEntry)
-						if ok {
-							return obj.ExternalIDs, nil
-						}
-						inter, ok := p.Source.(EntryBlockEntryGetter)
-						if ok {
-							face := inter.GetEntryBlockEntry()
-							if face == nil {
-								return nil, nil
-							}
-							return face.ExternalIDs, nil
-						}
-						return nil, fmt.Errorf("field externalIDs not resolved")
-					},
-				},
-				"content": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLContentType,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlockEntry)
-						if ok {
-							if obj.Content == nil {
-								return nil, nil
-							}
-							return obj.GetContent(), nil
-						}
-						inter, ok := p.Source.(EntryBlockEntryGetter)
-						if ok {
-							face := inter.GetEntryBlockEntry()
-							if face == nil {
-								return nil, nil
-							}
-							if face.Content == nil {
-								return nil, nil
-							}
-							return face.GetContent(), nil
-						}
-						return nil, fmt.Errorf("field content not resolved")
-					},
-				},
-				"version": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryBlockEntry)
-						if ok {
-							return obj.Version, nil
-						}
-						inter, ok := p.Source.(EntryBlockEntryGetter)
-						if ok {
-							face := inter.GetEntryBlockEntry()
-							if face == nil {
-								return nil, nil
-							}
-							return face.Version, nil
-						}
-						return nil, fmt.Errorf("field version not resolved")
-					},
-				},
-			}
-		}),
-	})
 	GraphQLEntryCreditBlockType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
 		Name:        "EntryCreditBlock",
-		Description: "",
+		Description: "====  ENTRY CREDIT BLOCK =====",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"header": &github_com_graphql_go_graphql.Field{
@@ -4631,15 +3224,12 @@ func init() {
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
 				"bodyHash": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*EntryCreditBlockHeader)
 						if ok {
-							if obj.BodyHash == nil {
-								return nil, nil
-							}
-							return obj.GetBodyHash(), nil
+							return obj.BodyHash, nil
 						}
 						inter, ok := p.Source.(EntryCreditBlockHeaderGetter)
 						if ok {
@@ -4647,24 +3237,18 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.BodyHash == nil {
-								return nil, nil
-							}
-							return face.GetBodyHash(), nil
+							return face.BodyHash, nil
 						}
 						return nil, fmt.Errorf("field bodyHash not resolved")
 					},
 				},
 				"previousHeaderHash": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*EntryCreditBlockHeader)
 						if ok {
-							if obj.PreviousHeaderHash == nil {
-								return nil, nil
-							}
-							return obj.GetPreviousHeaderHash(), nil
+							return obj.PreviousHeaderHash, nil
 						}
 						inter, ok := p.Source.(EntryCreditBlockHeaderGetter)
 						if ok {
@@ -4672,24 +3256,18 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.PreviousHeaderHash == nil {
-								return nil, nil
-							}
-							return face.GetPreviousHeaderHash(), nil
+							return face.PreviousHeaderHash, nil
 						}
 						return nil, fmt.Errorf("field previousHeaderHash not resolved")
 					},
 				},
 				"previousFullHash": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*EntryCreditBlockHeader)
 						if ok {
-							if obj.PreviousFullHash == nil {
-								return nil, nil
-							}
-							return obj.GetPreviousFullHash(), nil
+							return obj.PreviousFullHash, nil
 						}
 						inter, ok := p.Source.(EntryCreditBlockHeaderGetter)
 						if ok {
@@ -4697,10 +3275,7 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.PreviousFullHash == nil {
-								return nil, nil
-							}
-							return face.GetPreviousFullHash(), nil
+							return face.PreviousFullHash, nil
 						}
 						return nil, fmt.Errorf("field previousFullHash not resolved")
 					},
@@ -4789,15 +3364,15 @@ func init() {
 		Description: "",
 		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
 			return github_com_graphql_go_graphql.Fields{
-				"value": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLEntryCreditBlockEntryValueUnion,
+				"entryCreditBlockEntry": &github_com_graphql_go_graphql.Field{
+					Type:        GraphQLEntryCreditBlockEntryEntryCreditBlockEntryUnion,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*EntryCreditBlockEntry)
 						if !ok {
-							return nil, fmt.Errorf("field value not resolved")
+							return nil, fmt.Errorf("field entryCreditBlockEntry not resolved")
 						}
-						return obj.GetValue(), nil
+						return obj.GetEntryCreditBlockEntry(), nil
 					},
 				},
 			}
@@ -4828,15 +3403,12 @@ func init() {
 					},
 				},
 				"transactionID": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLHashType,
+					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*IncreaseBalance)
 						if ok {
-							if obj.TransactionID == nil {
-								return nil, nil
-							}
-							return obj.GetTransactionID(), nil
+							return obj.TransactionID, nil
 						}
 						inter, ok := p.Source.(IncreaseBalanceGetter)
 						if ok {
@@ -4844,10 +3416,7 @@ func init() {
 							if face == nil {
 								return nil, nil
 							}
-							if face.TransactionID == nil {
-								return nil, nil
-							}
-							return face.GetTransactionID(), nil
+							return face.TransactionID, nil
 						}
 						return nil, fmt.Errorf("field transactionID not resolved")
 					},
@@ -5077,8 +3646,8 @@ func init() {
 			}
 		}),
 	})
-	GraphQLFactomEventValueUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
-		Name:        "FactomEventValue",
+	GraphQLFactomEventEventUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
+		Name:        "FactomEventEvent",
 		Description: "",
 		Types: []*github_com_graphql_go_graphql.Object{
 			GraphQLChainCommitType,
@@ -5114,8 +3683,8 @@ func init() {
 			return nil
 		},
 	})
-	GraphQLEntryCreditBlockEntryValueUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
-		Name:        "EntryCreditBlockEntryValue",
+	GraphQLEntryCreditBlockEntryEntryCreditBlockEntryUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
+		Name:        "EntryCreditBlockEntryEntryCreditBlockEntry",
 		Description: "",
 		Types: []*github_com_graphql_go_graphql.Object{
 			GraphQLChainCommitType,
@@ -5168,24 +3737,19 @@ func (m *FactomEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if m.Value != nil {
+	if m.Event != nil {
 		{
-			size := m.Value.Size()
+			size := m.Event.Size()
 			i -= size
-			if _, err := m.Value.MarshalTo(dAtA[i:]); err != nil {
+			if _, err := m.Event.MarshalTo(dAtA[i:]); err != nil {
 				return 0, err
 			}
 		}
 	}
-	if m.IdentityChainID != nil {
-		{
-			size, err := m.IdentityChainID.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
+	if len(m.IdentityChainID) > 0 {
+		i -= len(m.IdentityChainID)
+		copy(dAtA[i:], m.IdentityChainID)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.IdentityChainID)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -5411,39 +3975,24 @@ func (m *ChainCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2a
 	}
-	if m.Weld != nil {
-		{
-			size, err := m.Weld.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
+	if len(m.Weld) > 0 {
+		i -= len(m.Weld)
+		copy(dAtA[i:], m.Weld)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.Weld)))
 		i--
 		dAtA[i] = 0x22
 	}
-	if m.EntryHash != nil {
-		{
-			size, err := m.EntryHash.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
+	if len(m.EntryHash) > 0 {
+		i -= len(m.EntryHash)
+		copy(dAtA[i:], m.EntryHash)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.EntryHash)))
 		i--
 		dAtA[i] = 0x1a
 	}
-	if m.ChainIDHash != nil {
-		{
-			size, err := m.ChainIDHash.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
+	if len(m.ChainIDHash) > 0 {
+		i -= len(m.ChainIDHash)
+		copy(dAtA[i:], m.ChainIDHash)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.ChainIDHash)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -5515,15 +4064,10 @@ func (m *EntryCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x1a
 	}
-	if m.EntryHash != nil {
-		{
-			size, err := m.EntryHash.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
+	if len(m.EntryHash) > 0 {
+		i -= len(m.EntryHash)
+		copy(dAtA[i:], m.EntryHash)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.EntryHash)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -5558,18 +4102,6 @@ func (m *EntryReveal) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if m.XXX_unrecognized != nil {
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if m.ChainID != nil {
-		{
-			size, err := m.ChainID.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x22
 	}
 	if m.Timestamp != nil {
 		{
@@ -5637,15 +4169,10 @@ func (m *StateChange) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x10
 	}
-	if m.EntityHash != nil {
-		{
-			size, err := m.EntityHash.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
+	if len(m.EntityHash) > 0 {
+		i -= len(m.EntityHash)
+		copy(dAtA[i:], m.EntityHash)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.EntityHash)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -5743,418 +4270,6 @@ func (m *DirectoryBlockCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if m.DirectoryBlock != nil {
 		{
 			size, err := m.DirectoryBlock.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *DirectoryBlock) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DirectoryBlock) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *DirectoryBlock) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if len(m.Entries) > 0 {
-		for iNdEx := len(m.Entries) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Entries[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x12
-		}
-	}
-	if m.Header != nil {
-		{
-			size, err := m.Header.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *DirectoryBlockHeader) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DirectoryBlockHeader) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *DirectoryBlockHeader) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if m.NetworkID != 0 {
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.NetworkID))
-		i--
-		dAtA[i] = 0x40
-	}
-	if m.Version != 0 {
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Version))
-		i--
-		dAtA[i] = 0x38
-	}
-	if m.BlockCount != 0 {
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockCount))
-		i--
-		dAtA[i] = 0x30
-	}
-	if m.BlockHeight != 0 {
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x28
-	}
-	if m.Timestamp != nil {
-		{
-			size, err := m.Timestamp.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x22
-	}
-	if m.PreviousFullHash != nil {
-		{
-			size, err := m.PreviousFullHash.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x1a
-	}
-	if m.PreviousKeyMerkleRoot != nil {
-		{
-			size, err := m.PreviousKeyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x12
-	}
-	if m.BodyMerkleRoot != nil {
-		{
-			size, err := m.BodyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *DirectoryBlockEntry) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DirectoryBlockEntry) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *DirectoryBlockEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if m.KeyMerkleRoot != nil {
-		{
-			size, err := m.KeyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x12
-	}
-	if m.ChainID != nil {
-		{
-			size, err := m.ChainID.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *EntryBlock) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *EntryBlock) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *EntryBlock) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if len(m.EntryHashes) > 0 {
-		for iNdEx := len(m.EntryHashes) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.EntryHashes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x12
-		}
-	}
-	if m.Header != nil {
-		{
-			size, err := m.Header.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *EntryBlockHeader) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *EntryBlockHeader) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *EntryBlockHeader) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if m.EntryCount != 0 {
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.EntryCount))
-		i--
-		dAtA[i] = 0x38
-	}
-	if m.BlockSequence != 0 {
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockSequence))
-		i--
-		dAtA[i] = 0x30
-	}
-	if m.BlockHeight != 0 {
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x28
-	}
-	if m.PreviousKeyMerkleRoot != nil {
-		{
-			size, err := m.PreviousKeyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x22
-	}
-	if m.PreviousFullHash != nil {
-		{
-			size, err := m.PreviousFullHash.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x1a
-	}
-	if m.ChainID != nil {
-		{
-			size, err := m.ChainID.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x12
-	}
-	if m.BodyMerkleRoot != nil {
-		{
-			size, err := m.BodyMerkleRoot.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *EntryBlockEntry) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *EntryBlockEntry) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *EntryBlockEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if m.Version != 0 {
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Version))
-		i--
-		dAtA[i] = 0x20
-	}
-	if m.Content != nil {
-		{
-			size, err := m.Content.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.ExternalIDs) > 0 {
-		for iNdEx := len(m.ExternalIDs) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.ExternalIDs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x12
-		}
-	}
-	if m.Hash != nil {
-		{
-			size, err := m.Hash.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -6266,39 +4381,24 @@ func (m *EntryCreditBlockHeader) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 		i--
 		dAtA[i] = 0x20
 	}
-	if m.PreviousFullHash != nil {
-		{
-			size, err := m.PreviousFullHash.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
+	if len(m.PreviousFullHash) > 0 {
+		i -= len(m.PreviousFullHash)
+		copy(dAtA[i:], m.PreviousFullHash)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.PreviousFullHash)))
 		i--
 		dAtA[i] = 0x1a
 	}
-	if m.PreviousHeaderHash != nil {
-		{
-			size, err := m.PreviousHeaderHash.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
+	if len(m.PreviousHeaderHash) > 0 {
+		i -= len(m.PreviousHeaderHash)
+		copy(dAtA[i:], m.PreviousHeaderHash)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.PreviousHeaderHash)))
 		i--
 		dAtA[i] = 0x12
 	}
-	if m.BodyHash != nil {
-		{
-			size, err := m.BodyHash.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
+	if len(m.BodyHash) > 0 {
+		i -= len(m.BodyHash)
+		copy(dAtA[i:], m.BodyHash)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.BodyHash)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -6329,11 +4429,11 @@ func (m *EntryCreditBlockEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if m.Value != nil {
+	if m.EntryCreditBlockEntry != nil {
 		{
-			size := m.Value.Size()
+			size := m.EntryCreditBlockEntry.Size()
 			i -= size
-			if _, err := m.Value.MarshalTo(dAtA[i:]); err != nil {
+			if _, err := m.EntryCreditBlockEntry.MarshalTo(dAtA[i:]); err != nil {
 				return 0, err
 			}
 		}
@@ -6480,15 +4580,10 @@ func (m *IncreaseBalance) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x18
 	}
-	if m.TransactionID != nil {
-		{
-			size, err := m.TransactionID.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
-		}
+	if len(m.TransactionID) > 0 {
+		i -= len(m.TransactionID)
+		copy(dAtA[i:], m.TransactionID)
+		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.TransactionID)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -6669,25 +4764,27 @@ func NewPopulatedFactomEvent(r randyFactomEvents, easy bool) *FactomEvent {
 	this := &FactomEvent{}
 	this.EventSource = EventSource([]int32{0, 1}[r.Intn(2)])
 	this.FactomNodeName = string(randStringFactomEvents(r))
-	if r.Intn(5) != 0 {
-		this.IdentityChainID = NewPopulatedHash(r, easy)
+	v1 := r.Intn(100)
+	this.IdentityChainID = make([]byte, v1)
+	for i := 0; i < v1; i++ {
+		this.IdentityChainID[i] = byte(r.Intn(256))
 	}
-	oneofNumber_Value := []int32{4, 5, 6, 7, 8, 9, 10}[r.Intn(7)]
-	switch oneofNumber_Value {
+	oneofNumber_Event := []int32{4, 5, 6, 7, 8, 9, 10}[r.Intn(7)]
+	switch oneofNumber_Event {
 	case 4:
-		this.Value = NewPopulatedFactomEvent_ChainCommit(r, easy)
+		this.Event = NewPopulatedFactomEvent_ChainCommit(r, easy)
 	case 5:
-		this.Value = NewPopulatedFactomEvent_EntryCommit(r, easy)
+		this.Event = NewPopulatedFactomEvent_EntryCommit(r, easy)
 	case 6:
-		this.Value = NewPopulatedFactomEvent_EntryReveal(r, easy)
+		this.Event = NewPopulatedFactomEvent_EntryReveal(r, easy)
 	case 7:
-		this.Value = NewPopulatedFactomEvent_StateChange(r, easy)
+		this.Event = NewPopulatedFactomEvent_StateChange(r, easy)
 	case 8:
-		this.Value = NewPopulatedFactomEvent_DirectoryBlockCommit(r, easy)
+		this.Event = NewPopulatedFactomEvent_DirectoryBlockCommit(r, easy)
 	case 9:
-		this.Value = NewPopulatedFactomEvent_ProcessMessage(r, easy)
+		this.Event = NewPopulatedFactomEvent_ProcessMessage(r, easy)
 	case 10:
-		this.Value = NewPopulatedFactomEvent_NodeMessage(r, easy)
+		this.Event = NewPopulatedFactomEvent_NodeMessage(r, easy)
 	}
 	if !easy && r.Intn(10) != 0 {
 		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 11)
@@ -6733,27 +4830,33 @@ func NewPopulatedFactomEvent_NodeMessage(r randyFactomEvents, easy bool) *Factom
 func NewPopulatedChainCommit(r randyFactomEvents, easy bool) *ChainCommit {
 	this := &ChainCommit{}
 	this.EntityState = EntityState([]int32{0, 1, 2, 3}[r.Intn(4)])
-	if r.Intn(5) != 0 {
-		this.ChainIDHash = NewPopulatedHash(r, easy)
+	v2 := r.Intn(100)
+	this.ChainIDHash = make([]byte, v2)
+	for i := 0; i < v2; i++ {
+		this.ChainIDHash[i] = byte(r.Intn(256))
 	}
-	if r.Intn(5) != 0 {
-		this.EntryHash = NewPopulatedHash(r, easy)
+	v3 := r.Intn(100)
+	this.EntryHash = make([]byte, v3)
+	for i := 0; i < v3; i++ {
+		this.EntryHash[i] = byte(r.Intn(256))
 	}
-	if r.Intn(5) != 0 {
-		this.Weld = NewPopulatedHash(r, easy)
+	v4 := r.Intn(100)
+	this.Weld = make([]byte, v4)
+	for i := 0; i < v4; i++ {
+		this.Weld[i] = byte(r.Intn(256))
 	}
 	if r.Intn(5) != 0 {
 		this.Timestamp = types.NewPopulatedTimestamp(r, easy)
 	}
 	this.Credits = uint32(r.Uint32())
-	v1 := r.Intn(100)
-	this.EntryCreditPublicKey = make([]byte, v1)
-	for i := 0; i < v1; i++ {
+	v5 := r.Intn(100)
+	this.EntryCreditPublicKey = make([]byte, v5)
+	for i := 0; i < v5; i++ {
 		this.EntryCreditPublicKey[i] = byte(r.Intn(256))
 	}
-	v2 := r.Intn(100)
-	this.Signature = make([]byte, v2)
-	for i := 0; i < v2; i++ {
+	v6 := r.Intn(100)
+	this.Signature = make([]byte, v6)
+	for i := 0; i < v6; i++ {
 		this.Signature[i] = byte(r.Intn(256))
 	}
 	this.Version = uint32(r.Uint32())
@@ -6766,21 +4869,23 @@ func NewPopulatedChainCommit(r randyFactomEvents, easy bool) *ChainCommit {
 func NewPopulatedEntryCommit(r randyFactomEvents, easy bool) *EntryCommit {
 	this := &EntryCommit{}
 	this.EntityState = EntityState([]int32{0, 1, 2, 3}[r.Intn(4)])
-	if r.Intn(5) != 0 {
-		this.EntryHash = NewPopulatedHash(r, easy)
+	v7 := r.Intn(100)
+	this.EntryHash = make([]byte, v7)
+	for i := 0; i < v7; i++ {
+		this.EntryHash[i] = byte(r.Intn(256))
 	}
 	if r.Intn(5) != 0 {
 		this.Timestamp = types.NewPopulatedTimestamp(r, easy)
 	}
 	this.Credits = uint32(r.Uint32())
-	v3 := r.Intn(100)
-	this.EntryCreditPublicKey = make([]byte, v3)
-	for i := 0; i < v3; i++ {
+	v8 := r.Intn(100)
+	this.EntryCreditPublicKey = make([]byte, v8)
+	for i := 0; i < v8; i++ {
 		this.EntryCreditPublicKey[i] = byte(r.Intn(256))
 	}
-	v4 := r.Intn(100)
-	this.Signature = make([]byte, v4)
-	for i := 0; i < v4; i++ {
+	v9 := r.Intn(100)
+	this.Signature = make([]byte, v9)
+	for i := 0; i < v9; i++ {
 		this.Signature[i] = byte(r.Intn(256))
 	}
 	this.Version = uint32(r.Uint32())
@@ -6799,19 +4904,18 @@ func NewPopulatedEntryReveal(r randyFactomEvents, easy bool) *EntryReveal {
 	if r.Intn(5) != 0 {
 		this.Timestamp = types.NewPopulatedTimestamp(r, easy)
 	}
-	if r.Intn(5) != 0 {
-		this.ChainID = NewPopulatedHash(r, easy)
-	}
 	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 5)
+		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 4)
 	}
 	return this
 }
 
 func NewPopulatedStateChange(r randyFactomEvents, easy bool) *StateChange {
 	this := &StateChange{}
-	if r.Intn(5) != 0 {
-		this.EntityHash = NewPopulatedHash(r, easy)
+	v10 := r.Intn(100)
+	this.EntityHash = make([]byte, v10)
+	for i := 0; i < v10; i++ {
+		this.EntityHash[i] = byte(r.Intn(256))
 	}
 	this.EntityState = EntityState([]int32{0, 1, 2, 3}[r.Intn(4)])
 	this.BlockHeight = uint32(r.Uint32())
@@ -6836,140 +4940,21 @@ func NewPopulatedDirectoryBlockCommit(r randyFactomEvents, easy bool) *Directory
 		this.EntryCreditBlock = NewPopulatedEntryCreditBlock(r, easy)
 	}
 	if r.Intn(5) != 0 {
-		v5 := r.Intn(5)
-		this.EntryBlocks = make([]*EntryBlock, v5)
-		for i := 0; i < v5; i++ {
+		v11 := r.Intn(5)
+		this.EntryBlocks = make([]*EntryBlock, v11)
+		for i := 0; i < v11; i++ {
 			this.EntryBlocks[i] = NewPopulatedEntryBlock(r, easy)
 		}
 	}
 	if r.Intn(5) != 0 {
-		v6 := r.Intn(5)
-		this.EntryBlockEntries = make([]*EntryBlockEntry, v6)
-		for i := 0; i < v6; i++ {
+		v12 := r.Intn(5)
+		this.EntryBlockEntries = make([]*EntryBlockEntry, v12)
+		for i := 0; i < v12; i++ {
 			this.EntryBlockEntries[i] = NewPopulatedEntryBlockEntry(r, easy)
 		}
 	}
 	if !easy && r.Intn(10) != 0 {
 		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 7)
-	}
-	return this
-}
-
-func NewPopulatedDirectoryBlock(r randyFactomEvents, easy bool) *DirectoryBlock {
-	this := &DirectoryBlock{}
-	if r.Intn(5) != 0 {
-		this.Header = NewPopulatedDirectoryBlockHeader(r, easy)
-	}
-	if r.Intn(5) != 0 {
-		v7 := r.Intn(5)
-		this.Entries = make([]*DirectoryBlockEntry, v7)
-		for i := 0; i < v7; i++ {
-			this.Entries[i] = NewPopulatedDirectoryBlockEntry(r, easy)
-		}
-	}
-	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 3)
-	}
-	return this
-}
-
-func NewPopulatedDirectoryBlockHeader(r randyFactomEvents, easy bool) *DirectoryBlockHeader {
-	this := &DirectoryBlockHeader{}
-	if r.Intn(5) != 0 {
-		this.BodyMerkleRoot = NewPopulatedHash(r, easy)
-	}
-	if r.Intn(5) != 0 {
-		this.PreviousKeyMerkleRoot = NewPopulatedHash(r, easy)
-	}
-	if r.Intn(5) != 0 {
-		this.PreviousFullHash = NewPopulatedHash(r, easy)
-	}
-	if r.Intn(5) != 0 {
-		this.Timestamp = types.NewPopulatedTimestamp(r, easy)
-	}
-	this.BlockHeight = uint32(r.Uint32())
-	this.BlockCount = uint32(r.Uint32())
-	this.Version = uint32(r.Uint32())
-	this.NetworkID = uint32(r.Uint32())
-	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 9)
-	}
-	return this
-}
-
-func NewPopulatedDirectoryBlockEntry(r randyFactomEvents, easy bool) *DirectoryBlockEntry {
-	this := &DirectoryBlockEntry{}
-	if r.Intn(5) != 0 {
-		this.ChainID = NewPopulatedHash(r, easy)
-	}
-	if r.Intn(5) != 0 {
-		this.KeyMerkleRoot = NewPopulatedHash(r, easy)
-	}
-	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 3)
-	}
-	return this
-}
-
-func NewPopulatedEntryBlock(r randyFactomEvents, easy bool) *EntryBlock {
-	this := &EntryBlock{}
-	if r.Intn(5) != 0 {
-		this.Header = NewPopulatedEntryBlockHeader(r, easy)
-	}
-	if r.Intn(5) != 0 {
-		v8 := r.Intn(5)
-		this.EntryHashes = make([]*Hash, v8)
-		for i := 0; i < v8; i++ {
-			this.EntryHashes[i] = NewPopulatedHash(r, easy)
-		}
-	}
-	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 3)
-	}
-	return this
-}
-
-func NewPopulatedEntryBlockHeader(r randyFactomEvents, easy bool) *EntryBlockHeader {
-	this := &EntryBlockHeader{}
-	if r.Intn(5) != 0 {
-		this.BodyMerkleRoot = NewPopulatedHash(r, easy)
-	}
-	if r.Intn(5) != 0 {
-		this.ChainID = NewPopulatedHash(r, easy)
-	}
-	if r.Intn(5) != 0 {
-		this.PreviousFullHash = NewPopulatedHash(r, easy)
-	}
-	if r.Intn(5) != 0 {
-		this.PreviousKeyMerkleRoot = NewPopulatedHash(r, easy)
-	}
-	this.BlockHeight = uint32(r.Uint32())
-	this.BlockSequence = uint32(r.Uint32())
-	this.EntryCount = uint32(r.Uint32())
-	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 8)
-	}
-	return this
-}
-
-func NewPopulatedEntryBlockEntry(r randyFactomEvents, easy bool) *EntryBlockEntry {
-	this := &EntryBlockEntry{}
-	if r.Intn(5) != 0 {
-		this.Hash = NewPopulatedHash(r, easy)
-	}
-	if r.Intn(5) != 0 {
-		v9 := r.Intn(5)
-		this.ExternalIDs = make([]*ExternalId, v9)
-		for i := 0; i < v9; i++ {
-			this.ExternalIDs[i] = NewPopulatedExternalId(r, easy)
-		}
-	}
-	if r.Intn(5) != 0 {
-		this.Content = NewPopulatedContent(r, easy)
-	}
-	this.Version = uint32(r.Uint32())
-	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 5)
 	}
 	return this
 }
@@ -6980,9 +4965,9 @@ func NewPopulatedEntryCreditBlock(r randyFactomEvents, easy bool) *EntryCreditBl
 		this.Header = NewPopulatedEntryCreditBlockHeader(r, easy)
 	}
 	if r.Intn(5) != 0 {
-		v10 := r.Intn(5)
-		this.Entries = make([]*EntryCreditBlockEntry, v10)
-		for i := 0; i < v10; i++ {
+		v13 := r.Intn(5)
+		this.Entries = make([]*EntryCreditBlockEntry, v13)
+		for i := 0; i < v13; i++ {
 			this.Entries[i] = NewPopulatedEntryCreditBlockEntry(r, easy)
 		}
 	}
@@ -6994,19 +4979,25 @@ func NewPopulatedEntryCreditBlock(r randyFactomEvents, easy bool) *EntryCreditBl
 
 func NewPopulatedEntryCreditBlockHeader(r randyFactomEvents, easy bool) *EntryCreditBlockHeader {
 	this := &EntryCreditBlockHeader{}
-	if r.Intn(5) != 0 {
-		this.BodyHash = NewPopulatedHash(r, easy)
+	v14 := r.Intn(100)
+	this.BodyHash = make([]byte, v14)
+	for i := 0; i < v14; i++ {
+		this.BodyHash[i] = byte(r.Intn(256))
 	}
-	if r.Intn(5) != 0 {
-		this.PreviousHeaderHash = NewPopulatedHash(r, easy)
+	v15 := r.Intn(100)
+	this.PreviousHeaderHash = make([]byte, v15)
+	for i := 0; i < v15; i++ {
+		this.PreviousHeaderHash[i] = byte(r.Intn(256))
 	}
-	if r.Intn(5) != 0 {
-		this.PreviousFullHash = NewPopulatedHash(r, easy)
+	v16 := r.Intn(100)
+	this.PreviousFullHash = make([]byte, v16)
+	for i := 0; i < v16; i++ {
+		this.PreviousFullHash[i] = byte(r.Intn(256))
 	}
 	this.BlockHeight = uint32(r.Uint32())
-	v11 := r.Intn(100)
-	this.HeaderExpansionArea = make([]byte, v11)
-	for i := 0; i < v11; i++ {
+	v17 := r.Intn(100)
+	this.HeaderExpansionArea = make([]byte, v17)
+	for i := 0; i < v17; i++ {
 		this.HeaderExpansionArea[i] = byte(r.Intn(256))
 	}
 	this.ObjectCount = uint64(uint64(r.Uint32()))
@@ -7019,18 +5010,18 @@ func NewPopulatedEntryCreditBlockHeader(r randyFactomEvents, easy bool) *EntryCr
 
 func NewPopulatedEntryCreditBlockEntry(r randyFactomEvents, easy bool) *EntryCreditBlockEntry {
 	this := &EntryCreditBlockEntry{}
-	oneofNumber_Value := []int32{1, 2, 3, 4, 5}[r.Intn(5)]
-	switch oneofNumber_Value {
+	oneofNumber_EntryCreditBlockEntry := []int32{1, 2, 3, 4, 5}[r.Intn(5)]
+	switch oneofNumber_EntryCreditBlockEntry {
 	case 1:
-		this.Value = NewPopulatedEntryCreditBlockEntry_ChainCommit(r, easy)
+		this.EntryCreditBlockEntry = NewPopulatedEntryCreditBlockEntry_ChainCommit(r, easy)
 	case 2:
-		this.Value = NewPopulatedEntryCreditBlockEntry_EntryCommit(r, easy)
+		this.EntryCreditBlockEntry = NewPopulatedEntryCreditBlockEntry_EntryCommit(r, easy)
 	case 3:
-		this.Value = NewPopulatedEntryCreditBlockEntry_IncreaseBalance(r, easy)
+		this.EntryCreditBlockEntry = NewPopulatedEntryCreditBlockEntry_IncreaseBalance(r, easy)
 	case 4:
-		this.Value = NewPopulatedEntryCreditBlockEntry_MinuteNumber(r, easy)
+		this.EntryCreditBlockEntry = NewPopulatedEntryCreditBlockEntry_MinuteNumber(r, easy)
 	case 5:
-		this.Value = NewPopulatedEntryCreditBlockEntry_ServerIndexNumber(r, easy)
+		this.EntryCreditBlockEntry = NewPopulatedEntryCreditBlockEntry_ServerIndexNumber(r, easy)
 	}
 	if !easy && r.Intn(10) != 0 {
 		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 6)
@@ -7065,13 +5056,15 @@ func NewPopulatedEntryCreditBlockEntry_ServerIndexNumber(r randyFactomEvents, ea
 }
 func NewPopulatedIncreaseBalance(r randyFactomEvents, easy bool) *IncreaseBalance {
 	this := &IncreaseBalance{}
-	v12 := r.Intn(100)
-	this.EntryCreditPublicKey = make([]byte, v12)
-	for i := 0; i < v12; i++ {
+	v18 := r.Intn(100)
+	this.EntryCreditPublicKey = make([]byte, v18)
+	for i := 0; i < v18; i++ {
 		this.EntryCreditPublicKey[i] = byte(r.Intn(256))
 	}
-	if r.Intn(5) != 0 {
-		this.TransactionID = NewPopulatedHash(r, easy)
+	v19 := r.Intn(100)
+	this.TransactionID = make([]byte, v19)
+	for i := 0; i < v19; i++ {
+		this.TransactionID[i] = byte(r.Intn(256))
 	}
 	this.Index = uint64(uint64(r.Uint32()))
 	this.Amount = uint64(uint64(r.Uint32()))
@@ -7140,9 +5133,9 @@ func randUTF8RuneFactomEvents(r randyFactomEvents) rune {
 	return rune(ru + 61)
 }
 func randStringFactomEvents(r randyFactomEvents) string {
-	v13 := r.Intn(100)
-	tmps := make([]rune, v13)
-	for i := 0; i < v13; i++ {
+	v20 := r.Intn(100)
+	tmps := make([]rune, v20)
+	for i := 0; i < v20; i++ {
 		tmps[i] = randUTF8RuneFactomEvents(r)
 	}
 	return string(tmps)
@@ -7164,11 +5157,11 @@ func randFieldFactomEvents(dAtA []byte, r randyFactomEvents, fieldNumber int, wi
 	switch wire {
 	case 0:
 		dAtA = encodeVarintPopulateFactomEvents(dAtA, uint64(key))
-		v14 := r.Int63()
+		v21 := r.Int63()
 		if r.Intn(2) == 0 {
-			v14 *= -1
+			v21 *= -1
 		}
-		dAtA = encodeVarintPopulateFactomEvents(dAtA, uint64(v14))
+		dAtA = encodeVarintPopulateFactomEvents(dAtA, uint64(v21))
 	case 1:
 		dAtA = encodeVarintPopulateFactomEvents(dAtA, uint64(key))
 		dAtA = append(dAtA, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
@@ -7206,12 +5199,12 @@ func (m *FactomEvent) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
-	if m.IdentityChainID != nil {
-		l = m.IdentityChainID.Size()
+	l = len(m.IdentityChainID)
+	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
-	if m.Value != nil {
-		n += m.Value.Size()
+	if m.Event != nil {
+		n += m.Event.Size()
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -7312,16 +5305,16 @@ func (m *ChainCommit) Size() (n int) {
 	if m.EntityState != 0 {
 		n += 1 + sovFactomEvents(uint64(m.EntityState))
 	}
-	if m.ChainIDHash != nil {
-		l = m.ChainIDHash.Size()
+	l = len(m.ChainIDHash)
+	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
-	if m.EntryHash != nil {
-		l = m.EntryHash.Size()
+	l = len(m.EntryHash)
+	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
-	if m.Weld != nil {
-		l = m.Weld.Size()
+	l = len(m.Weld)
+	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
 	if m.Timestamp != nil {
@@ -7357,8 +5350,8 @@ func (m *EntryCommit) Size() (n int) {
 	if m.EntityState != 0 {
 		n += 1 + sovFactomEvents(uint64(m.EntityState))
 	}
-	if m.EntryHash != nil {
-		l = m.EntryHash.Size()
+	l = len(m.EntryHash)
+	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
 	if m.Timestamp != nil {
@@ -7402,10 +5395,6 @@ func (m *EntryReveal) Size() (n int) {
 		l = m.Timestamp.Size()
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
-	if m.ChainID != nil {
-		l = m.ChainID.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
 	}
@@ -7418,8 +5407,8 @@ func (m *StateChange) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.EntityHash != nil {
-		l = m.EntityHash.Size()
+	l = len(m.EntityHash)
+	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
 	if m.EntityState != 0 {
@@ -7474,176 +5463,6 @@ func (m *DirectoryBlockCommit) Size() (n int) {
 	return n
 }
 
-func (m *DirectoryBlock) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Header != nil {
-		l = m.Header.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if len(m.Entries) > 0 {
-		for _, e := range m.Entries {
-			l = e.Size()
-			n += 1 + l + sovFactomEvents(uint64(l))
-		}
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *DirectoryBlockHeader) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.BodyMerkleRoot != nil {
-		l = m.BodyMerkleRoot.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.PreviousKeyMerkleRoot != nil {
-		l = m.PreviousKeyMerkleRoot.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.PreviousFullHash != nil {
-		l = m.PreviousFullHash.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.Timestamp != nil {
-		l = m.Timestamp.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovFactomEvents(uint64(m.BlockHeight))
-	}
-	if m.BlockCount != 0 {
-		n += 1 + sovFactomEvents(uint64(m.BlockCount))
-	}
-	if m.Version != 0 {
-		n += 1 + sovFactomEvents(uint64(m.Version))
-	}
-	if m.NetworkID != 0 {
-		n += 1 + sovFactomEvents(uint64(m.NetworkID))
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *DirectoryBlockEntry) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.ChainID != nil {
-		l = m.ChainID.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.KeyMerkleRoot != nil {
-		l = m.KeyMerkleRoot.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *EntryBlock) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Header != nil {
-		l = m.Header.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if len(m.EntryHashes) > 0 {
-		for _, e := range m.EntryHashes {
-			l = e.Size()
-			n += 1 + l + sovFactomEvents(uint64(l))
-		}
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *EntryBlockHeader) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.BodyMerkleRoot != nil {
-		l = m.BodyMerkleRoot.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.ChainID != nil {
-		l = m.ChainID.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.PreviousFullHash != nil {
-		l = m.PreviousFullHash.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.PreviousKeyMerkleRoot != nil {
-		l = m.PreviousKeyMerkleRoot.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovFactomEvents(uint64(m.BlockHeight))
-	}
-	if m.BlockSequence != 0 {
-		n += 1 + sovFactomEvents(uint64(m.BlockSequence))
-	}
-	if m.EntryCount != 0 {
-		n += 1 + sovFactomEvents(uint64(m.EntryCount))
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *EntryBlockEntry) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Hash != nil {
-		l = m.Hash.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if len(m.ExternalIDs) > 0 {
-		for _, e := range m.ExternalIDs {
-			l = e.Size()
-			n += 1 + l + sovFactomEvents(uint64(l))
-		}
-	}
-	if m.Content != nil {
-		l = m.Content.Size()
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.Version != 0 {
-		n += 1 + sovFactomEvents(uint64(m.Version))
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
 func (m *EntryCreditBlock) Size() (n int) {
 	if m == nil {
 		return 0
@@ -7672,16 +5491,16 @@ func (m *EntryCreditBlockHeader) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.BodyHash != nil {
-		l = m.BodyHash.Size()
+	l = len(m.BodyHash)
+	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
-	if m.PreviousHeaderHash != nil {
-		l = m.PreviousHeaderHash.Size()
+	l = len(m.PreviousHeaderHash)
+	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
-	if m.PreviousFullHash != nil {
-		l = m.PreviousFullHash.Size()
+	l = len(m.PreviousFullHash)
+	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
 	if m.BlockHeight != 0 {
@@ -7709,8 +5528,8 @@ func (m *EntryCreditBlockEntry) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.Value != nil {
-		n += m.Value.Size()
+	if m.EntryCreditBlockEntry != nil {
+		n += m.EntryCreditBlockEntry.Size()
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -7788,8 +5607,8 @@ func (m *IncreaseBalance) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
-	if m.TransactionID != nil {
-		l = m.TransactionID.Size()
+	l = len(m.TransactionID)
+	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
 	if m.Index != 0 {
@@ -7968,7 +5787,7 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field IdentityChainID", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowFactomEvents
@@ -7978,26 +5797,24 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.IdentityChainID = append(m.IdentityChainID[:0], dAtA[iNdEx:postIndex]...)
 			if m.IdentityChainID == nil {
-				m.IdentityChainID = &Hash{}
-			}
-			if err := m.IdentityChainID.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.IdentityChainID = []byte{}
 			}
 			iNdEx = postIndex
 		case 4:
@@ -8033,7 +5850,7 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &FactomEvent_ChainCommit{v}
+			m.Event = &FactomEvent_ChainCommit{v}
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
@@ -8068,7 +5885,7 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &FactomEvent_EntryCommit{v}
+			m.Event = &FactomEvent_EntryCommit{v}
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
@@ -8103,7 +5920,7 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &FactomEvent_EntryReveal{v}
+			m.Event = &FactomEvent_EntryReveal{v}
 			iNdEx = postIndex
 		case 7:
 			if wireType != 2 {
@@ -8138,7 +5955,7 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &FactomEvent_StateChange{v}
+			m.Event = &FactomEvent_StateChange{v}
 			iNdEx = postIndex
 		case 8:
 			if wireType != 2 {
@@ -8173,7 +5990,7 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &FactomEvent_DirectoryBlockCommit{v}
+			m.Event = &FactomEvent_DirectoryBlockCommit{v}
 			iNdEx = postIndex
 		case 9:
 			if wireType != 2 {
@@ -8208,7 +6025,7 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &FactomEvent_ProcessMessage{v}
+			m.Event = &FactomEvent_ProcessMessage{v}
 			iNdEx = postIndex
 		case 10:
 			if wireType != 2 {
@@ -8243,7 +6060,7 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &FactomEvent_NodeMessage{v}
+			m.Event = &FactomEvent_NodeMessage{v}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -8322,7 +6139,7 @@ func (m *ChainCommit) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ChainIDHash", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowFactomEvents
@@ -8332,33 +6149,31 @@ func (m *ChainCommit) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.ChainIDHash = append(m.ChainIDHash[:0], dAtA[iNdEx:postIndex]...)
 			if m.ChainIDHash == nil {
-				m.ChainIDHash = &Hash{}
-			}
-			if err := m.ChainIDHash.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.ChainIDHash = []byte{}
 			}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field EntryHash", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowFactomEvents
@@ -8368,33 +6183,31 @@ func (m *ChainCommit) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.EntryHash = append(m.EntryHash[:0], dAtA[iNdEx:postIndex]...)
 			if m.EntryHash == nil {
-				m.EntryHash = &Hash{}
-			}
-			if err := m.EntryHash.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.EntryHash = []byte{}
 			}
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Weld", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowFactomEvents
@@ -8404,26 +6217,24 @@ func (m *ChainCommit) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.Weld = append(m.Weld[:0], dAtA[iNdEx:postIndex]...)
 			if m.Weld == nil {
-				m.Weld = &Hash{}
-			}
-			if err := m.Weld.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.Weld = []byte{}
 			}
 			iNdEx = postIndex
 		case 5:
@@ -8645,7 +6456,7 @@ func (m *EntryCommit) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field EntryHash", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowFactomEvents
@@ -8655,26 +6466,24 @@ func (m *EntryCommit) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.EntryHash = append(m.EntryHash[:0], dAtA[iNdEx:postIndex]...)
 			if m.EntryHash == nil {
-				m.EntryHash = &Hash{}
-			}
-			if err := m.EntryHash.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.EntryHash = []byte{}
 			}
 			iNdEx = postIndex
 		case 3:
@@ -8964,42 +6773,6 @@ func (m *EntryReveal) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainID", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.ChainID == nil {
-				m.ChainID = &Hash{}
-			}
-			if err := m.ChainID.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipFactomEvents(dAtA[iNdEx:])
@@ -9058,7 +6831,7 @@ func (m *StateChange) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field EntityHash", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowFactomEvents
@@ -9068,26 +6841,24 @@ func (m *StateChange) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.EntityHash = append(m.EntityHash[:0], dAtA[iNdEx:postIndex]...)
 			if m.EntityHash == nil {
-				m.EntityHash = &Hash{}
-			}
-			if err := m.EntityHash.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.EntityHash = []byte{}
 			}
 			iNdEx = postIndex
 		case 2:
@@ -9419,1088 +7190,6 @@ func (m *DirectoryBlockCommit) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DirectoryBlock) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowFactomEvents
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: DirectoryBlock: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DirectoryBlock: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Header", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Header == nil {
-				m.Header = &DirectoryBlockHeader{}
-			}
-			if err := m.Header.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Entries", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Entries = append(m.Entries, &DirectoryBlockEntry{})
-			if err := m.Entries[len(m.Entries)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipFactomEvents(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DirectoryBlockHeader) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowFactomEvents
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: DirectoryBlockHeader: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DirectoryBlockHeader: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BodyMerkleRoot", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.BodyMerkleRoot == nil {
-				m.BodyMerkleRoot = &Hash{}
-			}
-			if err := m.BodyMerkleRoot.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PreviousKeyMerkleRoot", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.PreviousKeyMerkleRoot == nil {
-				m.PreviousKeyMerkleRoot = &Hash{}
-			}
-			if err := m.PreviousKeyMerkleRoot.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PreviousFullHash", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.PreviousFullHash == nil {
-				m.PreviousFullHash = &Hash{}
-			}
-			if err := m.PreviousFullHash.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Timestamp", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Timestamp == nil {
-				m.Timestamp = &types.Timestamp{}
-			}
-			if err := m.Timestamp.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockCount", wireType)
-			}
-			m.BlockCount = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockCount |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Version", wireType)
-			}
-			m.Version = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Version |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 8:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NetworkID", wireType)
-			}
-			m.NetworkID = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.NetworkID |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipFactomEvents(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DirectoryBlockEntry) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowFactomEvents
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: DirectoryBlockEntry: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DirectoryBlockEntry: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainID", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.ChainID == nil {
-				m.ChainID = &Hash{}
-			}
-			if err := m.ChainID.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field KeyMerkleRoot", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.KeyMerkleRoot == nil {
-				m.KeyMerkleRoot = &Hash{}
-			}
-			if err := m.KeyMerkleRoot.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipFactomEvents(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *EntryBlock) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowFactomEvents
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: EntryBlock: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EntryBlock: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Header", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Header == nil {
-				m.Header = &EntryBlockHeader{}
-			}
-			if err := m.Header.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EntryHashes", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.EntryHashes = append(m.EntryHashes, &Hash{})
-			if err := m.EntryHashes[len(m.EntryHashes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipFactomEvents(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *EntryBlockHeader) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowFactomEvents
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: EntryBlockHeader: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EntryBlockHeader: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BodyMerkleRoot", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.BodyMerkleRoot == nil {
-				m.BodyMerkleRoot = &Hash{}
-			}
-			if err := m.BodyMerkleRoot.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainID", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.ChainID == nil {
-				m.ChainID = &Hash{}
-			}
-			if err := m.ChainID.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PreviousFullHash", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.PreviousFullHash == nil {
-				m.PreviousFullHash = &Hash{}
-			}
-			if err := m.PreviousFullHash.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PreviousKeyMerkleRoot", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.PreviousKeyMerkleRoot == nil {
-				m.PreviousKeyMerkleRoot = &Hash{}
-			}
-			if err := m.PreviousKeyMerkleRoot.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockSequence", wireType)
-			}
-			m.BlockSequence = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockSequence |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EntryCount", wireType)
-			}
-			m.EntryCount = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.EntryCount |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipFactomEvents(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *EntryBlockEntry) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowFactomEvents
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: EntryBlockEntry: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EntryBlockEntry: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Hash", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Hash == nil {
-				m.Hash = &Hash{}
-			}
-			if err := m.Hash.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ExternalIDs", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ExternalIDs = append(m.ExternalIDs, &ExternalId{})
-			if err := m.ExternalIDs[len(m.ExternalIDs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Content", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Content == nil {
-				m.Content = &Content{}
-			}
-			if err := m.Content.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Version", wireType)
-			}
-			m.Version = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Version |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipFactomEvents(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *EntryCreditBlock) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -10658,7 +7347,7 @@ func (m *EntryCreditBlockHeader) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BodyHash", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowFactomEvents
@@ -10668,33 +7357,31 @@ func (m *EntryCreditBlockHeader) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.BodyHash = append(m.BodyHash[:0], dAtA[iNdEx:postIndex]...)
 			if m.BodyHash == nil {
-				m.BodyHash = &Hash{}
-			}
-			if err := m.BodyHash.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.BodyHash = []byte{}
 			}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field PreviousHeaderHash", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowFactomEvents
@@ -10704,33 +7391,31 @@ func (m *EntryCreditBlockHeader) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.PreviousHeaderHash = append(m.PreviousHeaderHash[:0], dAtA[iNdEx:postIndex]...)
 			if m.PreviousHeaderHash == nil {
-				m.PreviousHeaderHash = &Hash{}
-			}
-			if err := m.PreviousHeaderHash.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.PreviousHeaderHash = []byte{}
 			}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field PreviousFullHash", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowFactomEvents
@@ -10740,26 +7425,24 @@ func (m *EntryCreditBlockHeader) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.PreviousFullHash = append(m.PreviousFullHash[:0], dAtA[iNdEx:postIndex]...)
 			if m.PreviousFullHash == nil {
-				m.PreviousFullHash = &Hash{}
-			}
-			if err := m.PreviousFullHash.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.PreviousFullHash = []byte{}
 			}
 			iNdEx = postIndex
 		case 4:
@@ -10940,7 +7623,7 @@ func (m *EntryCreditBlockEntry) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &EntryCreditBlockEntry_ChainCommit{v}
+			m.EntryCreditBlockEntry = &EntryCreditBlockEntry_ChainCommit{v}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -10975,7 +7658,7 @@ func (m *EntryCreditBlockEntry) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &EntryCreditBlockEntry_EntryCommit{v}
+			m.EntryCreditBlockEntry = &EntryCreditBlockEntry_EntryCommit{v}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
@@ -11010,7 +7693,7 @@ func (m *EntryCreditBlockEntry) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &EntryCreditBlockEntry_IncreaseBalance{v}
+			m.EntryCreditBlockEntry = &EntryCreditBlockEntry_IncreaseBalance{v}
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
@@ -11045,7 +7728,7 @@ func (m *EntryCreditBlockEntry) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &EntryCreditBlockEntry_MinuteNumber{v}
+			m.EntryCreditBlockEntry = &EntryCreditBlockEntry_MinuteNumber{v}
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
@@ -11080,7 +7763,7 @@ func (m *EntryCreditBlockEntry) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Value = &EntryCreditBlockEntry_ServerIndexNumber{v}
+			m.EntryCreditBlockEntry = &EntryCreditBlockEntry_ServerIndexNumber{v}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -11174,7 +7857,7 @@ func (m *IncreaseBalance) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TransactionID", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowFactomEvents
@@ -11184,26 +7867,24 @@ func (m *IncreaseBalance) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthFactomEvents
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.TransactionID = append(m.TransactionID[:0], dAtA[iNdEx:postIndex]...)
 			if m.TransactionID == nil {
-				m.TransactionID = &Hash{}
-			}
-			if err := m.TransactionID.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.TransactionID = []byte{}
 			}
 			iNdEx = postIndex
 		case 3:
