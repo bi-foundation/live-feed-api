@@ -8,4 +8,4 @@ Subscriptions can be filtered. The filtering can be given on for each EventType 
 | ENTRY_COMMIT               | [CommitEntry](CommitEntry.md) |
 | STATE_CHANGE               | [StateChange](StateChange.md) |
 | NODE_MESSAGE               | [NodeMessage](NodeMessage.md) |
-| PROCESS_MESSAGE            | [ProcessMessage](ProcessMessage.md) |
+| PROCESS_LIST_EVENT         | [ProcessListEvent](ProcessListEvent.md) |

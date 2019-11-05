@@ -126,9 +126,13 @@ Each of these event types can be filtered to reduce network traffic. Filtering i
 { 
     identityChainID
     value { 
-        ... on ProcessMessage { 
-            messageCode
-            messageText 
+        ... on ProcessListEvent {
+            processListEvent { 
+                NewMinuteEvent {
+                    newMinute
+                    blockHeight
+                }
+            }
         }
     } 
 }
@@ -141,9 +145,11 @@ Will result in the following event:
         "hashValue": "OLqxRVt71+Xv0VxTx3fHnQyYjpIQ8dpJqZ2Vs6ZBe+k="
     },
     "Value": {
-        "ProcessMessage": {
-            "messageCode": 2,
-            "messageText": "New minute [6]"
+        "ProcessListEvent": {
+            "NewMinuteEvent": {
+                "newMinute": 6,
+                "blockHeight": 100000
+            }
         }
     }
 }
@@ -177,7 +183,7 @@ POST /live/feed/v0.1/subscriptions
     "NODE_MESSAGE": {
       "filtering": ""
     }, 
-    "PROCESS_MESSAGE": {
+    "PROCESS_LIST_EVENT": {
       "filtering": ""
     }
   }

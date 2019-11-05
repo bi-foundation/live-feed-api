@@ -157,7 +157,7 @@ func TestSendEvents(t *testing.T) {
 }
 
 func TestMapEventType(t *testing.T) {
-	testCases := []models.EventType{models.ChainCommit, models.EntryCommit, models.EntryReveal, models.DirectoryBlockCommit, models.StateChange, models.ProcessMessage, models.NodeMessage}
+	testCases := []models.EventType{models.ChainCommit, models.EntryCommit, models.EntryReveal, models.DirectoryBlockCommit, models.StateChange, models.ProcessListEvent, models.NodeMessage}
 
 	for _, testCase := range testCases {
 		t.Run(string(testCase), func(t *testing.T) {

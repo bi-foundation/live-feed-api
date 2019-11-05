@@ -25,10 +25,7 @@ Directory Block Commit example
                 header {
                     blockHeight
                     previousBackRefHash
-                    headerExpansionSize
-                    headerExpansionArea
                     messageCount
-                    bodySize
                 }
                 entries {
                     adminBlockEntry {
@@ -94,9 +91,7 @@ Directory Block Commit example
                     previousHeaderHash
                     previousFullHash
                     blockHeight
-                    headerExpansionArea
                     objectCount
-                    bodySize
                 }
                 entries {
                     entryCreditBlockEntry { 

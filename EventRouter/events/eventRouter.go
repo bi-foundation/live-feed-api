@@ -75,8 +75,8 @@ func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, err
 		return models.EntryCommit, nil
 	case *eventmessages.FactomEvent_EntryReveal:
 		return models.EntryReveal, nil
-	case *eventmessages.FactomEvent_ProcessMessage:
-		return models.ProcessMessage, nil
+	case *eventmessages.FactomEvent_ProcessListEvent:
+		return models.ProcessListEvent, nil
 	case *eventmessages.FactomEvent_NodeMessage:
 		return models.NodeMessage, nil
 	case *eventmessages.FactomEvent_StateChange:

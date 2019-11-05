@@ -23,7 +23,7 @@ message FactomEvent {
         EntryReveal entryReveal = 6;
         StateChange stateChange = 7;
         DirectoryBlockCommit directoryBlockCommit = 8;
-        ProcessMessage processMessage = 9;
+        ProcessListEvent processListEvent = 9;
         NodeMessage nodeMessage = 10;
     }
 }
@@ -86,9 +86,7 @@ message EntryCreditBlockHeader {
     bytes previousHeaderHash = 2;
     bytes previousFullHash = 3;
     uint32 blockHeight = 4;
-    bytes headerExpansionArea = 5;
-    uint64 objectCount = 6;
-    uint64 bodySize = 7;
+    uint64 objectCount = 5;
 }
 
 message EntryCreditBlockEntry {
@@ -117,16 +115,28 @@ message ServerIndexNumber {
 }
 
 // ====  MESSAGE EVENTS =====
-message ProcessMessage {
-    ProcessCode processCode = 1;
-    Level level = 2;
-    string messageText = 3;
-}
 
 message NodeMessage {
     NodeMessageCode messageCode = 1;
     Level level = 2;
     string messageText = 3;
+}
+
+// ====  PROCESS LIST EVENTS =====
+message ProcessListEvent {
+    oneof processListEvent {
+        NewBlockEvent newBlockEvent = 1;
+        NewMinuteEvent newMinuteEvent = 2;
+    }
+}
+
+message NewBlockEvent {
+    uint32 newBlockHeight = 1;
+}
+
+message NewMinuteEvent {
+    uint32 newMinute = 1;
+    uint32 blockHeight = 2;
 }
 
 // ====  ENUMS =====
@@ -146,11 +156,6 @@ enum Level {
     INFO = 0;
     WARNING = 1;
     ERROR = 2;
-}
-
-enum ProcessCode {
-    NEW_BLOCK = 0;
-    NEW_MINUTE = 1;
 }
 
 enum NodeMessageCode {

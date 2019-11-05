@@ -33,7 +33,7 @@ func TestNoFilteringQuery(t *testing.T) {
 }
 
 func TestQueryNoFiltering(t *testing.T) {
-	eventTypes := []models.EventType{models.ChainCommit, models.EntryCommit, models.EntryReveal, models.DirectoryBlockCommit, models.ProcessMessage, models.NodeMessage}
+	eventTypes := []models.EventType{models.ChainCommit, models.EntryCommit, models.EntryReveal, models.DirectoryBlockCommit, models.ProcessListEvent, models.NodeMessage}
 
 	for _, eventType := range eventTypes {
 		t.Run(string(eventType), func(t *testing.T) {
@@ -231,9 +231,6 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 			], 
 			"header": {
 			  "blockHeight": 1, 
-			  "bodySize":1,
-              "headerExpansionArea":"\u0001",
-              "headerExpansionSize":1,
                "messageCount":1,
                "previousBackRefHash": "\u0001"
 			}
@@ -297,8 +294,6 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 			"header": {
 			  "blockHeight": 1, 
 			  "bodyHash": "\u0001", 
-			  "bodySize": 1, 
-			  "headerExpansionArea": "\u0001", 
 			  "objectCount": 1, 
 			  "previousFullHash": "\u0001", 
 			  "previousHeaderHash": "\u0001"
@@ -365,7 +360,7 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 }
 
 func TestQueryProcessMessage(t *testing.T) {
-	query := readQuery(t, "ProcessMessage.md")
+	query := readQuery(t, "ProcessListEvent.md")
 	expectedJSON := `{
   		"event": {
 			"factomNodeName": "1",
@@ -378,7 +373,7 @@ func TestQueryProcessMessage(t *testing.T) {
 		  }
 		}`
 
-	event := createNewEvent(models.ProcessMessage)
+	event := createNewEvent(models.ProcessListEvent)
 
 	result, err := Filter(query, event)
 	if err != nil {
@@ -610,7 +605,7 @@ func BenchmarkFilters(b *testing.B) {
 		{models.ChainCommit, readQuery(b, "CommitChain.md")},
 		{models.EntryCommit, readQuery(b, "CommitEntry.md")},
 		{models.EntryReveal, readQuery(b, "EntryReveal.md")},
-		{models.ProcessMessage, readQuery(b, "ProcessMessage.md")},
+		{models.ProcessListEvent, readQuery(b, "ProcessListEvent.md")},
 		{models.NodeMessage, readQuery(b, "NodeMessage.md")},
 	}
 
@@ -639,8 +634,8 @@ func createNewEvent(eventType models.EventType) *eventmessages.FactomEvent {
 		event.Event = eventmessages.NewPopulatedFactomEvent_EntryCommit(randomizer, false)
 	case models.EntryReveal:
 		event.Event = eventmessages.NewPopulatedFactomEvent_EntryReveal(randomizer, false)
-	case models.ProcessMessage:
-		event.Event = eventmessages.NewPopulatedFactomEvent_ProcessMessage(randomizer, false)
+	case models.ProcessListEvent:
+		event.Event = eventmessages.NewPopulatedFactomEvent_ProcessListEvent(randomizer, false)
 	case models.NodeMessage:
 		event.Event = eventmessages.NewPopulatedFactomEvent_NodeMessage(randomizer, false)
 	case models.StateChange:

@@ -112,31 +112,6 @@ func (Level) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_d6566f2e3579336b, []int{2}
 }
 
-type ProcessCode int32
-
-const (
-	ProcessCode_NEW_BLOCK  ProcessCode = 0
-	ProcessCode_NEW_MINUTE ProcessCode = 1
-)
-
-var ProcessCode_name = map[int32]string{
-	0: "NEW_BLOCK",
-	1: "NEW_MINUTE",
-}
-
-var ProcessCode_value = map[string]int32{
-	"NEW_BLOCK":  0,
-	"NEW_MINUTE": 1,
-}
-
-func (x ProcessCode) String() string {
-	return proto.EnumName(ProcessCode_name, int32(x))
-}
-
-func (ProcessCode) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{3}
-}
-
 type NodeMessageCode int32
 
 const (
@@ -165,7 +140,7 @@ func (x NodeMessageCode) String() string {
 }
 
 func (NodeMessageCode) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{4}
+	return fileDescriptor_d6566f2e3579336b, []int{3}
 }
 
 // ====  ROOT EVENT =====
@@ -179,7 +154,7 @@ type FactomEvent struct {
 	//	*FactomEvent_EntryReveal
 	//	*FactomEvent_StateChange
 	//	*FactomEvent_DirectoryBlockCommit
-	//	*FactomEvent_ProcessMessage
+	//	*FactomEvent_ProcessListEvent
 	//	*FactomEvent_NodeMessage
 	Event                isFactomEvent_Event `protobuf_oneof:"event"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
@@ -242,8 +217,8 @@ type FactomEvent_StateChange struct {
 type FactomEvent_DirectoryBlockCommit struct {
 	DirectoryBlockCommit *DirectoryBlockCommit `protobuf:"bytes,8,opt,name=directoryBlockCommit,proto3,oneof" json:"directoryBlockCommit,omitempty"`
 }
-type FactomEvent_ProcessMessage struct {
-	ProcessMessage *ProcessMessage `protobuf:"bytes,9,opt,name=processMessage,proto3,oneof" json:"processMessage,omitempty"`
+type FactomEvent_ProcessListEvent struct {
+	ProcessListEvent *ProcessListEvent `protobuf:"bytes,9,opt,name=processListEvent,proto3,oneof" json:"processListEvent,omitempty"`
 }
 type FactomEvent_NodeMessage struct {
 	NodeMessage *NodeMessage `protobuf:"bytes,10,opt,name=nodeMessage,proto3,oneof" json:"nodeMessage,omitempty"`
@@ -254,7 +229,7 @@ func (*FactomEvent_EntryCommit) isFactomEvent_Event()          {}
 func (*FactomEvent_EntryReveal) isFactomEvent_Event()          {}
 func (*FactomEvent_StateChange) isFactomEvent_Event()          {}
 func (*FactomEvent_DirectoryBlockCommit) isFactomEvent_Event() {}
-func (*FactomEvent_ProcessMessage) isFactomEvent_Event()       {}
+func (*FactomEvent_ProcessListEvent) isFactomEvent_Event()     {}
 func (*FactomEvent_NodeMessage) isFactomEvent_Event()          {}
 
 func (m *FactomEvent) GetEvent() isFactomEvent_Event {
@@ -320,9 +295,9 @@ func (m *FactomEvent) GetDirectoryBlockCommit() *DirectoryBlockCommit {
 	return nil
 }
 
-func (m *FactomEvent) GetProcessMessage() *ProcessMessage {
-	if x, ok := m.GetEvent().(*FactomEvent_ProcessMessage); ok {
-		return x.ProcessMessage
+func (m *FactomEvent) GetProcessListEvent() *ProcessListEvent {
+	if x, ok := m.GetEvent().(*FactomEvent_ProcessListEvent); ok {
+		return x.ProcessListEvent
 	}
 	return nil
 }
@@ -342,7 +317,7 @@ func (*FactomEvent) XXX_OneofWrappers() []interface{} {
 		(*FactomEvent_EntryReveal)(nil),
 		(*FactomEvent_StateChange)(nil),
 		(*FactomEvent_DirectoryBlockCommit)(nil),
-		(*FactomEvent_ProcessMessage)(nil),
+		(*FactomEvent_ProcessListEvent)(nil),
 		(*FactomEvent_NodeMessage)(nil),
 	}
 }
@@ -828,9 +803,7 @@ type EntryCreditBlockHeader struct {
 	PreviousHeaderHash   []byte   `protobuf:"bytes,2,opt,name=previousHeaderHash,proto3" json:"previousHeaderHash,omitempty"`
 	PreviousFullHash     []byte   `protobuf:"bytes,3,opt,name=previousFullHash,proto3" json:"previousFullHash,omitempty"`
 	BlockHeight          uint32   `protobuf:"varint,4,opt,name=blockHeight,proto3" json:"blockHeight,omitempty"`
-	HeaderExpansionArea  []byte   `protobuf:"bytes,5,opt,name=headerExpansionArea,proto3" json:"headerExpansionArea,omitempty"`
-	ObjectCount          uint64   `protobuf:"varint,6,opt,name=objectCount,proto3" json:"objectCount,omitempty"`
-	BodySize             uint64   `protobuf:"varint,7,opt,name=bodySize,proto3" json:"bodySize,omitempty"`
+	ObjectCount          uint64   `protobuf:"varint,5,opt,name=objectCount,proto3" json:"objectCount,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -897,23 +870,9 @@ func (m *EntryCreditBlockHeader) GetBlockHeight() uint32 {
 	return 0
 }
 
-func (m *EntryCreditBlockHeader) GetHeaderExpansionArea() []byte {
-	if m != nil {
-		return m.HeaderExpansionArea
-	}
-	return nil
-}
-
 func (m *EntryCreditBlockHeader) GetObjectCount() uint64 {
 	if m != nil {
 		return m.ObjectCount
-	}
-	return 0
-}
-
-func (m *EntryCreditBlockHeader) GetBodySize() uint64 {
-	if m != nil {
-		return m.BodySize
 	}
 	return 0
 }
@@ -1211,70 +1170,6 @@ func (m *ServerIndexNumber) GetServerIndexNumber() uint32 {
 	return 0
 }
 
-// ====  MESSAGE EVENTS =====
-type ProcessMessage struct {
-	ProcessCode          ProcessCode `protobuf:"varint,1,opt,name=processCode,proto3,enum=eventmessages.ProcessCode" json:"processCode,omitempty"`
-	Level                Level       `protobuf:"varint,2,opt,name=level,proto3,enum=eventmessages.Level" json:"level,omitempty"`
-	MessageText          string      `protobuf:"bytes,3,opt,name=messageText,proto3" json:"messageText,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
-}
-
-func (m *ProcessMessage) Reset()         { *m = ProcessMessage{} }
-func (m *ProcessMessage) String() string { return proto.CompactTextString(m) }
-func (*ProcessMessage) ProtoMessage()    {}
-func (*ProcessMessage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{12}
-}
-func (m *ProcessMessage) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *ProcessMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_ProcessMessage.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *ProcessMessage) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ProcessMessage.Merge(m, src)
-}
-func (m *ProcessMessage) XXX_Size() int {
-	return m.Size()
-}
-func (m *ProcessMessage) XXX_DiscardUnknown() {
-	xxx_messageInfo_ProcessMessage.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ProcessMessage proto.InternalMessageInfo
-
-func (m *ProcessMessage) GetProcessCode() ProcessCode {
-	if m != nil {
-		return m.ProcessCode
-	}
-	return ProcessCode_NEW_BLOCK
-}
-
-func (m *ProcessMessage) GetLevel() Level {
-	if m != nil {
-		return m.Level
-	}
-	return Level_INFO
-}
-
-func (m *ProcessMessage) GetMessageText() string {
-	if m != nil {
-		return m.MessageText
-	}
-	return ""
-}
-
 type NodeMessage struct {
 	MessageCode          NodeMessageCode `protobuf:"varint,1,opt,name=messageCode,proto3,enum=eventmessages.NodeMessageCode" json:"messageCode,omitempty"`
 	Level                Level           `protobuf:"varint,2,opt,name=level,proto3,enum=eventmessages.Level" json:"level,omitempty"`
@@ -1288,7 +1183,7 @@ func (m *NodeMessage) Reset()         { *m = NodeMessage{} }
 func (m *NodeMessage) String() string { return proto.CompactTextString(m) }
 func (*NodeMessage) ProtoMessage()    {}
 func (*NodeMessage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d6566f2e3579336b, []int{13}
+	return fileDescriptor_d6566f2e3579336b, []int{12}
 }
 func (m *NodeMessage) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1338,11 +1233,202 @@ func (m *NodeMessage) GetMessageText() string {
 	return ""
 }
 
+// ====  PROCESS LIST EVENTS =====
+type ProcessListEvent struct {
+	// Types that are valid to be assigned to ProcessListEvent:
+	//	*ProcessListEvent_NewBlockEvent
+	//	*ProcessListEvent_NewMinuteEvent
+	ProcessListEvent     isProcessListEvent_ProcessListEvent `protobuf_oneof:"processListEvent"`
+	XXX_NoUnkeyedLiteral struct{}                            `json:"-"`
+	XXX_unrecognized     []byte                              `json:"-"`
+	XXX_sizecache        int32                               `json:"-"`
+}
+
+func (m *ProcessListEvent) Reset()         { *m = ProcessListEvent{} }
+func (m *ProcessListEvent) String() string { return proto.CompactTextString(m) }
+func (*ProcessListEvent) ProtoMessage()    {}
+func (*ProcessListEvent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d6566f2e3579336b, []int{13}
+}
+func (m *ProcessListEvent) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ProcessListEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ProcessListEvent.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ProcessListEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProcessListEvent.Merge(m, src)
+}
+func (m *ProcessListEvent) XXX_Size() int {
+	return m.Size()
+}
+func (m *ProcessListEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProcessListEvent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ProcessListEvent proto.InternalMessageInfo
+
+type isProcessListEvent_ProcessListEvent interface {
+	isProcessListEvent_ProcessListEvent()
+	Equal(interface{}) bool
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type ProcessListEvent_NewBlockEvent struct {
+	NewBlockEvent *NewBlockEvent `protobuf:"bytes,1,opt,name=newBlockEvent,proto3,oneof" json:"newBlockEvent,omitempty"`
+}
+type ProcessListEvent_NewMinuteEvent struct {
+	NewMinuteEvent *NewMinuteEvent `protobuf:"bytes,2,opt,name=newMinuteEvent,proto3,oneof" json:"newMinuteEvent,omitempty"`
+}
+
+func (*ProcessListEvent_NewBlockEvent) isProcessListEvent_ProcessListEvent()  {}
+func (*ProcessListEvent_NewMinuteEvent) isProcessListEvent_ProcessListEvent() {}
+
+func (m *ProcessListEvent) GetProcessListEvent() isProcessListEvent_ProcessListEvent {
+	if m != nil {
+		return m.ProcessListEvent
+	}
+	return nil
+}
+
+func (m *ProcessListEvent) GetNewBlockEvent() *NewBlockEvent {
+	if x, ok := m.GetProcessListEvent().(*ProcessListEvent_NewBlockEvent); ok {
+		return x.NewBlockEvent
+	}
+	return nil
+}
+
+func (m *ProcessListEvent) GetNewMinuteEvent() *NewMinuteEvent {
+	if x, ok := m.GetProcessListEvent().(*ProcessListEvent_NewMinuteEvent); ok {
+		return x.NewMinuteEvent
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*ProcessListEvent) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*ProcessListEvent_NewBlockEvent)(nil),
+		(*ProcessListEvent_NewMinuteEvent)(nil),
+	}
+}
+
+type NewBlockEvent struct {
+	NewBlockHeight       uint32   `protobuf:"varint,1,opt,name=newBlockHeight,proto3" json:"newBlockHeight,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *NewBlockEvent) Reset()         { *m = NewBlockEvent{} }
+func (m *NewBlockEvent) String() string { return proto.CompactTextString(m) }
+func (*NewBlockEvent) ProtoMessage()    {}
+func (*NewBlockEvent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d6566f2e3579336b, []int{14}
+}
+func (m *NewBlockEvent) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *NewBlockEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_NewBlockEvent.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *NewBlockEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NewBlockEvent.Merge(m, src)
+}
+func (m *NewBlockEvent) XXX_Size() int {
+	return m.Size()
+}
+func (m *NewBlockEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_NewBlockEvent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NewBlockEvent proto.InternalMessageInfo
+
+func (m *NewBlockEvent) GetNewBlockHeight() uint32 {
+	if m != nil {
+		return m.NewBlockHeight
+	}
+	return 0
+}
+
+type NewMinuteEvent struct {
+	NewMinute            uint32   `protobuf:"varint,1,opt,name=newMinute,proto3" json:"newMinute,omitempty"`
+	BlockHeight          uint32   `protobuf:"varint,2,opt,name=blockHeight,proto3" json:"blockHeight,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *NewMinuteEvent) Reset()         { *m = NewMinuteEvent{} }
+func (m *NewMinuteEvent) String() string { return proto.CompactTextString(m) }
+func (*NewMinuteEvent) ProtoMessage()    {}
+func (*NewMinuteEvent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d6566f2e3579336b, []int{15}
+}
+func (m *NewMinuteEvent) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *NewMinuteEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_NewMinuteEvent.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *NewMinuteEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NewMinuteEvent.Merge(m, src)
+}
+func (m *NewMinuteEvent) XXX_Size() int {
+	return m.Size()
+}
+func (m *NewMinuteEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_NewMinuteEvent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NewMinuteEvent proto.InternalMessageInfo
+
+func (m *NewMinuteEvent) GetNewMinute() uint32 {
+	if m != nil {
+		return m.NewMinute
+	}
+	return 0
+}
+
+func (m *NewMinuteEvent) GetBlockHeight() uint32 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterEnum("eventmessages.EventSource", EventSource_name, EventSource_value)
 	proto.RegisterEnum("eventmessages.EntityState", EntityState_name, EntityState_value)
 	proto.RegisterEnum("eventmessages.Level", Level_name, Level_value)
-	proto.RegisterEnum("eventmessages.ProcessCode", ProcessCode_name, ProcessCode_value)
 	proto.RegisterEnum("eventmessages.NodeMessageCode", NodeMessageCode_name, NodeMessageCode_value)
 	proto.RegisterType((*FactomEvent)(nil), "eventmessages.FactomEvent")
 	proto.RegisterType((*ChainCommit)(nil), "eventmessages.ChainCommit")
@@ -1356,103 +1442,106 @@ func init() {
 	proto.RegisterType((*IncreaseBalance)(nil), "eventmessages.IncreaseBalance")
 	proto.RegisterType((*MinuteNumber)(nil), "eventmessages.MinuteNumber")
 	proto.RegisterType((*ServerIndexNumber)(nil), "eventmessages.ServerIndexNumber")
-	proto.RegisterType((*ProcessMessage)(nil), "eventmessages.ProcessMessage")
 	proto.RegisterType((*NodeMessage)(nil), "eventmessages.NodeMessage")
+	proto.RegisterType((*ProcessListEvent)(nil), "eventmessages.ProcessListEvent")
+	proto.RegisterType((*NewBlockEvent)(nil), "eventmessages.NewBlockEvent")
+	proto.RegisterType((*NewMinuteEvent)(nil), "eventmessages.NewMinuteEvent")
 }
 
 func init() { proto.RegisterFile("eventmessages/factomEvents.proto", fileDescriptor_d6566f2e3579336b) }
 
 var fileDescriptor_d6566f2e3579336b = []byte{
-	// 1426 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x58, 0xcd, 0x72, 0x1b, 0xc5,
-	0x16, 0x56, 0xeb, 0xc7, 0xb6, 0x8e, 0x64, 0x5b, 0xe9, 0xeb, 0xe4, 0xea, 0xfa, 0x26, 0x8a, 0x6a,
-	0x6e, 0x2e, 0x65, 0x54, 0x89, 0x4c, 0x19, 0x36, 0x54, 0x20, 0xa0, 0x9f, 0x71, 0xa4, 0xc4, 0x96,
-	0x4c, 0x4b, 0x49, 0xca, 0xd9, 0xb8, 0x46, 0x33, 0x1d, 0x6b, 0x40, 0x9a, 0x11, 0x33, 0x23, 0x63,
-	0xf3, 0x08, 0x54, 0xb1, 0xc8, 0x92, 0x2a, 0xd8, 0x64, 0xc5, 0x82, 0x0d, 0x3b, 0x56, 0x14, 0x4b,
-	0x96, 0x3c, 0x02, 0xf8, 0x29, 0x58, 0x52, 0xdd, 0xd3, 0xd2, 0xf4, 0x8c, 0xc6, 0xf9, 0xc1, 0xac,
-	0xe2, 0x73, 0xfa, 0xfb, 0xce, 0x9c, 0xfe, 0xfa, 0x74, 0x9f, 0xa3, 0x40, 0x99, 0x9e, 0x50, 0xcb,
-	0x1b, 0x53, 0xd7, 0xd5, 0x8e, 0xa9, 0xbb, 0xfd, 0x4c, 0xd3, 0x3d, 0x7b, 0xac, 0x32, 0x9f, 0x5b,
-	0x9d, 0x38, 0xb6, 0x67, 0xe3, 0xd5, 0x10, 0x62, 0xb3, 0x73, 0x6c, 0x7a, 0xc3, 0xe9, 0xa0, 0xaa,
-	0xdb, 0xe3, 0xed, 0x81, 0x79, 0xe7, 0x99, 0x3d, 0xb5, 0x0c, 0xcd, 0x33, 0x6d, 0x6b, 0x9b, 0xc3,
-	0x07, 0xd3, 0x67, 0x77, 0x8e, 0x1d, 0x6d, 0x32, 0xfc, 0x7c, 0x74, 0x87, 0x9e, 0x7a, 0xd4, 0x72,
-	0xd9, 0x92, 0xf0, 0x70, 0xc4, 0xcc, 0xf0, 0xc3, 0x6f, 0x3e, 0xbe, 0x74, 0x3c, 0xef, 0x6c, 0x42,
-	0xdd, 0x6d, 0xcf, 0x1c, 0x53, 0xd7, 0xd3, 0xc6, 0x13, 0x11, 0xb7, 0x14, 0xde, 0x98, 0x66, 0x8c,
-	0x4d, 0xab, 0x3e, 0xb2, 0xf5, 0xcf, 0xc4, 0xba, 0x12, 0x5e, 0x37, 0x4c, 0x87, 0xea, 0x9e, 0xed,
-	0x9c, 0xc9, 0x98, 0x48, 0x0c, 0x6a, 0x79, 0xe1, 0xf5, 0x38, 0xf1, 0x4c, 0x43, 0x42, 0x28, 0x5f,
-	0x65, 0x20, 0xb7, 0x1b, 0x68, 0x8a, 0x3f, 0x80, 0x1c, 0xe7, 0xf4, 0xec, 0xa9, 0xa3, 0xd3, 0x22,
-	0x2a, 0xa3, 0xad, 0xb5, 0x9d, 0xcd, 0x6a, 0x28, 0x4e, 0x55, 0x0d, 0x10, 0x44, 0x86, 0xe3, 0xb7,
-	0x60, 0xcd, 0x3f, 0xa0, 0x8e, 0x6d, 0xd0, 0x8e, 0x36, 0xa6, 0xc5, 0x64, 0x19, 0x6d, 0x65, 0x49,
-	0xc4, 0x8b, 0xb7, 0x60, 0xdd, 0x34, 0xa8, 0xe5, 0x99, 0xde, 0x59, 0x63, 0xa8, 0x99, 0x56, 0xbb,
-	0x59, 0x4c, 0x95, 0xd1, 0x56, 0x9e, 0x44, 0xdd, 0xf8, 0x1e, 0xe4, 0x74, 0xf6, 0x67, 0xc3, 0x1e,
-	0x8f, 0x4d, 0xaf, 0x98, 0x2e, 0xa3, 0xad, 0xdc, 0x42, 0x3e, 0x8d, 0x00, 0xd1, 0x4a, 0x10, 0x99,
-	0xc0, 0xf8, 0x5c, 0x15, 0xc1, 0xcf, 0xc4, 0xf2, 0xd5, 0x00, 0xc1, 0xf8, 0x12, 0x61, 0xce, 0x27,
-	0xf4, 0x84, 0x6a, 0xa3, 0xe2, 0xd2, 0xc5, 0x7c, 0x1f, 0x31, 0xe7, 0xfb, 0x26, 0xe3, 0xbb, 0x9e,
-	0xe6, 0xd1, 0xc6, 0x50, 0xb3, 0x8e, 0x69, 0x71, 0x39, 0x96, 0xdf, 0x0b, 0x10, 0x8c, 0x2f, 0x11,
-	0xf0, 0x21, 0x6c, 0x84, 0x4f, 0x5e, 0x6c, 0x64, 0x85, 0x07, 0xfa, 0x5f, 0x24, 0x50, 0x33, 0x06,
-	0xda, 0x4a, 0x90, 0xd8, 0x10, 0xf8, 0x3e, 0xac, 0x4d, 0x1c, 0x5b, 0xa7, 0xae, 0xbb, 0xef, 0xf3,
-	0x8b, 0x59, 0x1e, 0xf4, 0x46, 0x24, 0xe8, 0x41, 0x08, 0xd4, 0x4a, 0x90, 0x08, 0x8d, 0xed, 0xd1,
-	0xb2, 0x0d, 0x3a, 0x8b, 0x02, 0xb1, 0x7b, 0xec, 0x04, 0x08, 0xb6, 0x47, 0x89, 0x50, 0x5f, 0x86,
-	0x0c, 0xc7, 0x2a, 0xe7, 0x49, 0xc8, 0x49, 0x67, 0xc9, 0x8b, 0x91, 0x57, 0x03, 0x17, 0xe8, 0xa2,
-	0x62, 0x0c, 0x10, 0x44, 0x86, 0xe3, 0xb2, 0x28, 0x9d, 0x76, 0xb3, 0xa5, 0xb9, 0x43, 0x5e, 0x89,
-	0x79, 0x22, 0xbb, 0xf0, 0x75, 0xc8, 0xf2, 0xb3, 0xe2, 0xeb, 0x7e, 0x01, 0x06, 0x0e, 0x8c, 0x21,
-	0xfd, 0x05, 0x1d, 0x19, 0xbc, 0xe6, 0xf2, 0x84, 0xff, 0x8d, 0xef, 0x42, 0x76, 0x7e, 0x8f, 0x45,
-	0x31, 0xdd, 0xa8, 0xca, 0x97, 0xbd, 0xca, 0x2f, 0x7b, 0xb5, 0x3f, 0x03, 0x91, 0x00, 0x8f, 0x8b,
-	0xb0, 0xac, 0x3b, 0xd4, 0x30, 0x3d, 0x97, 0xd7, 0xd1, 0x2a, 0x99, 0x99, 0x78, 0x07, 0x36, 0xfc,
-	0xa2, 0xe3, 0xf6, 0xc1, 0x74, 0x30, 0x32, 0xf5, 0x87, 0xf4, 0x8c, 0x97, 0x4b, 0x9e, 0xc4, 0xae,
-	0xb1, 0xe4, 0x5d, 0xf3, 0xd8, 0xd2, 0xbc, 0xa9, 0x43, 0x79, 0x39, 0xe4, 0x49, 0xe0, 0x60, 0xdf,
-	0x3a, 0xa1, 0x0e, 0x7b, 0x8b, 0xf8, 0xa9, 0xae, 0x92, 0x99, 0xa9, 0xfc, 0x90, 0x84, 0x9c, 0x54,
-	0xf0, 0x97, 0x14, 0x39, 0x24, 0x61, 0x32, 0x2a, 0x61, 0x48, 0xae, 0xd4, 0xdf, 0x97, 0x2b, 0xfd,
-	0x7a, 0x72, 0x65, 0x5e, 0x57, 0xae, 0xa5, 0x97, 0xc8, 0xb5, 0x1c, 0x96, 0xeb, 0x67, 0x24, 0xe4,
-	0x12, 0x17, 0xfa, 0x72, 0x72, 0xbd, 0x07, 0x19, 0x9e, 0x1d, 0x97, 0x2a, 0xb7, 0x53, 0x8a, 0x7b,
-	0x48, 0xf8, 0x1d, 0xf5, 0x3f, 0xe9, 0x83, 0x2f, 0x25, 0xa3, 0xf2, 0x35, 0x82, 0x9c, 0xf4, 0xc0,
-	0xe0, 0x12, 0x80, 0x9f, 0x11, 0x3f, 0x32, 0xc4, 0x95, 0x90, 0x3c, 0xd1, 0x0d, 0x26, 0xdf, 0xf8,
-	0xd2, 0x0d, 0x58, 0xfe, 0x2d, 0x6a, 0x1e, 0x0f, 0x3d, 0x9e, 0xec, 0x2a, 0x91, 0x5d, 0xca, 0x8f,
-	0x29, 0xd8, 0x88, 0x7b, 0xa7, 0xb0, 0x0a, 0x6b, 0xe1, 0x77, 0x8a, 0x27, 0xb7, 0xf8, 0x1e, 0x85,
-	0xc9, 0x24, 0x42, 0xc2, 0xef, 0x03, 0x04, 0xbd, 0x54, 0xe8, 0xfc, 0x9f, 0x48, 0x88, 0xda, 0x1c,
-	0x40, 0x24, 0x30, 0xfe, 0x08, 0xf2, 0x72, 0x8b, 0x14, 0x52, 0xff, 0x37, 0x42, 0xde, 0x95, 0x20,
-	0x24, 0x44, 0xc0, 0x0f, 0xa1, 0x20, 0x15, 0x9f, 0x1f, 0xc4, 0x6f, 0x59, 0x37, 0x63, 0x5b, 0x4e,
-	0x00, 0x23, 0x0b, 0x44, 0x7c, 0x57, 0xb4, 0x1e, 0x6e, 0xb9, 0xc5, 0x4c, 0x39, 0x15, 0xb3, 0x93,
-	0xa0, 0x62, 0x88, 0x8c, 0xc6, 0x7b, 0x70, 0x85, 0x86, 0x8a, 0xc9, 0xa4, 0xec, 0xd5, 0x49, 0xbd,
-	0x46, 0xd1, 0x2d, 0x12, 0x95, 0xe7, 0x08, 0x0a, 0xd1, 0x8c, 0xf1, 0x87, 0xb0, 0x34, 0xa4, 0x9a,
-	0x41, 0x1d, 0x71, 0x4e, 0xff, 0x7f, 0xc5, 0x16, 0x5b, 0x1c, 0x4c, 0x04, 0x09, 0xdf, 0x83, 0x65,
-	0x2a, 0xf2, 0x4a, 0xf2, 0xbc, 0x6e, 0xbd, 0x82, 0xef, 0x67, 0x37, 0x23, 0x29, 0x2f, 0x92, 0x70,
-	0x2d, 0xfe, 0x13, 0x78, 0x13, 0x56, 0x06, 0xb6, 0x21, 0x17, 0xf8, 0xdc, 0xc6, 0x55, 0xc0, 0x13,
-	0x87, 0x9e, 0x98, 0xf6, 0xd4, 0xf5, 0xd1, 0xd2, 0xcb, 0x15, 0xb3, 0x82, 0x2b, 0x50, 0x98, 0x79,
-	0x77, 0xa7, 0xa3, 0x91, 0xd4, 0x2a, 0x16, 0xfc, 0xd1, 0xe2, 0x4f, 0x2f, 0x14, 0x3f, 0x7e, 0x07,
-	0xfe, 0xe5, 0x6f, 0x5f, 0x3d, 0x9d, 0x68, 0x7c, 0x54, 0xac, 0x39, 0x54, 0x13, 0x0f, 0x57, 0xdc,
-	0x12, 0x8b, 0x69, 0x0f, 0x3e, 0xa5, 0xba, 0xd7, 0xb0, 0xa7, 0x96, 0xc7, 0x5f, 0xae, 0x34, 0x91,
-	0x5d, 0xb3, 0xdd, 0xf6, 0xcc, 0x2f, 0xfd, 0xf9, 0x22, 0x4d, 0xe6, 0xb6, 0xf2, 0x3c, 0x05, 0x57,
-	0x63, 0x75, 0x8c, 0x0e, 0x56, 0xe8, 0x92, 0x83, 0x55, 0xf2, 0x4d, 0x07, 0xab, 0x07, 0xb0, 0x6e,
-	0x5a, 0xba, 0x43, 0x35, 0x97, 0xd6, 0xb5, 0x91, 0x66, 0xe9, 0x54, 0x5c, 0xb7, 0x68, 0x79, 0xb6,
-	0xc3, 0xa8, 0x56, 0x82, 0x44, 0x89, 0xb8, 0x06, 0xf9, 0xb1, 0x69, 0x4d, 0x3d, 0xda, 0x99, 0x8e,
-	0x07, 0xd4, 0x11, 0x57, 0x2e, 0x7a, 0x6f, 0xf7, 0x25, 0x48, 0x2b, 0x41, 0x42, 0x14, 0x7c, 0x00,
-	0x57, 0x5c, 0xea, 0x9c, 0x50, 0xa7, 0x6d, 0x19, 0xf4, 0x54, 0xc4, 0xf1, 0x1b, 0x7c, 0x39, 0x3a,
-	0xad, 0x45, 0x71, 0xad, 0x04, 0x59, 0x24, 0xd7, 0xff, 0x0d, 0x57, 0x69, 0x9c, 0xf2, 0xca, 0x37,
-	0x08, 0xd6, 0x23, 0x9b, 0xba, 0xb0, 0xa3, 0xa1, 0x97, 0x74, 0xb4, 0x5b, 0xb0, 0xea, 0x39, 0x9a,
-	0xe5, 0x6a, 0x3a, 0xfb, 0x35, 0xd2, 0x6e, 0x8a, 0x22, 0x0e, 0x3b, 0xf1, 0x06, 0x64, 0x4c, 0x96,
-	0x15, 0x57, 0x37, 0x4d, 0x7c, 0x03, 0x5f, 0x83, 0x25, 0x6d, 0xcc, 0x0b, 0x2a, 0xcd, 0xdd, 0xc2,
-	0x52, 0x76, 0x20, 0x2f, 0xcb, 0x84, 0x95, 0x88, 0xb2, 0x88, 0x97, 0x74, 0xc8, 0xa7, 0xd4, 0xe0,
-	0xca, 0x82, 0x24, 0xf8, 0x76, 0x9c, 0x9e, 0x3e, 0x7b, 0x71, 0x41, 0xf9, 0x16, 0xc1, 0x5a, 0x78,
-	0xcc, 0x64, 0x6d, 0x48, 0x8c, 0x99, 0x0d, 0xdb, 0xb8, 0xa8, 0xcf, 0x1e, 0x04, 0x08, 0x22, 0xc3,
-	0x71, 0x05, 0x32, 0x23, 0x7a, 0x42, 0x47, 0xa2, 0x7d, 0x6d, 0x44, 0x78, 0x7b, 0x6c, 0x8d, 0xf8,
-	0x10, 0x76, 0xc3, 0xc4, 0x42, 0x9f, 0x9e, 0xfa, 0x2d, 0x2b, 0x4b, 0x64, 0x97, 0xf2, 0x1d, 0x82,
-	0x9c, 0x34, 0xbf, 0xe2, 0x8f, 0xe7, 0x0c, 0x29, 0xb7, 0xd2, 0xc5, 0x03, 0xaf, 0x9f, 0x9f, 0x44,
-	0xf9, 0x67, 0xf3, 0xab, 0x6c, 0x41, 0x4e, 0xfa, 0x49, 0x86, 0x57, 0x20, 0xbd, 0xd7, 0x7e, 0xac,
-	0x16, 0x12, 0x78, 0x1d, 0x72, 0x44, 0x3d, 0xd8, 0xab, 0x1d, 0x1e, 0xd5, 0xbb, 0xdd, 0x7e, 0x01,
-	0x55, 0x9e, 0xf2, 0x61, 0x66, 0xde, 0xad, 0x57, 0x21, 0x4b, 0xd4, 0x4f, 0x1e, 0xa9, 0xbd, 0xbe,
-	0xda, 0x2c, 0x24, 0x70, 0x1e, 0x56, 0x6a, 0x8d, 0x86, 0x7a, 0xc0, 0x2c, 0xc4, 0x2c, 0xa2, 0x3e,
-	0x50, 0x1b, 0xcc, 0x4a, 0xe2, 0x32, 0x5c, 0x6f, 0x74, 0xf7, 0xf7, 0xdb, 0xfd, 0xbe, 0xda, 0x3c,
-	0xea, 0x77, 0x8f, 0x9a, 0x6d, 0xa2, 0x36, 0xfa, 0x5d, 0x72, 0x78, 0x54, 0xdf, 0xeb, 0x36, 0x1e,
-	0x16, 0x52, 0x95, 0xb7, 0x21, 0xc3, 0xf3, 0x66, 0xdf, 0x6f, 0x77, 0x76, 0xbb, 0x85, 0x04, 0xce,
-	0xc1, 0xf2, 0x93, 0x1a, 0xe9, 0xb4, 0x3b, 0xf7, 0x0b, 0x08, 0x67, 0x21, 0xa3, 0x12, 0xd2, 0x25,
-	0x85, 0x64, 0xe5, 0x36, 0xe4, 0xa4, 0xa3, 0x63, 0x69, 0x74, 0xd4, 0x27, 0x22, 0x50, 0x02, 0xaf,
-	0x01, 0x30, 0x73, 0xbf, 0xdd, 0x79, 0xd4, 0x57, 0x0b, 0xa8, 0xa2, 0xc2, 0x7a, 0x44, 0x4c, 0x16,
-	0xf8, 0xbe, 0xda, 0x51, 0x49, 0x6d, 0xcf, 0xff, 0x4a, 0xaf, 0x5f, 0x23, 0x7e, 0xd6, 0x00, 0x4b,
-	0xbd, 0xc3, 0x4e, 0x83, 0xe7, 0x9c, 0x87, 0x95, 0x5e, 0xeb, 0x51, 0xbf, 0xd9, 0x7d, 0xd2, 0x29,
-	0xa4, 0xea, 0xfb, 0x7f, 0xfe, 0x51, 0x42, 0xdf, 0x9f, 0x97, 0xd0, 0x4f, 0xe7, 0x25, 0xf4, 0xeb,
-	0x79, 0x09, 0xfd, 0x76, 0x5e, 0x42, 0xbf, 0x9f, 0x97, 0xd0, 0x2f, 0x2f, 0x6e, 0x22, 0x28, 0xeb,
-	0xf6, 0xb8, 0xea, 0xff, 0x4c, 0x15, 0xff, 0x18, 0xe1, 0x43, 0x79, 0x1a, 0xfe, 0x7f, 0x86, 0xc1,
-	0x12, 0x9f, 0xbc, 0xde, 0xfd, 0x2b, 0x00, 0x00, 0xff, 0xff, 0x18, 0xf6, 0xc4, 0x15, 0xa1, 0x10,
+	// 1442 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x58, 0x4d, 0x73, 0x1b, 0x45,
+	0x13, 0xd6, 0xea, 0xc3, 0xb6, 0x5a, 0x92, 0xad, 0x4c, 0x39, 0x79, 0xf5, 0x9a, 0xa0, 0xa8, 0x96,
+	0x40, 0x19, 0x17, 0x91, 0xab, 0x0c, 0x55, 0x14, 0x15, 0x08, 0xe8, 0x63, 0x1d, 0x29, 0x91, 0x25,
+	0x33, 0x56, 0x92, 0x72, 0x2e, 0xae, 0xd5, 0xee, 0xc4, 0x5a, 0x90, 0x76, 0xcd, 0xee, 0xca, 0x89,
+	0x7f, 0x04, 0x55, 0xe4, 0xc8, 0x81, 0x0b, 0x27, 0x0e, 0x5c, 0x38, 0x50, 0xc5, 0x89, 0xe2, 0xc8,
+	0x91, 0x03, 0x3f, 0x00, 0xfc, 0x2b, 0x38, 0x52, 0xf3, 0x21, 0x69, 0x76, 0xb4, 0xce, 0x07, 0x3e,
+	0x59, 0xd3, 0xf3, 0x3c, 0x3d, 0x3d, 0xcf, 0xf4, 0x4c, 0xf7, 0x1a, 0x2a, 0xe4, 0x94, 0xb8, 0xe1,
+	0x98, 0x04, 0x81, 0x79, 0x4c, 0x82, 0xed, 0x27, 0xa6, 0x15, 0x7a, 0x63, 0x83, 0xda, 0x82, 0xea,
+	0x89, 0xef, 0x85, 0x1e, 0x2a, 0x44, 0x10, 0x1b, 0xdd, 0x63, 0x27, 0x1c, 0x4e, 0x06, 0x55, 0xcb,
+	0x1b, 0x6f, 0x0f, 0x9c, 0x5b, 0x4f, 0xbc, 0x89, 0x6b, 0x9b, 0xa1, 0xe3, 0xb9, 0xdb, 0x0c, 0x3e,
+	0x98, 0x3c, 0xb9, 0x75, 0xec, 0x9b, 0x27, 0xc3, 0xaf, 0x46, 0xb7, 0xc8, 0xb3, 0x90, 0xb8, 0x01,
+	0x9d, 0x12, 0x16, 0x86, 0x98, 0x0e, 0xb8, 0xfb, 0x8d, 0x87, 0x97, 0xf6, 0x17, 0x9e, 0x9d, 0x90,
+	0x60, 0x3b, 0x74, 0xc6, 0x24, 0x08, 0xcd, 0xf1, 0x89, 0xf0, 0x5b, 0x8e, 0x6e, 0xcc, 0xb4, 0xc7,
+	0x8e, 0x5b, 0x1f, 0x79, 0xd6, 0x97, 0x62, 0x5e, 0x8f, 0xce, 0xdb, 0x8e, 0x4f, 0xac, 0xd0, 0xf3,
+	0xcf, 0x64, 0x8c, 0xe2, 0x83, 0xb8, 0x61, 0x74, 0x3e, 0x4e, 0x3c, 0xc7, 0x96, 0x10, 0xfa, 0x37,
+	0x19, 0xc8, 0xed, 0xce, 0x35, 0x45, 0x1f, 0x43, 0x8e, 0x71, 0x0e, 0xbc, 0x89, 0x6f, 0x91, 0x92,
+	0x56, 0xd1, 0x36, 0x57, 0x77, 0x36, 0xaa, 0x11, 0x3f, 0x55, 0x63, 0x8e, 0xc0, 0x32, 0x1c, 0xbd,
+	0x03, 0xab, 0xfc, 0x80, 0xba, 0x9e, 0x4d, 0xba, 0xe6, 0x98, 0x94, 0x92, 0x15, 0x6d, 0x33, 0x8b,
+	0x15, 0x2b, 0xda, 0x84, 0x35, 0xc7, 0x26, 0x6e, 0xe8, 0x84, 0x67, 0x8d, 0xa1, 0xe9, 0xb8, 0xed,
+	0x66, 0x29, 0x55, 0xd1, 0x36, 0xf3, 0x58, 0x35, 0xa3, 0x3b, 0x90, 0xb3, 0xe8, 0xcf, 0x86, 0x37,
+	0x1e, 0x3b, 0x61, 0x29, 0x5d, 0xd1, 0x36, 0x73, 0x0b, 0xf1, 0x34, 0xe6, 0x88, 0x56, 0x02, 0xcb,
+	0x04, 0xca, 0x67, 0xaa, 0x08, 0x7e, 0x26, 0x96, 0x6f, 0xcc, 0x11, 0x94, 0x2f, 0x11, 0x66, 0x7c,
+	0x4c, 0x4e, 0x89, 0x39, 0x2a, 0x2d, 0x5d, 0xcc, 0xe7, 0x88, 0x19, 0x9f, 0x0f, 0x29, 0x3f, 0x08,
+	0xcd, 0x90, 0x34, 0x86, 0xa6, 0x7b, 0x4c, 0x4a, 0xcb, 0xb1, 0xfc, 0x83, 0x39, 0x82, 0xf2, 0x25,
+	0x02, 0x3a, 0x84, 0xf5, 0xe8, 0xc9, 0x8b, 0x8d, 0xac, 0x30, 0x47, 0x6f, 0x29, 0x8e, 0x9a, 0x31,
+	0xd0, 0x56, 0x02, 0xc7, 0xba, 0x40, 0x7b, 0x50, 0x3c, 0xf1, 0x3d, 0x8b, 0x04, 0x41, 0xc7, 0x09,
+	0x42, 0x76, 0xa6, 0xa5, 0x2c, 0x73, 0x7b, 0x43, 0x71, 0xbb, 0xaf, 0xc0, 0x5a, 0x09, 0xbc, 0x40,
+	0xa5, 0x3b, 0x75, 0x3d, 0x9b, 0xec, 0x71, 0x52, 0x09, 0x62, 0x77, 0xda, 0x9d, 0x23, 0xe8, 0x4e,
+	0x25, 0x42, 0x7d, 0x19, 0x32, 0x0c, 0xab, 0x9f, 0x27, 0x21, 0x27, 0x9d, 0x28, 0x4b, 0x49, 0x96,
+	0x13, 0x4c, 0xa6, 0x8b, 0x52, 0x72, 0x8e, 0xc0, 0x32, 0x1c, 0x55, 0x44, 0x02, 0xb5, 0x9b, 0x2d,
+	0x33, 0x18, 0xb2, 0x7c, 0xcc, 0x63, 0xd9, 0x84, 0xae, 0x43, 0x96, 0x9d, 0x18, 0x9b, 0xe7, 0x69,
+	0x38, 0x37, 0x20, 0x04, 0xe9, 0xa7, 0x64, 0x64, 0xb3, 0xcc, 0xcb, 0x63, 0xf6, 0x1b, 0xdd, 0x86,
+	0xec, 0xec, 0x36, 0x8b, 0x94, 0x7a, 0xb3, 0x2a, 0x5f, 0xf9, 0x2a, 0xbb, 0xf2, 0xd5, 0xfe, 0x14,
+	0x84, 0xe7, 0x78, 0x54, 0x82, 0x65, 0xcb, 0x27, 0xb6, 0x13, 0x06, 0x2c, 0x9b, 0x0a, 0x78, 0x3a,
+	0x44, 0x3b, 0xb0, 0xce, 0x53, 0x8f, 0x8d, 0xf7, 0x27, 0x83, 0x91, 0x63, 0xdd, 0x27, 0x67, 0x2c,
+	0x69, 0xf2, 0x38, 0x76, 0x8e, 0x06, 0x1f, 0x38, 0xc7, 0xae, 0x19, 0x4e, 0x7c, 0xc2, 0x92, 0x22,
+	0x8f, 0xe7, 0x06, 0xba, 0xd6, 0x29, 0xf1, 0xe9, 0x8b, 0xc4, 0x4e, 0xb6, 0x80, 0xa7, 0x43, 0xfd,
+	0xc7, 0x24, 0xe4, 0xa4, 0xb4, 0xbf, 0xa4, 0xc8, 0x11, 0x09, 0x93, 0xaa, 0x84, 0x11, 0xb9, 0x52,
+	0xff, 0x5d, 0xae, 0xf4, 0xab, 0xc9, 0x95, 0x79, 0x55, 0xb9, 0x96, 0x5e, 0x20, 0xd7, 0x72, 0x54,
+	0xae, 0x5f, 0x35, 0x21, 0x97, 0xb8, 0xd6, 0x97, 0x93, 0xeb, 0x03, 0xc8, 0xb0, 0xe8, 0x98, 0x54,
+	0xb9, 0x9d, 0x72, 0xdc, 0x73, 0xc2, 0x6e, 0x2a, 0x5f, 0x92, 0x83, 0x2f, 0x25, 0xa3, 0xfe, 0xb5,
+	0x06, 0x39, 0xe9, 0x99, 0x41, 0x65, 0x00, 0x1e, 0x11, 0x3b, 0x32, 0x8d, 0x29, 0x21, 0x59, 0xd4,
+	0x0d, 0x26, 0x5f, 0xfb, 0xd2, 0x0d, 0x68, 0xfc, 0x2d, 0xe2, 0x1c, 0x0f, 0x43, 0x16, 0x6c, 0x01,
+	0xcb, 0x26, 0xfd, 0xa7, 0x14, 0xac, 0xc7, 0xbd, 0x56, 0xc8, 0x80, 0xd5, 0xe8, 0x6b, 0xc5, 0x82,
+	0xa3, 0x5b, 0x7d, 0xd1, 0x53, 0x87, 0x15, 0x12, 0xfa, 0x08, 0x60, 0x5e, 0x51, 0x85, 0xce, 0xff,
+	0x57, 0x5c, 0xd4, 0x66, 0x00, 0x2c, 0x81, 0xd1, 0xa7, 0x90, 0x97, 0x0b, 0xa5, 0x90, 0xfa, 0x0d,
+	0x85, 0xbc, 0x2b, 0x41, 0x70, 0x84, 0x80, 0xee, 0x43, 0x51, 0x4a, 0x3e, 0xee, 0x24, 0x1d, 0xfb,
+	0xb0, 0x1a, 0x0a, 0x0c, 0x2f, 0x10, 0xd1, 0x6d, 0x51, 0x80, 0xd8, 0x28, 0x28, 0x65, 0x2a, 0xa9,
+	0x98, 0x9d, 0xcc, 0x33, 0x06, 0xcb, 0x68, 0xd4, 0x81, 0x2b, 0x24, 0x92, 0x4c, 0x0e, 0xa1, 0xaf,
+	0x4e, 0xea, 0x15, 0x92, 0x6e, 0x91, 0xa8, 0x3f, 0xd7, 0xa0, 0xa8, 0x46, 0x8c, 0x3e, 0x81, 0xa5,
+	0x21, 0x31, 0x6d, 0xe2, 0x8b, 0x73, 0x7a, 0xfb, 0x25, 0x5b, 0x6c, 0x31, 0x30, 0x16, 0x24, 0x74,
+	0x07, 0x96, 0x89, 0x88, 0x2b, 0xc9, 0xe2, 0xba, 0xf9, 0x12, 0x3e, 0x8f, 0x6e, 0x4a, 0xd2, 0xff,
+	0xd4, 0xe0, 0x5a, 0xfc, 0x12, 0x68, 0x03, 0x56, 0x06, 0x9e, 0x2d, 0x27, 0xf8, 0x6c, 0x8c, 0xaa,
+	0x80, 0x4e, 0x7c, 0x72, 0xea, 0x78, 0x93, 0x80, 0xa3, 0xa5, 0x97, 0x2b, 0x66, 0x06, 0x6d, 0xd1,
+	0x5a, 0xc9, 0xad, 0xbb, 0x93, 0xd1, 0x48, 0x2a, 0x15, 0x0b, 0x76, 0x35, 0xf9, 0xd3, 0x0b, 0xc9,
+	0x4f, 0x11, 0xde, 0xe0, 0x0b, 0x62, 0x85, 0x0d, 0x6f, 0xe2, 0xf2, 0xa6, 0x24, 0x8d, 0x65, 0x93,
+	0xfe, 0x3c, 0x05, 0x57, 0x63, 0x77, 0xae, 0x36, 0x44, 0xda, 0x25, 0x1b, 0xa2, 0xe4, 0xeb, 0x36,
+	0x44, 0xf7, 0x60, 0xcd, 0x71, 0x2d, 0x9f, 0x98, 0x01, 0xa9, 0x9b, 0x23, 0xd3, 0xb5, 0x88, 0xb8,
+	0x20, 0x6a, 0x42, 0xb5, 0xa3, 0xa8, 0x56, 0x02, 0xab, 0x44, 0x54, 0x83, 0xfc, 0xd8, 0x71, 0x27,
+	0x21, 0xe9, 0x4e, 0xc6, 0x03, 0xe2, 0x8b, 0x4b, 0xa2, 0xde, 0xb4, 0x3d, 0x09, 0xd2, 0x4a, 0xe0,
+	0x08, 0x05, 0xed, 0xc3, 0x95, 0x80, 0xf8, 0xa7, 0xc4, 0x6f, 0xbb, 0x36, 0x79, 0x26, 0xfc, 0xf0,
+	0x92, 0x5c, 0x51, 0xbb, 0x2c, 0x15, 0xd7, 0x4a, 0xe0, 0x45, 0x72, 0xfd, 0x7f, 0x70, 0x95, 0xc4,
+	0x29, 0xaf, 0x7f, 0xab, 0xc1, 0x9a, 0xb2, 0xa9, 0x0b, 0x6b, 0x90, 0xf6, 0x82, 0x1a, 0x74, 0x13,
+	0x0a, 0xa1, 0x6f, 0xba, 0x81, 0x69, 0xd1, 0xaf, 0x88, 0x76, 0x53, 0xa4, 0x5d, 0xd4, 0x88, 0xd6,
+	0x21, 0xe3, 0xd0, 0xa8, 0x98, 0xba, 0x69, 0xcc, 0x07, 0xe8, 0x1a, 0x2c, 0x99, 0x63, 0x96, 0x34,
+	0x69, 0x66, 0x16, 0x23, 0x7d, 0x07, 0xf2, 0xb2, 0x4c, 0x48, 0x57, 0x94, 0xd5, 0x58, 0x12, 0x46,
+	0x6c, 0x7a, 0x0d, 0xae, 0x2c, 0x48, 0x82, 0xde, 0x8b, 0xd3, 0x93, 0xb3, 0x17, 0x27, 0xf4, 0xef,
+	0x34, 0xc8, 0x49, 0x2d, 0x1d, 0xfa, 0x0c, 0x72, 0x42, 0xee, 0x86, 0x67, 0x4f, 0xcb, 0x62, 0xf9,
+	0xe2, 0x1e, 0x90, 0xa2, 0xb0, 0x4c, 0x41, 0x5b, 0x90, 0x19, 0x91, 0x53, 0x32, 0x12, 0x15, 0x67,
+	0x5d, 0xe1, 0x76, 0xe8, 0x1c, 0xe6, 0x10, 0x7a, 0x8d, 0xc4, 0x44, 0x9f, 0x3c, 0xe3, 0x55, 0x26,
+	0x8b, 0x65, 0x93, 0xfe, 0xb3, 0x06, 0x45, 0xb5, 0x79, 0x45, 0x4d, 0x28, 0xb8, 0xe4, 0x29, 0x3f,
+	0x58, 0xd6, 0xf4, 0xf2, 0x3b, 0x74, 0x5d, 0x0d, 0x53, 0xc6, 0xb4, 0x12, 0x38, 0x4a, 0x42, 0x77,
+	0x61, 0xd5, 0x25, 0x4f, 0xb9, 0xe8, 0xdc, 0x4d, 0x32, 0xb6, 0x4e, 0x75, 0x23, 0xa0, 0x56, 0x02,
+	0x2b, 0xb4, 0x3a, 0x5a, 0x6c, 0xc3, 0xf5, 0x0f, 0xa1, 0x10, 0x59, 0x9e, 0x7e, 0x58, 0x4d, 0x97,
+	0x17, 0xcf, 0x0a, 0x3f, 0x13, 0xc5, 0xaa, 0xef, 0xc3, 0x6a, 0x74, 0x41, 0xda, 0xf1, 0xcc, 0x16,
+	0x14, 0xa4, 0xb9, 0x41, 0x7d, 0xab, 0x92, 0x0b, 0x6f, 0xd5, 0xd6, 0x26, 0xe4, 0xa4, 0xcf, 0x3d,
+	0xb4, 0x02, 0xe9, 0x4e, 0xfb, 0xa1, 0x51, 0x4c, 0xa0, 0x35, 0xc8, 0x61, 0x63, 0xbf, 0x53, 0x3b,
+	0x3c, 0xaa, 0xf7, 0x7a, 0xfd, 0xa2, 0xb6, 0xf5, 0x98, 0xb5, 0x48, 0xb3, 0x1e, 0xa0, 0x00, 0x59,
+	0x6c, 0x7c, 0xfe, 0xc0, 0x38, 0xe8, 0x1b, 0xcd, 0x62, 0x02, 0xe5, 0x61, 0xa5, 0xd6, 0x68, 0x18,
+	0xfb, 0x74, 0xa4, 0xd1, 0x11, 0x36, 0xee, 0x19, 0x0d, 0x3a, 0x4a, 0xa2, 0x0a, 0x5c, 0x6f, 0xf4,
+	0xf6, 0xf6, 0xda, 0xfd, 0xbe, 0xd1, 0x3c, 0xea, 0xf7, 0x8e, 0x9a, 0x6d, 0x6c, 0x34, 0xfa, 0x3d,
+	0x7c, 0x78, 0x54, 0xef, 0xf4, 0x1a, 0xf7, 0x8b, 0xa9, 0xad, 0x77, 0x21, 0xc3, 0x8e, 0x9e, 0xae,
+	0xdf, 0xee, 0xee, 0xf6, 0x8a, 0x09, 0x94, 0x83, 0xe5, 0x47, 0x35, 0xdc, 0x6d, 0x77, 0xef, 0x16,
+	0x35, 0x94, 0x85, 0x8c, 0x81, 0x71, 0x0f, 0x17, 0x93, 0x5b, 0x06, 0xac, 0x29, 0x19, 0x46, 0xa1,
+	0x77, 0x8d, 0xae, 0x81, 0x6b, 0x1d, 0xce, 0x3b, 0xe8, 0xd7, 0x30, 0x8f, 0x03, 0x60, 0xe9, 0xe0,
+	0xb0, 0xdb, 0x60, 0x51, 0xe4, 0x61, 0xe5, 0xa0, 0xf5, 0xa0, 0xdf, 0xec, 0x3d, 0xea, 0x16, 0x53,
+	0xf5, 0xbd, 0x7f, 0xfe, 0x2e, 0x6b, 0x3f, 0x9c, 0x97, 0xb5, 0x5f, 0xce, 0xcb, 0xda, 0xef, 0xe7,
+	0x65, 0xed, 0x8f, 0xf3, 0xb2, 0xf6, 0xd7, 0x79, 0x59, 0xfb, 0xed, 0xfb, 0x1b, 0x1a, 0x54, 0x2c,
+	0x6f, 0x5c, 0xe5, 0x1f, 0xb5, 0xe2, 0x8f, 0x1d, 0x3d, 0xf7, 0xc7, 0xd1, 0xff, 0x4a, 0x0c, 0x96,
+	0x58, 0x87, 0xf6, 0xfe, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0xfc, 0x1e, 0x6d, 0xa7, 0xcf, 0x10,
 	0x00, 0x00,
 }
 
@@ -1618,14 +1707,14 @@ func (this *FactomEvent_DirectoryBlockCommit) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *FactomEvent_ProcessMessage) Equal(that interface{}) bool {
+func (this *FactomEvent_ProcessListEvent) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*FactomEvent_ProcessMessage)
+	that1, ok := that.(*FactomEvent_ProcessListEvent)
 	if !ok {
-		that2, ok := that.(FactomEvent_ProcessMessage)
+		that2, ok := that.(FactomEvent_ProcessListEvent)
 		if ok {
 			that1 = &that2
 		} else {
@@ -1637,7 +1726,7 @@ func (this *FactomEvent_ProcessMessage) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if !this.ProcessMessage.Equal(that1.ProcessMessage) {
+	if !this.ProcessListEvent.Equal(that1.ProcessListEvent) {
 		return false
 	}
 	return true
@@ -1946,13 +2035,7 @@ func (this *EntryCreditBlockHeader) Equal(that interface{}) bool {
 	if this.BlockHeight != that1.BlockHeight {
 		return false
 	}
-	if !bytes.Equal(this.HeaderExpansionArea, that1.HeaderExpansionArea) {
-		return false
-	}
 	if this.ObjectCount != that1.ObjectCount {
-		return false
-	}
-	if this.BodySize != that1.BodySize {
 		return false
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -2203,39 +2286,6 @@ func (this *ServerIndexNumber) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *ProcessMessage) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*ProcessMessage)
-	if !ok {
-		that2, ok := that.(ProcessMessage)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.ProcessCode != that1.ProcessCode {
-		return false
-	}
-	if this.Level != that1.Level {
-		return false
-	}
-	if this.MessageText != that1.MessageText {
-		return false
-	}
-	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
-		return false
-	}
-	return true
-}
 func (this *NodeMessage) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
@@ -2269,11 +2319,148 @@ func (this *NodeMessage) Equal(that interface{}) bool {
 	}
 	return true
 }
+func (this *ProcessListEvent) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ProcessListEvent)
+	if !ok {
+		that2, ok := that.(ProcessListEvent)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.ProcessListEvent == nil {
+		if this.ProcessListEvent != nil {
+			return false
+		}
+	} else if this.ProcessListEvent == nil {
+		return false
+	} else if !this.ProcessListEvent.Equal(that1.ProcessListEvent) {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *ProcessListEvent_NewBlockEvent) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ProcessListEvent_NewBlockEvent)
+	if !ok {
+		that2, ok := that.(ProcessListEvent_NewBlockEvent)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.NewBlockEvent.Equal(that1.NewBlockEvent) {
+		return false
+	}
+	return true
+}
+func (this *ProcessListEvent_NewMinuteEvent) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ProcessListEvent_NewMinuteEvent)
+	if !ok {
+		that2, ok := that.(ProcessListEvent_NewMinuteEvent)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.NewMinuteEvent.Equal(that1.NewMinuteEvent) {
+		return false
+	}
+	return true
+}
+func (this *NewBlockEvent) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*NewBlockEvent)
+	if !ok {
+		that2, ok := that.(NewBlockEvent)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.NewBlockHeight != that1.NewBlockHeight {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
+func (this *NewMinuteEvent) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*NewMinuteEvent)
+	if !ok {
+		that2, ok := that.(NewMinuteEvent)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.NewMinute != that1.NewMinute {
+		return false
+	}
+	if this.BlockHeight != that1.BlockHeight {
+		return false
+	}
+	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
+		return false
+	}
+	return true
+}
 
 var GraphQLEventSourceEnum *github_com_graphql_go_graphql.Enum
 var GraphQLEntityStateEnum *github_com_graphql_go_graphql.Enum
 var GraphQLLevelEnum *github_com_graphql_go_graphql.Enum
-var GraphQLProcessCodeEnum *github_com_graphql_go_graphql.Enum
 var GraphQLNodeMessageCodeEnum *github_com_graphql_go_graphql.Enum
 
 type FactomEventGetter interface {
@@ -2350,17 +2537,30 @@ type ServerIndexNumberGetter interface {
 
 var GraphQLServerIndexNumberType *github_com_graphql_go_graphql.Object
 
-type ProcessMessageGetter interface {
-	GetProcessMessage() *ProcessMessage
-}
-
-var GraphQLProcessMessageType *github_com_graphql_go_graphql.Object
-
 type NodeMessageGetter interface {
 	GetNodeMessage() *NodeMessage
 }
 
 var GraphQLNodeMessageType *github_com_graphql_go_graphql.Object
+
+type ProcessListEventGetter interface {
+	GetProcessListEvent() *ProcessListEvent
+}
+
+var GraphQLProcessListEventType *github_com_graphql_go_graphql.Object
+var GraphQLProcessListEventProcessListEventUnion *github_com_graphql_go_graphql.Union
+
+type NewBlockEventGetter interface {
+	GetNewBlockEvent() *NewBlockEvent
+}
+
+var GraphQLNewBlockEventType *github_com_graphql_go_graphql.Object
+
+type NewMinuteEventGetter interface {
+	GetNewMinuteEvent() *NewMinuteEvent
+}
+
+var GraphQLNewMinuteEventType *github_com_graphql_go_graphql.Object
 
 func (g *FactomEvent_ChainCommit) GetChainCommit() *ChainCommit {
 	return g.ChainCommit
@@ -2377,8 +2577,8 @@ func (g *FactomEvent_StateChange) GetStateChange() *StateChange {
 func (g *FactomEvent_DirectoryBlockCommit) GetDirectoryBlockCommit() *DirectoryBlockCommit {
 	return g.DirectoryBlockCommit
 }
-func (g *FactomEvent_ProcessMessage) GetProcessMessage() *ProcessMessage {
-	return g.ProcessMessage
+func (g *FactomEvent_ProcessListEvent) GetProcessListEvent() *ProcessListEvent {
+	return g.ProcessListEvent
 }
 func (g *FactomEvent_NodeMessage) GetNodeMessage() *NodeMessage {
 	return g.NodeMessage
@@ -2397,6 +2597,12 @@ func (g *EntryCreditBlockEntry_MinuteNumber) GetMinuteNumber() *MinuteNumber {
 }
 func (g *EntryCreditBlockEntry_ServerIndexNumber) GetServerIndexNumber() *ServerIndexNumber {
 	return g.ServerIndexNumber
+}
+func (g *ProcessListEvent_NewBlockEvent) GetNewBlockEvent() *NewBlockEvent {
+	return g.NewBlockEvent
+}
+func (g *ProcessListEvent_NewMinuteEvent) GetNewMinuteEvent() *NewMinuteEvent {
+	return g.NewMinuteEvent
 }
 
 func init() {
@@ -2439,17 +2645,6 @@ func init() {
 			},
 			"ERROR": &github_com_graphql_go_graphql.EnumValueConfig{
 				Value: 2,
-			},
-		},
-	})
-	GraphQLProcessCodeEnum = github_com_graphql_go_graphql.NewEnum(github_com_graphql_go_graphql.EnumConfig{
-		Name: "ProcessCode",
-		Values: github_com_graphql_go_graphql.EnumValueConfigMap{
-			"NEW_BLOCK": &github_com_graphql_go_graphql.EnumValueConfig{
-				Value: 0,
-			},
-			"NEW_MINUTE": &github_com_graphql_go_graphql.EnumValueConfig{
-				Value: 1,
 			},
 		},
 	})
@@ -3299,25 +3494,6 @@ func init() {
 						return nil, fmt.Errorf("field blockHeight not resolved")
 					},
 				},
-				"headerExpansionArea": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_bi_foundation_protobuf_graphql_extension_plugin_graphql_scalars.ByteString,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryCreditBlockHeader)
-						if ok {
-							return obj.HeaderExpansionArea, nil
-						}
-						inter, ok := p.Source.(EntryCreditBlockHeaderGetter)
-						if ok {
-							face := inter.GetEntryCreditBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							return face.HeaderExpansionArea, nil
-						}
-						return nil, fmt.Errorf("field headerExpansionArea not resolved")
-					},
-				},
 				"objectCount": &github_com_graphql_go_graphql.Field{
 					Type:        github_com_graphql_go_graphql.Int,
 					Description: "",
@@ -3335,25 +3511,6 @@ func init() {
 							return face.ObjectCount, nil
 						}
 						return nil, fmt.Errorf("field objectCount not resolved")
-					},
-				},
-				"bodySize": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.Int,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*EntryCreditBlockHeader)
-						if ok {
-							return obj.BodySize, nil
-						}
-						inter, ok := p.Source.(EntryCreditBlockHeaderGetter)
-						if ok {
-							face := inter.GetEntryCreditBlockHeader()
-							if face == nil {
-								return nil, nil
-							}
-							return face.BodySize, nil
-						}
-						return nil, fmt.Errorf("field bodySize not resolved")
 					},
 				},
 			}
@@ -3516,71 +3673,6 @@ func init() {
 			}
 		}),
 	})
-	GraphQLProcessMessageType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
-		Name:        "ProcessMessage",
-		Description: "====  MESSAGE EVENTS =====",
-		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
-			return github_com_graphql_go_graphql.Fields{
-				"processCode": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLProcessCodeEnum,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*ProcessMessage)
-						if ok {
-							return int(ProcessCode_value[obj.ProcessCode.String()]), nil
-						}
-						inter, ok := p.Source.(ProcessMessageGetter)
-						if ok {
-							face := inter.GetProcessMessage()
-							if face == nil {
-								return nil, nil
-							}
-							return int(ProcessCode_value[face.ProcessCode.String()]), nil
-						}
-						return nil, fmt.Errorf("field processCode not resolved")
-					},
-				},
-				"level": &github_com_graphql_go_graphql.Field{
-					Type:        GraphQLLevelEnum,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*ProcessMessage)
-						if ok {
-							return int(Level_value[obj.Level.String()]), nil
-						}
-						inter, ok := p.Source.(ProcessMessageGetter)
-						if ok {
-							face := inter.GetProcessMessage()
-							if face == nil {
-								return nil, nil
-							}
-							return int(Level_value[face.Level.String()]), nil
-						}
-						return nil, fmt.Errorf("field level not resolved")
-					},
-				},
-				"messageText": &github_com_graphql_go_graphql.Field{
-					Type:        github_com_graphql_go_graphql.String,
-					Description: "",
-					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
-						obj, ok := p.Source.(*ProcessMessage)
-						if ok {
-							return obj.MessageText, nil
-						}
-						inter, ok := p.Source.(ProcessMessageGetter)
-						if ok {
-							face := inter.GetProcessMessage()
-							if face == nil {
-								return nil, nil
-							}
-							return face.MessageText, nil
-						}
-						return nil, fmt.Errorf("field messageText not resolved")
-					},
-				},
-			}
-		}),
-	})
 	GraphQLNodeMessageType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
 		Name:        "NodeMessage",
 		Description: "",
@@ -3646,6 +3738,98 @@ func init() {
 			}
 		}),
 	})
+	GraphQLProcessListEventType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
+		Name:        "ProcessListEvent",
+		Description: "====  PROCESS LIST EVENTS =====",
+		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
+			return github_com_graphql_go_graphql.Fields{
+				"processListEvent": &github_com_graphql_go_graphql.Field{
+					Type:        GraphQLProcessListEventProcessListEventUnion,
+					Description: "",
+					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
+						obj, ok := p.Source.(*ProcessListEvent)
+						if !ok {
+							return nil, fmt.Errorf("field processListEvent not resolved")
+						}
+						return obj.GetProcessListEvent(), nil
+					},
+				},
+			}
+		}),
+	})
+	GraphQLNewBlockEventType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
+		Name:        "NewBlockEvent",
+		Description: "",
+		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
+			return github_com_graphql_go_graphql.Fields{
+				"newBlockHeight": &github_com_graphql_go_graphql.Field{
+					Type:        github_com_graphql_go_graphql.Int,
+					Description: "",
+					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
+						obj, ok := p.Source.(*NewBlockEvent)
+						if ok {
+							return obj.NewBlockHeight, nil
+						}
+						inter, ok := p.Source.(NewBlockEventGetter)
+						if ok {
+							face := inter.GetNewBlockEvent()
+							if face == nil {
+								return nil, nil
+							}
+							return face.NewBlockHeight, nil
+						}
+						return nil, fmt.Errorf("field newBlockHeight not resolved")
+					},
+				},
+			}
+		}),
+	})
+	GraphQLNewMinuteEventType = github_com_graphql_go_graphql.NewObject(github_com_graphql_go_graphql.ObjectConfig{
+		Name:        "NewMinuteEvent",
+		Description: "",
+		Fields: (github_com_graphql_go_graphql.FieldsThunk)(func() github_com_graphql_go_graphql.Fields {
+			return github_com_graphql_go_graphql.Fields{
+				"newMinute": &github_com_graphql_go_graphql.Field{
+					Type:        github_com_graphql_go_graphql.Int,
+					Description: "",
+					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
+						obj, ok := p.Source.(*NewMinuteEvent)
+						if ok {
+							return obj.NewMinute, nil
+						}
+						inter, ok := p.Source.(NewMinuteEventGetter)
+						if ok {
+							face := inter.GetNewMinuteEvent()
+							if face == nil {
+								return nil, nil
+							}
+							return face.NewMinute, nil
+						}
+						return nil, fmt.Errorf("field newMinute not resolved")
+					},
+				},
+				"blockHeight": &github_com_graphql_go_graphql.Field{
+					Type:        github_com_graphql_go_graphql.Int,
+					Description: "",
+					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
+						obj, ok := p.Source.(*NewMinuteEvent)
+						if ok {
+							return obj.BlockHeight, nil
+						}
+						inter, ok := p.Source.(NewMinuteEventGetter)
+						if ok {
+							face := inter.GetNewMinuteEvent()
+							if face == nil {
+								return nil, nil
+							}
+							return face.BlockHeight, nil
+						}
+						return nil, fmt.Errorf("field blockHeight not resolved")
+					},
+				},
+			}
+		}),
+	})
 	GraphQLFactomEventEventUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
 		Name:        "FactomEventEvent",
 		Description: "",
@@ -3655,7 +3839,7 @@ func init() {
 			GraphQLEntryRevealType,
 			GraphQLStateChangeType,
 			GraphQLDirectoryBlockCommitType,
-			GraphQLProcessMessageType,
+			GraphQLProcessListEventType,
 			GraphQLNodeMessageType,
 		},
 		ResolveType: func(p github_com_graphql_go_graphql.ResolveTypeParams) *github_com_graphql_go_graphql.Object {
@@ -3674,8 +3858,8 @@ func init() {
 			if _, ok := p.Value.(*FactomEvent_DirectoryBlockCommit); ok {
 				return GraphQLDirectoryBlockCommitType
 			}
-			if _, ok := p.Value.(*FactomEvent_ProcessMessage); ok {
-				return GraphQLProcessMessageType
+			if _, ok := p.Value.(*FactomEvent_ProcessListEvent); ok {
+				return GraphQLProcessListEventType
 			}
 			if _, ok := p.Value.(*FactomEvent_NodeMessage); ok {
 				return GraphQLNodeMessageType
@@ -3708,6 +3892,23 @@ func init() {
 			}
 			if _, ok := p.Value.(*EntryCreditBlockEntry_ServerIndexNumber); ok {
 				return GraphQLServerIndexNumberType
+			}
+			return nil
+		},
+	})
+	GraphQLProcessListEventProcessListEventUnion = github_com_graphql_go_graphql.NewUnion(github_com_graphql_go_graphql.UnionConfig{
+		Name:        "ProcessListEventProcessListEvent",
+		Description: "",
+		Types: []*github_com_graphql_go_graphql.Object{
+			GraphQLNewBlockEventType,
+			GraphQLNewMinuteEventType,
+		},
+		ResolveType: func(p github_com_graphql_go_graphql.ResolveTypeParams) *github_com_graphql_go_graphql.Object {
+			if _, ok := p.Value.(*ProcessListEvent_NewBlockEvent); ok {
+				return GraphQLNewBlockEventType
+			}
+			if _, ok := p.Value.(*ProcessListEvent_NewMinuteEvent); ok {
+				return GraphQLNewMinuteEventType
 			}
 			return nil
 		},
@@ -3873,16 +4074,16 @@ func (m *FactomEvent_DirectoryBlockCommit) MarshalToSizedBuffer(dAtA []byte) (in
 	}
 	return len(dAtA) - i, nil
 }
-func (m *FactomEvent_ProcessMessage) MarshalTo(dAtA []byte) (int, error) {
+func (m *FactomEvent_ProcessListEvent) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *FactomEvent_ProcessMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *FactomEvent_ProcessListEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if m.ProcessMessage != nil {
+	if m.ProcessListEvent != nil {
 		{
-			size, err := m.ProcessMessage.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.ProcessListEvent.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -4359,22 +4560,10 @@ func (m *EntryCreditBlockHeader) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if m.BodySize != 0 {
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BodySize))
-		i--
-		dAtA[i] = 0x38
-	}
 	if m.ObjectCount != 0 {
 		i = encodeVarintFactomEvents(dAtA, i, uint64(m.ObjectCount))
 		i--
-		dAtA[i] = 0x30
-	}
-	if len(m.HeaderExpansionArea) > 0 {
-		i -= len(m.HeaderExpansionArea)
-		copy(dAtA[i:], m.HeaderExpansionArea)
-		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.HeaderExpansionArea)))
-		i--
-		dAtA[i] = 0x2a
+		dAtA[i] = 0x28
 	}
 	if m.BlockHeight != 0 {
 		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockHeight))
@@ -4661,50 +4850,6 @@ func (m *ServerIndexNumber) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *ProcessMessage) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *ProcessMessage) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *ProcessMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if len(m.MessageText) > 0 {
-		i -= len(m.MessageText)
-		copy(dAtA[i:], m.MessageText)
-		i = encodeVarintFactomEvents(dAtA, i, uint64(len(m.MessageText)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if m.Level != 0 {
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.Level))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.ProcessCode != 0 {
-		i = encodeVarintFactomEvents(dAtA, i, uint64(m.ProcessCode))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *NodeMessage) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -4749,6 +4894,153 @@ func (m *NodeMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *ProcessListEvent) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ProcessListEvent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ProcessListEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.ProcessListEvent != nil {
+		{
+			size := m.ProcessListEvent.Size()
+			i -= size
+			if _, err := m.ProcessListEvent.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ProcessListEvent_NewBlockEvent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ProcessListEvent_NewBlockEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.NewBlockEvent != nil {
+		{
+			size, err := m.NewBlockEvent.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+func (m *ProcessListEvent_NewMinuteEvent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ProcessListEvent_NewMinuteEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.NewMinuteEvent != nil {
+		{
+			size, err := m.NewMinuteEvent.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintFactomEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
+func (m *NewBlockEvent) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *NewBlockEvent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *NewBlockEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.NewBlockHeight != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.NewBlockHeight))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *NewMinuteEvent) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *NewMinuteEvent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *NewMinuteEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.BlockHeight != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.NewMinute != 0 {
+		i = encodeVarintFactomEvents(dAtA, i, uint64(m.NewMinute))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintFactomEvents(dAtA []byte, offset int, v uint64) int {
 	offset -= sovFactomEvents(v)
 	base := offset
@@ -4782,7 +5074,7 @@ func NewPopulatedFactomEvent(r randyFactomEvents, easy bool) *FactomEvent {
 	case 8:
 		this.Event = NewPopulatedFactomEvent_DirectoryBlockCommit(r, easy)
 	case 9:
-		this.Event = NewPopulatedFactomEvent_ProcessMessage(r, easy)
+		this.Event = NewPopulatedFactomEvent_ProcessListEvent(r, easy)
 	case 10:
 		this.Event = NewPopulatedFactomEvent_NodeMessage(r, easy)
 	}
@@ -4817,9 +5109,9 @@ func NewPopulatedFactomEvent_DirectoryBlockCommit(r randyFactomEvents, easy bool
 	this.DirectoryBlockCommit = NewPopulatedDirectoryBlockCommit(r, easy)
 	return this
 }
-func NewPopulatedFactomEvent_ProcessMessage(r randyFactomEvents, easy bool) *FactomEvent_ProcessMessage {
-	this := &FactomEvent_ProcessMessage{}
-	this.ProcessMessage = NewPopulatedProcessMessage(r, easy)
+func NewPopulatedFactomEvent_ProcessListEvent(r randyFactomEvents, easy bool) *FactomEvent_ProcessListEvent {
+	this := &FactomEvent_ProcessListEvent{}
+	this.ProcessListEvent = NewPopulatedProcessListEvent(r, easy)
 	return this
 }
 func NewPopulatedFactomEvent_NodeMessage(r randyFactomEvents, easy bool) *FactomEvent_NodeMessage {
@@ -4995,15 +5287,9 @@ func NewPopulatedEntryCreditBlockHeader(r randyFactomEvents, easy bool) *EntryCr
 		this.PreviousFullHash[i] = byte(r.Intn(256))
 	}
 	this.BlockHeight = uint32(r.Uint32())
-	v17 := r.Intn(100)
-	this.HeaderExpansionArea = make([]byte, v17)
-	for i := 0; i < v17; i++ {
-		this.HeaderExpansionArea[i] = byte(r.Intn(256))
-	}
 	this.ObjectCount = uint64(uint64(r.Uint32()))
-	this.BodySize = uint64(uint64(r.Uint32()))
 	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 8)
+		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 6)
 	}
 	return this
 }
@@ -5056,14 +5342,14 @@ func NewPopulatedEntryCreditBlockEntry_ServerIndexNumber(r randyFactomEvents, ea
 }
 func NewPopulatedIncreaseBalance(r randyFactomEvents, easy bool) *IncreaseBalance {
 	this := &IncreaseBalance{}
-	v18 := r.Intn(100)
-	this.EntryCreditPublicKey = make([]byte, v18)
-	for i := 0; i < v18; i++ {
+	v17 := r.Intn(100)
+	this.EntryCreditPublicKey = make([]byte, v17)
+	for i := 0; i < v17; i++ {
 		this.EntryCreditPublicKey[i] = byte(r.Intn(256))
 	}
-	v19 := r.Intn(100)
-	this.TransactionID = make([]byte, v19)
-	for i := 0; i < v19; i++ {
+	v18 := r.Intn(100)
+	this.TransactionID = make([]byte, v18)
+	for i := 0; i < v18; i++ {
 		this.TransactionID[i] = byte(r.Intn(256))
 	}
 	this.Index = uint64(uint64(r.Uint32()))
@@ -5092,9 +5378,9 @@ func NewPopulatedServerIndexNumber(r randyFactomEvents, easy bool) *ServerIndexN
 	return this
 }
 
-func NewPopulatedProcessMessage(r randyFactomEvents, easy bool) *ProcessMessage {
-	this := &ProcessMessage{}
-	this.ProcessCode = ProcessCode([]int32{0, 1}[r.Intn(2)])
+func NewPopulatedNodeMessage(r randyFactomEvents, easy bool) *NodeMessage {
+	this := &NodeMessage{}
+	this.MessageCode = NodeMessageCode([]int32{0, 1, 2, 3}[r.Intn(4)])
 	this.Level = Level([]int32{0, 1, 2}[r.Intn(3)])
 	this.MessageText = string(randStringFactomEvents(r))
 	if !easy && r.Intn(10) != 0 {
@@ -5103,13 +5389,46 @@ func NewPopulatedProcessMessage(r randyFactomEvents, easy bool) *ProcessMessage 
 	return this
 }
 
-func NewPopulatedNodeMessage(r randyFactomEvents, easy bool) *NodeMessage {
-	this := &NodeMessage{}
-	this.MessageCode = NodeMessageCode([]int32{0, 1, 2, 3}[r.Intn(4)])
-	this.Level = Level([]int32{0, 1, 2}[r.Intn(3)])
-	this.MessageText = string(randStringFactomEvents(r))
+func NewPopulatedProcessListEvent(r randyFactomEvents, easy bool) *ProcessListEvent {
+	this := &ProcessListEvent{}
+	oneofNumber_ProcessListEvent := []int32{1, 2}[r.Intn(2)]
+	switch oneofNumber_ProcessListEvent {
+	case 1:
+		this.ProcessListEvent = NewPopulatedProcessListEvent_NewBlockEvent(r, easy)
+	case 2:
+		this.ProcessListEvent = NewPopulatedProcessListEvent_NewMinuteEvent(r, easy)
+	}
 	if !easy && r.Intn(10) != 0 {
-		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 4)
+		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 3)
+	}
+	return this
+}
+
+func NewPopulatedProcessListEvent_NewBlockEvent(r randyFactomEvents, easy bool) *ProcessListEvent_NewBlockEvent {
+	this := &ProcessListEvent_NewBlockEvent{}
+	this.NewBlockEvent = NewPopulatedNewBlockEvent(r, easy)
+	return this
+}
+func NewPopulatedProcessListEvent_NewMinuteEvent(r randyFactomEvents, easy bool) *ProcessListEvent_NewMinuteEvent {
+	this := &ProcessListEvent_NewMinuteEvent{}
+	this.NewMinuteEvent = NewPopulatedNewMinuteEvent(r, easy)
+	return this
+}
+func NewPopulatedNewBlockEvent(r randyFactomEvents, easy bool) *NewBlockEvent {
+	this := &NewBlockEvent{}
+	this.NewBlockHeight = uint32(r.Uint32())
+	if !easy && r.Intn(10) != 0 {
+		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 2)
+	}
+	return this
+}
+
+func NewPopulatedNewMinuteEvent(r randyFactomEvents, easy bool) *NewMinuteEvent {
+	this := &NewMinuteEvent{}
+	this.NewMinute = uint32(r.Uint32())
+	this.BlockHeight = uint32(r.Uint32())
+	if !easy && r.Intn(10) != 0 {
+		this.XXX_unrecognized = randUnrecognizedFactomEvents(r, 3)
 	}
 	return this
 }
@@ -5133,9 +5452,9 @@ func randUTF8RuneFactomEvents(r randyFactomEvents) rune {
 	return rune(ru + 61)
 }
 func randStringFactomEvents(r randyFactomEvents) string {
-	v20 := r.Intn(100)
-	tmps := make([]rune, v20)
-	for i := 0; i < v20; i++ {
+	v19 := r.Intn(100)
+	tmps := make([]rune, v19)
+	for i := 0; i < v19; i++ {
 		tmps[i] = randUTF8RuneFactomEvents(r)
 	}
 	return string(tmps)
@@ -5157,11 +5476,11 @@ func randFieldFactomEvents(dAtA []byte, r randyFactomEvents, fieldNumber int, wi
 	switch wire {
 	case 0:
 		dAtA = encodeVarintPopulateFactomEvents(dAtA, uint64(key))
-		v21 := r.Int63()
+		v20 := r.Int63()
 		if r.Intn(2) == 0 {
-			v21 *= -1
+			v20 *= -1
 		}
-		dAtA = encodeVarintPopulateFactomEvents(dAtA, uint64(v21))
+		dAtA = encodeVarintPopulateFactomEvents(dAtA, uint64(v20))
 	case 1:
 		dAtA = encodeVarintPopulateFactomEvents(dAtA, uint64(key))
 		dAtA = append(dAtA, byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)), byte(r.Intn(256)))
@@ -5272,14 +5591,14 @@ func (m *FactomEvent_DirectoryBlockCommit) Size() (n int) {
 	}
 	return n
 }
-func (m *FactomEvent_ProcessMessage) Size() (n int) {
+func (m *FactomEvent_ProcessListEvent) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.ProcessMessage != nil {
-		l = m.ProcessMessage.Size()
+	if m.ProcessListEvent != nil {
+		l = m.ProcessListEvent.Size()
 		n += 1 + l + sovFactomEvents(uint64(l))
 	}
 	return n
@@ -5506,15 +5825,8 @@ func (m *EntryCreditBlockHeader) Size() (n int) {
 	if m.BlockHeight != 0 {
 		n += 1 + sovFactomEvents(uint64(m.BlockHeight))
 	}
-	l = len(m.HeaderExpansionArea)
-	if l > 0 {
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
 	if m.ObjectCount != 0 {
 		n += 1 + sovFactomEvents(uint64(m.ObjectCount))
-	}
-	if m.BodySize != 0 {
-		n += 1 + sovFactomEvents(uint64(m.BodySize))
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -5653,28 +5965,6 @@ func (m *ServerIndexNumber) Size() (n int) {
 	return n
 }
 
-func (m *ProcessMessage) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.ProcessCode != 0 {
-		n += 1 + sovFactomEvents(uint64(m.ProcessCode))
-	}
-	if m.Level != 0 {
-		n += 1 + sovFactomEvents(uint64(m.Level))
-	}
-	l = len(m.MessageText)
-	if l > 0 {
-		n += 1 + l + sovFactomEvents(uint64(l))
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
 func (m *NodeMessage) Size() (n int) {
 	if m == nil {
 		return 0
@@ -5690,6 +5980,78 @@ func (m *NodeMessage) Size() (n int) {
 	l = len(m.MessageText)
 	if l > 0 {
 		n += 1 + l + sovFactomEvents(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *ProcessListEvent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ProcessListEvent != nil {
+		n += m.ProcessListEvent.Size()
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *ProcessListEvent_NewBlockEvent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.NewBlockEvent != nil {
+		l = m.NewBlockEvent.Size()
+		n += 1 + l + sovFactomEvents(uint64(l))
+	}
+	return n
+}
+func (m *ProcessListEvent_NewMinuteEvent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.NewMinuteEvent != nil {
+		l = m.NewMinuteEvent.Size()
+		n += 1 + l + sovFactomEvents(uint64(l))
+	}
+	return n
+}
+func (m *NewBlockEvent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.NewBlockHeight != 0 {
+		n += 1 + sovFactomEvents(uint64(m.NewBlockHeight))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *NewMinuteEvent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.NewMinute != 0 {
+		n += 1 + sovFactomEvents(uint64(m.NewMinute))
+	}
+	if m.BlockHeight != 0 {
+		n += 1 + sovFactomEvents(uint64(m.BlockHeight))
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -5994,7 +6356,7 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 9:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ProcessMessage", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ProcessListEvent", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -6021,11 +6383,11 @@ func (m *FactomEvent) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			v := &ProcessMessage{}
+			v := &ProcessListEvent{}
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Event = &FactomEvent_ProcessMessage{v}
+			m.Event = &FactomEvent_ProcessListEvent{v}
 			iNdEx = postIndex
 		case 10:
 			if wireType != 2 {
@@ -7465,40 +7827,6 @@ func (m *EntryCreditBlockHeader) Unmarshal(dAtA []byte) error {
 				}
 			}
 		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field HeaderExpansionArea", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.HeaderExpansionArea = append(m.HeaderExpansionArea[:0], dAtA[iNdEx:postIndex]...)
-			if m.HeaderExpansionArea == nil {
-				m.HeaderExpansionArea = []byte{}
-			}
-			iNdEx = postIndex
-		case 6:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ObjectCount", wireType)
 			}
@@ -7513,25 +7841,6 @@ func (m *EntryCreditBlockHeader) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.ObjectCount |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BodySize", wireType)
-			}
-			m.BodySize = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BodySize |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -8096,130 +8405,6 @@ func (m *ServerIndexNumber) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *ProcessMessage) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowFactomEvents
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: ProcessMessage: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ProcessMessage: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ProcessCode", wireType)
-			}
-			m.ProcessCode = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.ProcessCode |= ProcessCode(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Level", wireType)
-			}
-			m.Level = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Level |= Level(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MessageText", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowFactomEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.MessageText = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipFactomEvents(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthFactomEvents
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *NodeMessage) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -8319,6 +8504,295 @@ func (m *NodeMessage) Unmarshal(dAtA []byte) error {
 			}
 			m.MessageText = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipFactomEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ProcessListEvent) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowFactomEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ProcessListEvent: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ProcessListEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NewBlockEvent", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFactomEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &NewBlockEvent{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.ProcessListEvent = &ProcessListEvent_NewBlockEvent{v}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NewMinuteEvent", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFactomEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &NewMinuteEvent{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.ProcessListEvent = &ProcessListEvent_NewMinuteEvent{v}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipFactomEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *NewBlockEvent) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowFactomEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: NewBlockEvent: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: NewBlockEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NewBlockHeight", wireType)
+			}
+			m.NewBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFactomEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NewBlockHeight |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipFactomEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthFactomEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *NewMinuteEvent) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowFactomEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: NewMinuteEvent: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: NewMinuteEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NewMinute", wireType)
+			}
+			m.NewMinute = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFactomEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NewMinute |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowFactomEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipFactomEvents(dAtA[iNdEx:])

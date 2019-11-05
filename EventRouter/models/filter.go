@@ -10,7 +10,7 @@ const (
 	EntryReveal          EventType = "ENTRY_REVEAL"
 	DirectoryBlockCommit EventType = "DIRECTORY_BLOCK_COMMIT"
 	StateChange          EventType = "STATE_CHANGE"
-	ProcessMessage       EventType = "PROCESS_MESSAGE"
+	ProcessListEvent     EventType = "PROCESS_LIST_EVENT"
 	NodeMessage          EventType = "NODE_MESSAGE"
 )
 

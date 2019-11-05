@@ -182,9 +182,6 @@ var nonFilteringQuery = `{
           }
           header {
             blockHeight
-            bodySize
-            headerExpansionArea
-            headerExpansionSize
             messageCount
             previousBackRefHash
           }
@@ -263,9 +260,6 @@ var nonFilteringQuery = `{
           }
           header {
             blockHeight
-            bodyHash
-            bodySize
-            headerExpansionArea
             objectCount
             previousFullHash
             previousHeaderHash
@@ -306,10 +300,16 @@ var nonFilteringQuery = `{
           }
         }
       }
-      ... on ProcessMessage {
-        level
-        messageText
-        processCode
+      ... on ProcessListEvent {
+ 			processListEvent {
+				NewBlockEvent {
+					newBlockHeight
+				}
+				NewMinuteEvent {
+					newMinute
+					blockHeight
+				}
+			}
       }
       ... on NodeMessage {
         level

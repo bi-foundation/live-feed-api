@@ -178,7 +178,7 @@ func validateSubscription(subscription *models.Subscription) error {
 		case models.EntryCommit:
 		case models.EntryReveal:
 		case models.StateChange:
-		case models.ProcessMessage:
+		case models.ProcessListEvent:
 		case models.NodeMessage:
 		default:
 			return fmt.Errorf("invalid event type: %s", eventType)
