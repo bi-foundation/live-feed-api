@@ -125,16 +125,16 @@ Each of these event types can be filtered to reduce network traffic. Filtering i
 ```graphql endpoint doc
 { 
     identityChainID
-    value { 
+    event {
         ... on ProcessListEvent {
-            processListEvent { 
-                NewMinuteEvent {
+            processListEvent {
+                ... on NewMinuteEvent {
                     newMinute
                     blockHeight
                 }
-            }
+             }
         }
-    } 
+    }
 }
 ```
 

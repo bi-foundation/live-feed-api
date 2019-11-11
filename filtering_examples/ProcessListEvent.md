@@ -5,15 +5,15 @@ Process List Event example
     identityChainID 
     event {
         ... on ProcessListEvent {
-            processListEvent {
-                ... on NewBlockEvent {
-                    newBlockHeight
+                processListEvent {
+                    ... on NewBlockEvent {
+                        newBlockHeight
+                    }
+                    ... on NewMinuteEvent {
+                        newMinute
+                        blockHeight
+                    }
                 }
-                ... on NewMinuteEvent {
-                    newMinute
-                    blockHeight
-                }
-            }
         }
     }
 }

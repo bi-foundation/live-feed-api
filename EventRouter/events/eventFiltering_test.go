@@ -365,10 +365,11 @@ func TestQueryProcessMessage(t *testing.T) {
   		"event": {
 			"factomNodeName": "1",
 			"identityChainID": "\u0001",
-			"event": {
-			  "messageText": "1",
-			  "processCode": "NEW_MINUTE",
-			  "level": "WARNING"
+	  		"event": {
+				"processListEvent": {
+				  "blockHeight": 1,
+				  "newMinute": 1
+				}
 			}
 		  }
 		}`

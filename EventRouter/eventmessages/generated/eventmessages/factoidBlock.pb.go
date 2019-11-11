@@ -284,7 +284,7 @@ type isRCD_Rcd interface {
 }
 
 type RCD_Rcd1 struct {
-	Rcd1 *RCD1 `protobuf:"bytes,1,opt,name=rcd1,proto3,oneof" json:"rcd1,omitempty"`
+	Rcd1 *RCD1 `protobuf:"bytes,1,opt,name=rcd1,proto3,oneof"`
 }
 
 func (*RCD_Rcd1) isRCD_Rcd() {}
@@ -1072,10 +1072,18 @@ func init() {
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*RCD)
-						if !ok {
-							return nil, fmt.Errorf("field rcd not resolved")
+						if ok {
+							return obj.GetRcd(), nil
 						}
-						return obj.GetRcd(), nil
+						inter, ok := p.Source.(RCDGetter)
+						if ok {
+							face := inter.GetRCD()
+							if face == nil {
+								return nil, nil
+							}
+							return face.GetRcd(), nil
+						}
+						return nil, fmt.Errorf("field rcd not resolved")
 					},
 				},
 			}
@@ -1391,8 +1399,7 @@ func (m *RCD) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *RCD_Rcd1) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *RCD_Rcd1) MarshalToSizedBuffer(dAtA []byte) (int, error) {

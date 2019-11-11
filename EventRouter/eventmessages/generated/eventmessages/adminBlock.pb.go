@@ -220,52 +220,52 @@ type isAdminBlockEntry_AdminBlockEntry interface {
 }
 
 type AdminBlockEntry_AddAuditServer struct {
-	AddAuditServer *AddAuditServer `protobuf:"bytes,1,opt,name=addAuditServer,proto3,oneof" json:"addAuditServer,omitempty"`
+	AddAuditServer *AddAuditServer `protobuf:"bytes,1,opt,name=addAuditServer,proto3,oneof"`
 }
 type AdminBlockEntry_AddEfficiency struct {
-	AddEfficiency *AddEfficiency `protobuf:"bytes,2,opt,name=addEfficiency,proto3,oneof" json:"addEfficiency,omitempty"`
+	AddEfficiency *AddEfficiency `protobuf:"bytes,2,opt,name=addEfficiency,proto3,oneof"`
 }
 type AdminBlockEntry_AddFactoidAddress struct {
-	AddFactoidAddress *AddFactoidAddress `protobuf:"bytes,3,opt,name=addFactoidAddress,proto3,oneof" json:"addFactoidAddress,omitempty"`
+	AddFactoidAddress *AddFactoidAddress `protobuf:"bytes,3,opt,name=addFactoidAddress,proto3,oneof"`
 }
 type AdminBlockEntry_AddFederatedServer struct {
-	AddFederatedServer *AddFederatedServer `protobuf:"bytes,4,opt,name=addFederatedServer,proto3,oneof" json:"addFederatedServer,omitempty"`
+	AddFederatedServer *AddFederatedServer `protobuf:"bytes,4,opt,name=addFederatedServer,proto3,oneof"`
 }
 type AdminBlockEntry_AddFederatedServerBitcoinAnchorKey struct {
-	AddFederatedServerBitcoinAnchorKey *AddFederatedServerBitcoinAnchorKey `protobuf:"bytes,5,opt,name=addFederatedServerBitcoinAnchorKey,proto3,oneof" json:"addFederatedServerBitcoinAnchorKey,omitempty"`
+	AddFederatedServerBitcoinAnchorKey *AddFederatedServerBitcoinAnchorKey `protobuf:"bytes,5,opt,name=addFederatedServerBitcoinAnchorKey,proto3,oneof"`
 }
 type AdminBlockEntry_AddFederatedServerSigningKey struct {
-	AddFederatedServerSigningKey *AddFederatedServerSigningKey `protobuf:"bytes,6,opt,name=addFederatedServerSigningKey,proto3,oneof" json:"addFederatedServerSigningKey,omitempty"`
+	AddFederatedServerSigningKey *AddFederatedServerSigningKey `protobuf:"bytes,6,opt,name=addFederatedServerSigningKey,proto3,oneof"`
 }
 type AdminBlockEntry_AddReplaceMatryoshkaHash struct {
-	AddReplaceMatryoshkaHash *AddReplaceMatryoshkaHash `protobuf:"bytes,7,opt,name=addReplaceMatryoshkaHash,proto3,oneof" json:"addReplaceMatryoshkaHash,omitempty"`
+	AddReplaceMatryoshkaHash *AddReplaceMatryoshkaHash `protobuf:"bytes,7,opt,name=addReplaceMatryoshkaHash,proto3,oneof"`
 }
 type AdminBlockEntry_CancelCoinbaseDescriptor struct {
-	CancelCoinbaseDescriptor *CancelCoinbaseDescriptor `protobuf:"bytes,8,opt,name=cancelCoinbaseDescriptor,proto3,oneof" json:"cancelCoinbaseDescriptor,omitempty"`
+	CancelCoinbaseDescriptor *CancelCoinbaseDescriptor `protobuf:"bytes,8,opt,name=cancelCoinbaseDescriptor,proto3,oneof"`
 }
 type AdminBlockEntry_CoinbaseDescriptor struct {
-	CoinbaseDescriptor *CoinbaseDescriptor `protobuf:"bytes,9,opt,name=coinbaseDescriptor,proto3,oneof" json:"coinbaseDescriptor,omitempty"`
+	CoinbaseDescriptor *CoinbaseDescriptor `protobuf:"bytes,9,opt,name=coinbaseDescriptor,proto3,oneof"`
 }
 type AdminBlockEntry_DirectoryBlockSignatureEntry struct {
-	DirectoryBlockSignatureEntry *DirectoryBlockSignatureEntry `protobuf:"bytes,10,opt,name=directoryBlockSignatureEntry,proto3,oneof" json:"directoryBlockSignatureEntry,omitempty"`
+	DirectoryBlockSignatureEntry *DirectoryBlockSignatureEntry `protobuf:"bytes,10,opt,name=directoryBlockSignatureEntry,proto3,oneof"`
 }
 type AdminBlockEntry_EndOfMinuteEntry struct {
-	EndOfMinuteEntry *EndOfMinuteEntry `protobuf:"bytes,11,opt,name=endOfMinuteEntry,proto3,oneof" json:"endOfMinuteEntry,omitempty"`
+	EndOfMinuteEntry *EndOfMinuteEntry `protobuf:"bytes,11,opt,name=endOfMinuteEntry,proto3,oneof"`
 }
 type AdminBlockEntry_ForwardCompatibleEntry struct {
-	ForwardCompatibleEntry *ForwardCompatibleEntry `protobuf:"bytes,12,opt,name=forwardCompatibleEntry,proto3,oneof" json:"forwardCompatibleEntry,omitempty"`
+	ForwardCompatibleEntry *ForwardCompatibleEntry `protobuf:"bytes,12,opt,name=forwardCompatibleEntry,proto3,oneof"`
 }
 type AdminBlockEntry_IncreaseServerCount struct {
-	IncreaseServerCount *IncreaseServerCount `protobuf:"bytes,13,opt,name=increaseServerCount,proto3,oneof" json:"increaseServerCount,omitempty"`
+	IncreaseServerCount *IncreaseServerCount `protobuf:"bytes,13,opt,name=increaseServerCount,proto3,oneof"`
 }
 type AdminBlockEntry_RemoveFederatedServer struct {
-	RemoveFederatedServer *RemoveFederatedServer `protobuf:"bytes,14,opt,name=removeFederatedServer,proto3,oneof" json:"removeFederatedServer,omitempty"`
+	RemoveFederatedServer *RemoveFederatedServer `protobuf:"bytes,14,opt,name=removeFederatedServer,proto3,oneof"`
 }
 type AdminBlockEntry_RevealMatryoshkaHash struct {
-	RevealMatryoshkaHash *RevealMatryoshkaHash `protobuf:"bytes,15,opt,name=revealMatryoshkaHash,proto3,oneof" json:"revealMatryoshkaHash,omitempty"`
+	RevealMatryoshkaHash *RevealMatryoshkaHash `protobuf:"bytes,15,opt,name=revealMatryoshkaHash,proto3,oneof"`
 }
 type AdminBlockEntry_ServerFault struct {
-	ServerFault *ServerFault `protobuf:"bytes,16,opt,name=serverFault,proto3,oneof" json:"serverFault,omitempty"`
+	ServerFault *ServerFault `protobuf:"bytes,16,opt,name=serverFault,proto3,oneof"`
 }
 
 func (*AdminBlockEntry_AddAuditServer) isAdminBlockEntry_AdminBlockEntry()                     {}
@@ -2909,10 +2909,18 @@ func init() {
 					Description: "",
 					Resolve: func(p github_com_graphql_go_graphql.ResolveParams) (interface{}, error) {
 						obj, ok := p.Source.(*AdminBlockEntry)
-						if !ok {
-							return nil, fmt.Errorf("field adminBlockEntry not resolved")
+						if ok {
+							return obj.GetAdminBlockEntry(), nil
 						}
-						return obj.GetAdminBlockEntry(), nil
+						inter, ok := p.Source.(AdminBlockEntryGetter)
+						if ok {
+							face := inter.GetAdminBlockEntry()
+							if face == nil {
+								return nil, nil
+							}
+							return face.GetAdminBlockEntry(), nil
+						}
+						return nil, fmt.Errorf("field adminBlockEntry not resolved")
 					},
 				},
 			}
@@ -4067,8 +4075,7 @@ func (m *AdminBlockEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 }
 
 func (m *AdminBlockEntry_AddAuditServer) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_AddAuditServer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4088,8 +4095,7 @@ func (m *AdminBlockEntry_AddAuditServer) MarshalToSizedBuffer(dAtA []byte) (int,
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddEfficiency) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_AddEfficiency) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4109,8 +4115,7 @@ func (m *AdminBlockEntry_AddEfficiency) MarshalToSizedBuffer(dAtA []byte) (int, 
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddFactoidAddress) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_AddFactoidAddress) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4130,8 +4135,7 @@ func (m *AdminBlockEntry_AddFactoidAddress) MarshalToSizedBuffer(dAtA []byte) (i
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddFederatedServer) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_AddFederatedServer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4151,8 +4155,7 @@ func (m *AdminBlockEntry_AddFederatedServer) MarshalToSizedBuffer(dAtA []byte) (
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddFederatedServerBitcoinAnchorKey) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_AddFederatedServerBitcoinAnchorKey) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4172,8 +4175,7 @@ func (m *AdminBlockEntry_AddFederatedServerBitcoinAnchorKey) MarshalToSizedBuffe
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddFederatedServerSigningKey) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_AddFederatedServerSigningKey) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4193,8 +4195,7 @@ func (m *AdminBlockEntry_AddFederatedServerSigningKey) MarshalToSizedBuffer(dAtA
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_AddReplaceMatryoshkaHash) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_AddReplaceMatryoshkaHash) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4214,8 +4215,7 @@ func (m *AdminBlockEntry_AddReplaceMatryoshkaHash) MarshalToSizedBuffer(dAtA []b
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_CancelCoinbaseDescriptor) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_CancelCoinbaseDescriptor) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4235,8 +4235,7 @@ func (m *AdminBlockEntry_CancelCoinbaseDescriptor) MarshalToSizedBuffer(dAtA []b
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_CoinbaseDescriptor) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_CoinbaseDescriptor) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4256,8 +4255,7 @@ func (m *AdminBlockEntry_CoinbaseDescriptor) MarshalToSizedBuffer(dAtA []byte) (
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_DirectoryBlockSignatureEntry) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_DirectoryBlockSignatureEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4277,8 +4275,7 @@ func (m *AdminBlockEntry_DirectoryBlockSignatureEntry) MarshalToSizedBuffer(dAtA
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_EndOfMinuteEntry) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_EndOfMinuteEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4298,8 +4295,7 @@ func (m *AdminBlockEntry_EndOfMinuteEntry) MarshalToSizedBuffer(dAtA []byte) (in
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_ForwardCompatibleEntry) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_ForwardCompatibleEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4319,8 +4315,7 @@ func (m *AdminBlockEntry_ForwardCompatibleEntry) MarshalToSizedBuffer(dAtA []byt
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_IncreaseServerCount) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_IncreaseServerCount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4340,8 +4335,7 @@ func (m *AdminBlockEntry_IncreaseServerCount) MarshalToSizedBuffer(dAtA []byte) 
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_RemoveFederatedServer) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_RemoveFederatedServer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4361,8 +4355,7 @@ func (m *AdminBlockEntry_RemoveFederatedServer) MarshalToSizedBuffer(dAtA []byte
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_RevealMatryoshkaHash) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_RevealMatryoshkaHash) MarshalToSizedBuffer(dAtA []byte) (int, error) {
@@ -4382,8 +4375,7 @@ func (m *AdminBlockEntry_RevealMatryoshkaHash) MarshalToSizedBuffer(dAtA []byte)
 	return len(dAtA) - i, nil
 }
 func (m *AdminBlockEntry_ServerFault) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
+	return m.MarshalToSizedBuffer(dAtA[:m.Size()])
 }
 
 func (m *AdminBlockEntry_ServerFault) MarshalToSizedBuffer(dAtA []byte) (int, error) {

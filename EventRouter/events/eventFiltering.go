@@ -179,12 +179,14 @@ var nonFilteringQuery = `{
                 vmIndex
               }
             }
+            adminIdType
           }
           header {
             blockHeight
             messageCount
             previousBackRefHash
           }
+          keyMerkleRoot
         }
         directoryBlock {
           entries {
@@ -260,6 +262,7 @@ var nonFilteringQuery = `{
           }
           header {
             blockHeight
+            bodyHash
             objectCount
             previousFullHash
             previousHeaderHash
@@ -269,8 +272,10 @@ var nonFilteringQuery = `{
           blockHeight
           bodyMerkleRoot
           exchangeRate
+          keyMerkleRoot
           previousKeyMerkleRoot
           previousLedgerKeyMerkleRoot
+          transactionCount
           transactions {
             blockHeight
             entryCreditOutputs {
@@ -301,15 +306,15 @@ var nonFilteringQuery = `{
         }
       }
       ... on ProcessListEvent {
- 			processListEvent {
-				NewBlockEvent {
-					newBlockHeight
-				}
-				NewMinuteEvent {
-					newMinute
-					blockHeight
-				}
-			}
+        processListEvent {
+          ... on NewBlockEvent {
+            newBlockHeight
+          }
+          ... on NewMinuteEvent {
+            blockHeight
+            newMinute
+          }
+        }
       }
       ... on NodeMessage {
         level

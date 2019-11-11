@@ -94,7 +94,7 @@ Directory Block Commit example
                     objectCount
                 }
                 entries {
-                    entryCreditBlockEntry { 
+                        entryCreditBlockEntry { 
                         ... on ChainCommit {
                             version
                             timestamp
