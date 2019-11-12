@@ -67,10 +67,10 @@ generate:
 
 .PHONY: dev-deps
 dev-deps:
-	GO111MODULE=off $(GOGET) -v ${u} \
+	GO111MODULE=on $(GOGET) -v ${u} \
 		golang.org/x/lint/golint \
-		github.com/swaggo/swag/cmd/swag	\
-		github.com/swaggo/swag/gen	\
+		github.com/swaggo/swag/cmd/swag@v1.6.3	\
+		github.com/swaggo/swag/gen@v1.6.3	\
 		github.com/golang/protobuf/protoc-gen-go	\
 		github.com/bi-foundation/protobuf-graphql-extension/protoc-gen-gogoopsee
 
