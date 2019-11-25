@@ -49,7 +49,7 @@ func (eventRouter *eventRouter) handleEvents() {
 			continue
 		}
 
-		log.Info("handle %s event: %v", eventType, factomEvent)
+		log.Debug("handle %s event: %v", eventType, factomEvent)
 
 		subscriptionContexts, err := repository.SubscriptionRepository.GetActiveSubscriptions(eventType)
 		if err != nil {
