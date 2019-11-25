@@ -134,7 +134,7 @@ func (repository *sqlRepository) CreateSubscription(createSubscriptionContext *m
 			}
 		}
 	}
-	log.Debug("stored subscription: %v", subscriptionContext)
+	log.Info("stored subscription: %v", subscriptionContext)
 	return subscriptionContext, err
 }
 
@@ -182,7 +182,7 @@ func (repository *sqlRepository) ReadSubscription(id string) (subscriptionContex
 		return nil, errors.NewSubscriptionNotFound(id)
 	}
 
-	log.Debug("read subscription: %v", subscriptionContext)
+	log.Info("read subscription: %v", subscriptionContext)
 	return subscriptionContext, err
 }
 
@@ -260,7 +260,7 @@ func (repository *sqlRepository) UpdateSubscription(updateSubscriptionContext *m
 	}
 
 	subscriptionContext = updateSubscriptionContext
-	log.Debug("update subscription: %v", subscriptionContext)
+	log.Info("update subscription: %v", subscriptionContext)
 	return subscriptionContext, err
 }
 
@@ -293,7 +293,7 @@ func (repository *sqlRepository) DeleteSubscription(id string) (err error) {
 		return err
 	}
 
-	log.Debug("deleted subscription: %s", id)
+	log.Info("deleted subscription: %s", id)
 	return err
 }
 

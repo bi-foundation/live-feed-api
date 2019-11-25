@@ -129,6 +129,7 @@ func (eventRouter *eventRouter) emitEvent(subscriptionID string) {
 			var err error
 			subscriptionContext, err = repository.SubscriptionRepository.ReadSubscription(subscriptionID)
 			if err != nil {
+				log.Error("failed to read subscription before send: %v", err)
 				eventRouter.handleSendFailure(subscriptionContext, err.Error())
 
 				// put the event back on the stack and wait to resend event
@@ -143,6 +144,7 @@ func (eventRouter *eventRouter) emitEvent(subscriptionID string) {
 
 		// if there was a failure, update the context in case the subscription has been updated in the mean time
 		if err != nil {
+			log.Error("failed to emit event: %v", err)
 			eventRouter.handleSendFailure(subscriptionContext, err.Error())
 
 			// put the event back on the stack and wait to resend event
