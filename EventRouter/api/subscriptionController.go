@@ -173,6 +173,7 @@ func validateSubscription(subscription *models.Subscription) error {
 
 	for eventType := range subscription.Filters {
 		switch eventType {
+		case models.DirectoryBlockAnchor:
 		case models.DirectoryBlockCommit:
 		case models.ChainCommit:
 		case models.EntryCommit:

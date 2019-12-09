@@ -359,6 +359,40 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 	assert.JSONEq(t, expectedJSON, string(result))
 }
 
+func TestQueryDirectoryBlockAnchor(t *testing.T) {
+	query := readQuery(t, "DirectoryBlockAnchor.md")
+	expectedJSON := `{
+		"event": {
+			"event": {
+				"blockHeight": 1,
+				"btcBlockHash": "\u0001",
+				"btcBlockHeight": 1,
+				"btcConfirmed": false,
+				"btcTxHash": "\u0001",
+				"btcTxOffset": 1,
+				"directoryBlockHash": "\u0001",
+				"directoryBlockMerkleRoot": "\u0001",
+				"ethereumAnchorRecordEntryHash": "\u0001",
+				"ethereumConfirmed": false,
+				"timestamp": 1000
+			},
+			"factomNodeName": "1",
+			"identityChainID": "\u0001"
+		}
+	}`
+
+	event := createNewEvent(models.DirectoryBlockAnchor)
+
+	result, err := Filter(query, event)
+	if err != nil {
+		fmt.Printf("query: %s \n", jsonPrettyPrint(query))
+		fmt.Printf("result: %s \n", jsonPrettyPrint(string(result)))
+		t.Fatalf("failed to marshal result: %v - %v", err, result)
+	}
+
+	assert.JSONEq(t, expectedJSON, string(result))
+}
+
 func TestQueryProcessMessage(t *testing.T) {
 	query := readQuery(t, "ProcessListEvent.md")
 	expectedJSON := `{
@@ -602,6 +636,7 @@ func BenchmarkFilters(b *testing.B) {
 		EventType models.EventType
 		Filtering string
 	}{
+		{models.DirectoryBlockAnchor, readQuery(b, "DirectoryBlockAnchor.md")},
 		{models.DirectoryBlockCommit, readQuery(b, "DirectoryBlockCommit.md")},
 		{models.ChainCommit, readQuery(b, "CommitChain.md")},
 		{models.EntryCommit, readQuery(b, "CommitEntry.md")},
@@ -627,6 +662,8 @@ func BenchmarkFilters(b *testing.B) {
 func createNewEvent(eventType models.EventType) *eventmessages.FactomEvent {
 	event := eventmessages.NewPopulatedFactomEvent(randomizer, false)
 	switch eventType {
+	case models.DirectoryBlockAnchor:
+		event.Event = eventmessages.NewPopulatedFactomEvent_DirectoryBlockAnchor(randomizer, false)
 	case models.DirectoryBlockCommit:
 		event.Event = eventmessages.NewPopulatedFactomEvent_DirectoryBlockCommit(randomizer, false)
 	case models.ChainCommit:

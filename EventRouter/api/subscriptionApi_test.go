@@ -293,7 +293,7 @@ func testSubscriptionAPI(t *testing.T, scheme string, port int) {
 			defer response.Body.Close()
 			body, err := ioutil.ReadAll(response.Body)
 
-			t.Logf("%s response: %s", name, body)
+			// t.Logf("%s response: %s", name, body)
 
 			testCase.assert(t, body)
 		})

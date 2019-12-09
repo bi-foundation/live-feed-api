@@ -2,7 +2,8 @@ Subscriptions can be filtered. The filtering can be given on for each EventType 
 
 | event type                 |                               |
 |----------------------------|-------------------------------|
-| DIRECTORY_BLOCK_COMMIT     | [StateChange](StateChange.md) |
+| DIRECTORY_BLOCK_ANCHOR     | [DirectoryBlockAnchor](DirectoryBlockAnchor.md) |
+| DIRECTORY_BLOCK_COMMIT     | [DirectoryBlockCommit](DirectoryBlockCommit.md) |
 | CHAIN_COMMIT               | [CommitChain](CommitChain.md) |
 | ENTRY_REVEAL               | [EntryReveal](EntryReveal.md) |
 | ENTRY_COMMIT               | [CommitEntry](CommitEntry.md) |
