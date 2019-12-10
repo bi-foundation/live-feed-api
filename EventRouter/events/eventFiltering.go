@@ -189,10 +189,12 @@ var nonFilteringQuery = `{
           keyMerkleRoot
         }
         directoryBlock {
+          chainID
           entries {
             chainID
             keyMerkleRoot
           }
+          hash
           header {
             blockCount
             blockHeight
@@ -203,6 +205,7 @@ var nonFilteringQuery = `{
             timestamp
             version
           }
+          keyMerkleRoot
         }
         entryBlockEntries {
           chainID
@@ -290,6 +293,7 @@ var nonFilteringQuery = `{
               address
               amount
             }
+            minuteNumber
             redeemConditionDataStructures {
               rcd {
                 ... on RCD1 {
@@ -320,6 +324,19 @@ var nonFilteringQuery = `{
         level
         messageCode
         messageText
+      }
+      ... on DirectoryBlockAnchor {
+        blockHeight
+        btcBlockHash
+        btcBlockHeight
+        btcConfirmed
+        btcTxHash
+        btcTxOffset
+        directoryBlockHash
+        directoryBlockMerkleRoot
+        ethereumAnchorRecordEntryHash
+        ethereumConfirmed
+        timestamp
       }
     }
     eventSource

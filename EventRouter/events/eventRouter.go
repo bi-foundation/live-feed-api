@@ -67,6 +67,8 @@ func (eventRouter *eventRouter) handleEvents() {
 
 func mapEventType(factomEvent *eventmessages.FactomEvent) (models.EventType, error) {
 	switch factomEvent.Event.(type) {
+	case *eventmessages.FactomEvent_DirectoryBlockAnchor:
+		return models.DirectoryBlockAnchor, nil
 	case *eventmessages.FactomEvent_DirectoryBlockCommit:
 		return models.DirectoryBlockCommit, nil
 	case *eventmessages.FactomEvent_ChainCommit:

@@ -24,6 +24,7 @@ message FactoidBlock {
 message Transaction {
     bytes transactionID = 1;
     uint32 blockHeight = 2;
+    uint32 minuteNumber = 9;
     graphqlproto.types.Timestamp timestamp = 3;
     repeated TransactionAddress factoidInputs = 4;
     repeated TransactionAddress factoidOutputs = 5;

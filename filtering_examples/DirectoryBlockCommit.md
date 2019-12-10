@@ -2,10 +2,13 @@ Directory Block Commit example
 ```graphql endpoint doc
 {
     factomNodeName
-    identityChainID 
+    identityChainID
     event {
         ... on DirectoryBlockCommit {
             directoryBlock {
+                chainID
+                hash
+                keyMerkleRoot
                 header {
                     version
                     timestamp
@@ -34,20 +37,20 @@ Directory Block Commit example
                             efficiency
                         }
                         # ... on AddAuditServer { }
-                        # ... on AddFactoidAddress { } 
-                        # ... on AddFederatedServer { } 
-                        # ... on AddFederatedServerBitcoinAnchorKey { } 
-                        # ... on AddFederatedServerSigningKey { } 
-                        # ... on AddReplaceMatryoshkaHash { } 
-                        # ... on CancelCoinbaseDescriptor { } 
-                        # ... on CoinbaseDescriptor { } 
-                        # ... on DirectoryBlockSignatureEntry { } 
-                        # ... on EndOfMinuteEntry { } 
-                        # ... on ForwardCompatibleEntry { } 
-                        # ... on IncreaseServerCount { } 
-                        # ... on RemoveFederatedServer { } 
-                        # ... on RevealMatryoshkaHash { } 
-                        # ... on ServerFault { } 
+                        # ... on AddFactoidAddress { }
+                        # ... on AddFederatedServer { }
+                        # ... on AddFederatedServerBitcoinAnchorKey { }
+                        # ... on AddFederatedServerSigningKey { }
+                        # ... on AddReplaceMatryoshkaHash { }
+                        # ... on CancelCoinbaseDescriptor { }
+                        # ... on CoinbaseDescriptor { }
+                        # ... on DirectoryBlockSignatureEntry { }
+                        # ... on EndOfMinuteEntry { }
+                        # ... on ForwardCompatibleEntry { }
+                        # ... on IncreaseServerCount { }
+                        # ... on RemoveFederatedServer { }
+                        # ... on RevealMatryoshkaHash { }
+                        # ... on ServerFault { }
                     }
                 }
             }
@@ -61,6 +64,7 @@ Directory Block Commit example
                     transactionID
                     blockHeight
                     timestamp
+                    minuteNumber
                     factoidInputs {
                         amount
                         address
@@ -76,13 +80,13 @@ Directory Block Commit example
                     redeemConditionDataStructures {
                         rcd {
                             ... on RCD1 {
-                                publicKey 
+                                publicKey
                             }
                         }
                     }
                     signatureBlocks {
-                        signature 
-                    } 
+                        signature
+                    }
                 }
             }
             entryCreditBlock {
@@ -94,7 +98,7 @@ Directory Block Commit example
                     objectCount
                 }
                 entries {
-                        entryCreditBlockEntry { 
+                        entryCreditBlockEntry {
                         ... on ChainCommit {
                             version
                             timestamp
@@ -107,26 +111,26 @@ Directory Block Commit example
                             weld
                         }
                         ... on EntryCommit {
-                            version 
+                            version
                             timestamp
                             entryHash
-                            entityState 
-                            credits 
-                            entryCreditPublicKey 
-                            signature 
+                            entityState
+                            credits
+                            entryCreditPublicKey
+                            signature
                         }
-                        ... on IncreaseBalance { 
+                        ... on IncreaseBalance {
                             entryCreditPublicKey
                             transactionID
                             index
                             amount
-                        } 
-                        ... on MinuteNumber { 
+                        }
+                        ... on MinuteNumber {
                             minuteNumber
-                        } 
-                        ... on ServerIndexNumber { 
+                        }
+                        ... on ServerIndexNumber {
                             serverIndexNumber
-                        } 
+                        }
                     }
                 }
             }
@@ -145,7 +149,7 @@ Directory Block Commit example
             entryBlockEntries {
                 version
                 hash
-                externalIDs 
+                externalIDs
                 content
             }
         }

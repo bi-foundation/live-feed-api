@@ -217,16 +217,6 @@
                 }
             }
         },
-        "models.Filter": {
-            "type": "object",
-            "properties": {
-                "filtering": {
-                    "description": "Define a Filter on an EventType to filter the event. This allows to reduce the network traffic. The filtering is done with GraphQL",
-                    "type": "string",
-                    "example": "{ identityChainID { hashValue } value { ... on NodeMessage { messageCode messageText } } }"
-                }
-            }
-        },
         "models.Subscription": {
             "type": "object",
             "required": [
@@ -256,17 +246,7 @@
                 },
                 "filters": {
                     "description": "The emitted event can be filter to receive not all data from an event type. Subscribe on one or more event types. For every event type a filtering can be defined.",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "object",
-                        "properties": {
-                            "filtering": {
-                                "description": "Define a Filter on an EventType to filter the event. This allows to reduce the network traffic. The filtering is done with GraphQL",
-                                "type": "string",
-                                "example": "{ identityChainID { hashValue } value { ... on NodeMessage { messageCode messageText } } }"
-                            }
-                        }
-                    }
+                    "type": "object"
                 },
                 "id": {
                     "description": "The id of the subscription.",
