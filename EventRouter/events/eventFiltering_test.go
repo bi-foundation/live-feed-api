@@ -214,7 +214,6 @@ func TestQueryStateChange(t *testing.T) {
 }
 
 func TestQueryDirectoryBlockCommit(t *testing.T) {
-	query := readQuery(t, "DirectoryBlockCommit.md")
 	expectedJSON := `{
 	  "event": {
 		"factomNodeName": "1", 
@@ -236,6 +235,9 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 			}
 		  }, 
 		  "directoryBlock": {
+			"chainID":"\u0001",
+			"keyMerkleRoot":"\u0001",
+			"hash":"\u0001",
 			"entries": [
 			  {
 				"chainID": "\u0001", 
@@ -325,7 +327,8 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 					"address": "\u0001", 
 					"amount": 1
 				  }
-				], 
+				],
+				"minuteNumber": 1,
 				"redeemConditionDataStructures": [
 				  {
 					"rcd": {
@@ -346,6 +349,7 @@ func TestQueryDirectoryBlockCommit(t *testing.T) {
 		}
 	  }
 	}`
+	query := readQuery(t, "DirectoryBlockCommit.md")
 
 	event := createNewEvent(models.DirectoryBlockCommit)
 
