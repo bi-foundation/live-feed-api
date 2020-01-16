@@ -1,4 +1,4 @@
-basePath: /live/feed/v0.1
+basePath: /live/feed/v1.0
 definitions:
   models.APIError:
     properties:
@@ -90,7 +90,7 @@ info:
     name: MIT
     url: http://opensource.org/licenses/MIT
   title: Live Feed API
-  version: "0.1"
+  version: "1.0"
 paths:
   /subscriptions:
     post:

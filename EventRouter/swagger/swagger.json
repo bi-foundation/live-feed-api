@@ -12,10 +12,10 @@
             "name": "MIT",
             "url": "http://opensource.org/licenses/MIT"
         },
-        "version": "0.1"
+        "version": "1.0"
     },
     "host": "localhost:8700",
-    "basePath": "/live/feed/v0.1",
+    "basePath": "/live/feed/v1.0",
     "paths": {
         "/subscriptions": {
             "post": {

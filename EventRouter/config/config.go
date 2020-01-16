@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultVersion = "0.1"
+	defaultVersion = "1.0"
 
 	defaultConfigName = "factom-live-feed.conf"
 	defaultConfigDir  = "live-feed"

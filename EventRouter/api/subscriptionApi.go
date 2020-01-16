@@ -1,14 +1,14 @@
 package api
 
 // @title Live Feed API
-// @version 0.1
+// @version 1.0
 // @description The live feed API is a service for receiving events from the factom blockchain. The API is connected to a factomd node. The received events will be emitted to the subscriptions in the API. Users can subscribe a callback url where able to receive different types of events.
 
 // @license.name MIT
 // @license.url http://opensource.org/licenses/MIT
 //
 // @host localhost:8700
-// @BasePath /live/feed/v0.1
+// @BasePath /live/feed/v1.0
 // @schemes http https
 
 import (
