@@ -28,6 +28,15 @@ definitions:
           required when the callback type is set on BASIC_AUTH.
         type: string
     type: object
+  models.Filter:
+    properties:
+      filtering:
+        description: Define a Filter on an EventType to filter the event. This allows
+          to reduce the network traffic. The filtering is done with GraphQL
+        example: '{ identityChainID { hashValue } value { ... on NodeMessage { messageCode
+          messageText } } }'
+        type: string
+    type: object
   models.Subscription:
     properties:
       callbackType:
@@ -51,6 +60,8 @@ definitions:
         description: Credentials of the callback endpoint where events are delivered.
         type: object
       filters:
+        additionalProperties:
+          $ref: '#/definitions/models.Filter'
         description: The emitted event can be filter to receive not all data from
           an event type. Subscribe on one or more event types. For every event type
           a filtering can be defined.
@@ -104,7 +115,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/models.Subscription'
-          type: object
       produces:
       - application/json
       responses:
@@ -187,7 +197,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/models.Subscription'
-          type: object
       produces:
       - application/json
       responses:

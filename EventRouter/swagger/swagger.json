@@ -34,7 +34,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/models.Subscription"
                         }
                     }
@@ -118,7 +117,6 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
                             "$ref": "#/definitions/models.Subscription"
                         }
                     }
@@ -217,6 +215,16 @@
                 }
             }
         },
+        "models.Filter": {
+            "type": "object",
+            "properties": {
+                "filtering": {
+                    "description": "Define a Filter on an EventType to filter the event. This allows to reduce the network traffic. The filtering is done with GraphQL",
+                    "type": "string",
+                    "example": "{ identityChainID { hashValue } value { ... on NodeMessage { messageCode messageText } } }"
+                }
+            }
+        },
         "models.Subscription": {
             "type": "object",
             "required": [
@@ -246,7 +254,10 @@
                 },
                 "filters": {
                     "description": "The emitted event can be filter to receive not all data from an event type. Subscribe on one or more event types. For every event type a filtering can be defined.",
-                    "type": "object"
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/models.Filter"
+                    }
                 },
                 "id": {
                     "description": "The id of the subscription.",
