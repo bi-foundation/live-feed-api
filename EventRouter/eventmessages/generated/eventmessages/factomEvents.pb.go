@@ -2600,12 +2600,6 @@ type NewMinuteEventGetter interface {
 
 var GraphQLNewMinuteEventType *github_com_graphql_go_graphql.Object
 
-func (g *ProcessListEvent_NewBlockEvent) GetNewBlockEvent() *NewBlockEvent {
-	return g.NewBlockEvent
-}
-func (g *ProcessListEvent_NewMinuteEvent) GetNewMinuteEvent() *NewMinuteEvent {
-	return g.NewMinuteEvent
-}
 func (g *FactomEvent_ChainCommit) GetChainCommit() *ChainCommit {
 	return g.ChainCommit
 }
@@ -2644,6 +2638,12 @@ func (g *EntryCreditBlockEntry_MinuteNumber) GetMinuteNumber() *MinuteNumber {
 }
 func (g *EntryCreditBlockEntry_ServerIndexNumber) GetServerIndexNumber() *ServerIndexNumber {
 	return g.ServerIndexNumber
+}
+func (g *ProcessListEvent_NewBlockEvent) GetNewBlockEvent() *NewBlockEvent {
+	return g.NewBlockEvent
+}
+func (g *ProcessListEvent_NewMinuteEvent) GetNewMinuteEvent() *NewMinuteEvent {
+	return g.NewMinuteEvent
 }
 
 func init() {

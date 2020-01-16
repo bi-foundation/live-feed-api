@@ -13,9 +13,10 @@ require (
 	github.com/mattn/go-sqlite3 v1.11.0 // indirect
 	github.com/onsi/ginkgo v1.10.1 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/proullon/ramsql v0.0.0-20181213202341-817cee58a244
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.4.0
-	github.com/swaggo/swag v1.6.2
+	github.com/swaggo/swag v1.6.5
 	github.com/ziutek/mymysql v1.5.4 // indirect
 )
